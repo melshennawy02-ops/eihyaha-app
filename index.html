@@ -72,7 +72,8 @@
   /* ===== Forms ===== */
   label.flabel{display:block; font-size:12px; color:var(--muted); margin:12px 0 6px;}
   input[type=range]{width:100%;}
-  textarea, input[type=text]{width:100%; border:1px solid #E4DFCF; border-radius:10px; padding:10px 12px; font-size:13px; font-family:inherit; background:#fff; color:var(--text);}
+  textarea, input[type=text], input[type=email], input[type=password], input[type=number], select{width:100%; border:1px solid #E4DFCF; border-radius:10px; padding:10px 12px; font-size:13px; font-family:inherit; background:#fff; color:var(--text);}
+  input[type=file]{width:100%; font-size:12px; color:var(--muted); padding:8px 0;}
   textarea{min-height:70px; resize:none;}
   .btn-primary{width:100%; background:var(--navy-dark); color:var(--white); border:none; padding:13px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; margin-top:14px;}
   .btn-primary:active{opacity:.85;}
@@ -101,8 +102,18 @@
 <body>
 <div id="app">
 
+  <!-- ===================== SCREEN: GATE (تسجيل دخول إجباري) ===================== -->
+  <div class="screen active" id="screen-gate">
+    <div style="padding:50px 16px 0; text-align:center;">
+      <p style="font-size:11px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها ✦</p>
+      <h1 style="font-size:21px; font-weight:700; margin:0 0 4px;">إحياها باستمتاع</h1>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 24px;">سجّل دخولك للمتابعة</p>
+    </div>
+    <div style="padding:0 16px;" id="gateBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: HOME ===================== -->
-  <div class="screen active" id="screen-home">
+  <div class="screen" id="screen-home">
     <div class="topbar">
       <h1 id="h1-brand">إحياها باستمتاع</h1>
       <div class="sos" onclick="showSafety()">محتاج مختص</div>
@@ -193,6 +204,14 @@
       </div>
       <button class="btn-ghost" onclick="loadFullHistory()">📂 عرض السجلات</button>
       <div id="fullHistoryWrap" style="margin-top:14px;"></div>
+
+      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-top:20px;">
+        <p class="card-title">📌 ملاحظة سريعة</p>
+        <textarea id="stickyNoteInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:50px;"></textarea>
+        <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt()">حفظ</button>
+      </div>
+      <div id="stickyChooserWrap"></div>
+      <div id="stickyNotesList" style="margin-top:10px;"></div>
     </div>
   </div>
 
@@ -206,6 +225,24 @@
     <div style="padding:0 16px;" id="reportBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: TASKS (المهام + التقويم) ===================== -->
+  <div class="screen" id="screen-tasks">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1 id="h1-tasks">المهام</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;">
+      <div id="taskCalendar"></div>
+      <div id="taskListWrap" style="margin-top:14px;"></div>
+      <label class="flabel">مهمة جديدة</label>
+      <input type="text" id="newTaskTitle" placeholder="اكتب المهمة...">
+      <label class="flabel">الوقت (اختياري)</label>
+      <input type="time" id="newTaskTime">
+      <button class="btn-primary" onclick="addTask()">إضافة المهمة</button>
+    </div>
+  </div>
+
   <!-- ===================== SCREEN: ACCOUNT (تسجيل الدخول) ===================== -->
   <div class="screen" id="screen-account">
     <div class="topbar">
@@ -216,10 +253,22 @@
     <div style="padding:0 16px;" id="accountBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: ADMIN (مراجعة المتخصصين) ===================== -->
+  <div class="screen" id="screen-admin">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1>لوحة الأدمن</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="adminBody"></div>
+  </div>
+
   <!-- ===================== BOTTOM NAV ===================== -->
-  <div class="bottomnav">
+  <div class="bottomnav" id="bottomNav" style="display:none;">
     <div class="navitem active" data-nav="home" onclick="goHome()"><span class="navicon">🏠</span><span id="navlabel-home">الرئيسية</span></div>
+    <div class="navitem" data-nav="tasks" onclick="openTasksScreen()"><span class="navicon">✅</span><span id="navlabel-tasks">المهام</span></div>
     <div class="navitem" data-nav="daftar" onclick="showScreen('screen-daftar')"><span class="navicon">📓</span><span id="navlabel-daftar">دفتري</span></div>
+    <div class="navitem" id="navitem-admin" style="display:none;" onclick="openAdminScreen()"><span class="navicon">🛡️</span><span>الأدمن</span></div>
     <div class="navitem" data-nav="settings" onclick="openAccountScreen()"><span class="navicon">⚙️</span><span id="navlabel-account">حسابي</span></div>
   </div>
 
@@ -303,14 +352,156 @@ async function firestoreGetDoc(collection, docId){
   }catch(err){ return null; }
 }
 
+// ================= تسجيل الدخول ببصمة الإصبع (WebAuthn) =================
+// ملاحظة صادقة: بتشتغل بس لو المتصفح/الجهاز بيدعم WebAuthn فعليًا (متصفح Chrome
+// حقيقي غالبًا نعم، لكن جوه APK مغلّف بـWebView بسيط زي بتاعنا الحالي مش مضمونة —
+// بتعمل رصد تلقائي وتختفي بهدوء من غير أي خطأ لو مش مدعومة.
+const webAuthnSupported = typeof window.PublicKeyCredential !== 'undefined';
+
+function bufferToBase64(buf){
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+function base64ToBuffer(b64){
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
+// بعد نجاح تسجيل الدخول/الحساب، نعرض على المستخدم يفعّل الدخول بالبصمة للمرة الجاية
+function offerBiometricSetup(refreshToken){
+  if(!webAuthnSupported || !refreshToken) return;
+  if(localStorage.getItem('eihyaha_biometric_enabled') === '1') return;
+  registerBiometric(refreshToken);
+}
+
+async function registerBiometric(refreshToken){
+  try{
+    const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+    if(!auth) return;
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: "إحياها باستمتاع" },
+        user: {
+          id: new TextEncoder().encode(auth.uid),
+          name: auth.email || auth.username,
+          displayName: auth.username,
+        },
+        pubKeyCredParams: [{ type:"public-key", alg:-7 }],
+        authenticatorSelection: { authenticatorAttachment:"platform", userVerification:"required" },
+        timeout: 60000,
+      }
+    });
+    localStorage.setItem('eihyaha_webauthn_id', bufferToBase64(credential.rawId));
+    localStorage.setItem('eihyaha_refresh_token', refreshToken);
+    localStorage.setItem('eihyaha_biometric_enabled', '1');
+  }catch(err){
+    // الجهاز مش بيدعم بصمة، أو المستخدم رفض — نتجاهل من غير ما نضايقه
+    console.warn('البصمة مش متاحة على الجهاز/المتصفح ده:', err);
+  }
+}
+
+async function loginWithBiometric(){
+  const credIdB64 = localStorage.getItem('eihyaha_webauthn_id');
+  const refreshToken = localStorage.getItem('eihyaha_refresh_token');
+  if(!credIdB64 || !refreshToken){ showAuthError('البصمة مش مفعّلة على الجهاز ده، سجّل دخولك بالإيميل الأول'); return; }
+  try{
+    await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials: [{ id: base64ToBuffer(credIdB64), type:'public-key' }],
+        userVerification: 'required',
+        timeout: 60000,
+      }
+    });
+    // نجحت البصمة محليًا — نجدد الجلسة بالـrefresh token بدل كتابة كلمة السر تاني
+    const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`, {
+      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: `grant_type=refresh_token&refresh_token=${refreshToken}`
+    });
+    const data = await res.json();
+    if(data.user_id){
+      const profile = await firestoreGetDoc('users', data.user_id);
+      const username = (profile && profile.username) || 'مستخدم';
+      saveAuthSession(data.user_id, username, profile ? profile.email : '');
+      enterApp();
+    } else {
+      showAuthError('انتهت صلاحية جلسة البصمة، سجّل دخولك بالإيميل وكلمة المرور');
+    }
+  }catch(err){
+    showAuthError('تعذّر التحقق من البصمة');
+  }
+}
+
+// ================= لوحة الأدمن — قبول أو رفض المتخصصين =================
+// عدّل الإيميل ده لإيميلك الحقيقي عشان تقدر توصل للوحة الأدمن بعد تسجيل الدخول
+const ADMIN_EMAILS = ["ضع-إيميلك-الحقيقي-هنا@example.com"];
+
+function checkAdminAccess(){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const isAdmin = auth && ADMIN_EMAILS.includes(auth.email);
+  const navItem = document.getElementById('navitem-admin');
+  if(navItem) navItem.style.display = isAdmin ? 'flex' : 'none';
+  return isAdmin;
+}
+
+function openAdminScreen(){
+  if(!checkAdminAccess()){ alert('الصفحة دي للأدمن بس'); return; }
+  renderAdminScreen();
+  showScreen('screen-admin');
+}
+
+async function renderAdminScreen(){
+  const body = document.getElementById('adminBody');
+  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">جاري تحميل طلبات المتخصصين...</p>`;
+  const docs = await firestoreListAll('specialists');
+  const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+
+  if(specialists.length === 0){
+    body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
+    return;
+  }
+
+  const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗' };
+  const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34' };
+
+  body.innerHTML = specialists.map(s => `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div>
+          <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
+          <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
+        </div>
+        <span style="font-size:10px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
+      </div>
+      ${s.bio ? `<p style="font-size:12px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
+      ${s.license ? `<p style="font-size:11px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
+      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
+      ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
+      ${s.status === 'pending' ? `
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">✓ قبول</button>
+          <button class="btn-ghost" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="reviewSpecialist('${s.id}','rejected')">✗ رفض</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+async function reviewSpecialist(uid, decision){
+  await firestoreSetDoc('specialists', uid, { status: decision });
+  renderAdminScreen();
+}
+
 function saveAuthSession(uid, username, email){
   localStorage.setItem('eihyaha_auth', JSON.stringify({ uid, username, email }));
   localStorage.setItem('eihyaha_ever_used_auth', '1');
+  checkAdminAccess();
 }
 
 function authSignOut(){
   localStorage.removeItem('eihyaha_auth');
-  renderAccountScreen();
+  document.getElementById('bottomNav').style.display = 'none';
+  renderGateScreen();
+  showScreen('screen-gate');
 }
 
 function showAuthError(msg){
@@ -318,11 +509,21 @@ function showAuthError(msg){
   if(el){ el.textContent = msg; el.style.display = 'block'; }
 }
 
+// ---------- الدخول للتطبيق بعد نجاح تسجيل الدخول/الحساب ----------
+function enterApp(){
+  document.getElementById('bottomNav').style.display = 'flex';
+  goHome();
+}
+
+// ---------- مستخدم عادي: تسجيل حساب جديد ببيانات شخصية ----------
 async function doSignUp(){
+  const fullName = document.getElementById('authFullName').value.trim();
   const username = document.getElementById('authUsername').value.trim();
+  const age = document.getElementById('authAge').value.trim();
+  const gender = document.getElementById('authGender').value;
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
-  if(!username || !email || !password){ showAuthError('لازم تملأ اسم المستخدم والإيميل وكلمة المرور'); return; }
+  if(!fullName || !username || !email || !password){ showAuthError('لازم تملأ الاسم واسم المستخدم والإيميل وكلمة المرور'); return; }
   if(!email.includes('@') || !email.includes('.')){ showAuthError('اكتب إيميل صحيح'); return; }
   if(password.length < 6){ showAuthError('كلمة المرور لازم تكون 6 حروف على الأقل'); return; }
 
@@ -332,9 +533,10 @@ async function doSignUp(){
     else showAuthError('حصل خطأ: ' + error);
     return;
   }
-  await firestoreSetDoc('users', data.localId, { username, email });
+  await firestoreSetDoc('users', data.localId, { username, email, fullName, age: age || '', gender: gender || '', role:'user' });
   saveAuthSession(data.localId, username, email);
-  renderAccountScreen();
+  offerBiometricSetup(data.refreshToken);
+  enterApp();
 }
 
 async function doSignIn(){
@@ -351,19 +553,106 @@ async function doSignIn(){
   const profile = await firestoreGetDoc('users', data.localId);
   const username = (profile && profile.username) || email.split('@')[0];
   saveAuthSession(data.localId, username, email);
-  renderAccountScreen();
+  offerBiometricSetup(data.refreshToken);
+  enterApp();
 }
 
+// ---------- تسجيل متخصص: بيانات كاملة + رفع صورة توثيق (Base64 داخل Firestore) ----------
+let specialistImageBase64 = '';
+
+function handleSpecialistFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const MAX_BYTES = 400 * 1024; // 400 كيلوبايت كحد أقصى (قيد Firestore على حجم الحقل النصي)
+  if(file.size > MAX_BYTES){
+    showAuthError('حجم الصورة كبير — اختار صورة أصغر من 400 كيلوبايت (اضغطها أول)');
+    input.value = '';
+    specialistImageBase64 = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => { specialistImageBase64 = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+async function doSignUpSpecialist(){
+  const fullName = document.getElementById('specFullName').value.trim();
+  const specialty = document.getElementById('specSpecialty').value.trim();
+  const experience = document.getElementById('specExperience').value.trim();
+  const license = document.getElementById('specLicense').value.trim();
+  const bio = document.getElementById('specBio').value.trim();
+  const agreedCommission = document.getElementById('specCommissionAgree').checked;
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+
+  if(!fullName || !specialty || !email || !password){ showAuthError('لازم تملأ الاسم والتخصص والإيميل وكلمة المرور'); return; }
+  if(!email.includes('@') || !email.includes('.')){ showAuthError('اكتب إيميل صحيح'); return; }
+  if(password.length < 6){ showAuthError('كلمة المرور لازم تكون 6 حروف على الأقل'); return; }
+  if(!specialistImageBase64){ showAuthError('لازم ترفع صورة شهادة أو بطاقة نقابية تثبت تخصصك'); return; }
+  if(!agreedCommission){ showAuthError('لازم توافق على سياسة العمولة قبل التسجيل'); return; }
+
+  const { data, error } = await authRequest('signUp', { email, password, returnSecureToken:true });
+  if(error){
+    if(error.includes('EMAIL_EXISTS')) showAuthError('الإيميل ده متسجل قبل كده');
+    else showAuthError('حصل خطأ: ' + error);
+    return;
+  }
+  await firestoreSetDoc('users', data.localId, { username:fullName, email, fullName, role:'specialist' });
+  await firestoreSetDoc('specialists', data.localId, {
+    fullName, specialty, experience: experience || '', license: license || '',
+    bio: bio || '', email, certificateImage: specialistImageBase64, status:'pending', agreedCommission:'yes',
+  });
+  saveAuthSession(data.localId, fullName, email);
+  specialistImageBase64 = '';
+  offerBiometricSetup(data.refreshToken);
+  enterApp();
+}
+
+// ---------- بناء نموذج البوابة حسب النوع (دخول / حساب عادي / متخصص) ----------
 function renderAuthFields(mode){
   const wrap = document.getElementById('authFieldsWrap');
   if(mode === 'signup'){
     wrap.innerHTML = `
+      <label class="flabel">الاسم الكامل</label>
+      <input type="text" id="authFullName" placeholder="الاسم الكامل">
       <label class="flabel">اسم المستخدم</label>
       <input type="text" id="authUsername" placeholder="مثال: mohamed_2026">
+      <label class="flabel">العمر (اختياري)</label>
+      <input type="number" id="authAge" placeholder="العمر">
+      <label class="flabel">النوع (اختياري)</label>
+      <select id="authGender">
+        <option value="">تفضّل عدم التحديد</option>
+        <option value="male">ذكر</option>
+        <option value="female">أنثى</option>
+      </select>
       <label class="flabel">الإيميل</label>
       <input type="email" id="authEmail" placeholder="name@example.com">
       <label class="flabel">كلمة المرور</label>
       <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
+    `;
+  } else if(mode === 'specialist'){
+    wrap.innerHTML = `
+      <label class="flabel">الاسم الكامل</label>
+      <input type="text" id="specFullName" placeholder="الاسم الكامل">
+      <label class="flabel">التخصص</label>
+      <input type="text" id="specSpecialty" placeholder="مثال: أخصائي نفسي إكلينيكي">
+      <label class="flabel">سنوات الخبرة</label>
+      <input type="number" id="specExperience" placeholder="عدد السنوات">
+      <label class="flabel">رقم الترخيص/العضوية (اختياري)</label>
+      <input type="text" id="specLicense" placeholder="رقم الترخيص">
+      <label class="flabel">نبذة مختصرة</label>
+      <textarea id="specBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;"></textarea>
+      <label class="flabel">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
+      <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
+      <label class="flabel">الإيميل</label>
+      <input type="email" id="authEmail" placeholder="name@example.com">
+      <label class="flabel">كلمة المرور</label>
+      <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
+      <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
+        <input type="checkbox" id="specCommissionAgree" style="width:auto; margin-top:3px;">
+        <label for="specCommissionAgree" style="font-size:11.5px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد <b>عمولة</b> على أي جلسة أو استشارة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-top:8px;">حسابك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
     `;
   } else {
     wrap.innerHTML = `
@@ -378,11 +667,45 @@ function renderAuthFields(mode){
 function setAuthMode(mode){
   const btn = document.getElementById('authSubmitBtn');
   document.getElementById('tabSignin').style.background = mode === 'signin' ? 'var(--sand)' : 'transparent';
-  document.getElementById('tabSignup').style.background = mode === 'signup' ? 'var(--sand)' : 'transparent';
+  document.getElementById('tabSignup').style.background = (mode === 'signup' || mode === 'specialist') ? 'var(--sand)' : 'transparent';
+  const specToggle = document.getElementById('specialistToggleWrap');
+  if(specToggle) specToggle.style.display = (mode === 'signup' || mode === 'specialist') ? 'block' : 'none';
   renderAuthFields(mode);
   if(mode === 'signin'){ btn.textContent = 'دخول'; btn.onclick = doSignIn; }
+  else if(mode === 'specialist'){ btn.textContent = 'إرسال طلب التسجيل كمتخصص'; btn.onclick = doSignUpSpecialist; }
   else { btn.textContent = 'إنشاء الحساب'; btn.onclick = doSignUp; }
   document.getElementById('authError').style.display = 'none';
+}
+
+// ---------- شاشة البوابة نفسها ----------
+function renderGateScreen(){
+  const body = document.getElementById('gateBody');
+  const isFirstTime = !localStorage.getItem('eihyaha_ever_used_auth');
+  const biometricReady = webAuthnSupported && localStorage.getItem('eihyaha_biometric_enabled') === '1';
+  body.innerHTML = `
+    ${biometricReady ? `
+      <button class="btn-primary" style="margin-bottom:10px;" onclick="loginWithBiometric()">👆 ادخل ببصمة الإصبع</button>
+      <p style="font-size:11px; color:var(--muted); text-align:center; margin:0 0 16px;">أو سجّل دخولك بالطريقة العادية تحت</p>
+    ` : ''}
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">تسجيل الدخول</div>
+      <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">حساب جديد</div>
+    </div>
+    <div id="specialistToggleWrap" style="display:none; margin-bottom:14px;">
+      <div class="choice-btn" style="text-align:center; margin:0; font-size:11.5px;" onclick="setAuthMode('specialist')">🩺 عندي تخصص مهني؟ سجّل كمتخصص</div>
+    </div>
+    <div id="authFieldsWrap"></div>
+    <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
+    <button class="btn-primary" id="authSubmitBtn">دخول</button>
+    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق</p>
+  `;
+  setAuthMode(isFirstTime ? 'signup' : 'signin');
+  if(isFirstTime){
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:12px; color:var(--gold); text-align:center; margin:-8px 0 14px; font-weight:700;';
+    note.textContent = 'أول مرة معانا؟ اعمل حسابك دلوقتي 👋';
+    document.getElementById('tabSignin').parentElement.after(note);
+  }
 }
 
 function openAccountScreen(){
@@ -393,7 +716,16 @@ function openAccountScreen(){
 function renderSettingsSection(){
   const currentTheme = localStorage.getItem('eihyaha_theme') || 'classic';
   const currentLang = localStorage.getItem('eihyaha_lang') || 'ar';
+  const notifOn = localStorage.getItem('eihyaha_task_notifications') !== 'off';
   return `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">إشعارات المهام</p>
+      <div style="display:flex; gap:8px;">
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${notifOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setTaskNotifications('on')">مفعّلة</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${!notifOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setTaskNotifications('off')">مقفولة</div>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-top:10px;">إشعارات محلية تشتغل بس لو التطبيق مفتوح — الإشعارات الحقيقية للتطبيق المقفول هتتضاف لاحقًا.</p>
+    </div>
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">${t('theme_title')}</p>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
@@ -422,38 +754,14 @@ function renderSettingsSection(){
 function renderAccountScreen(){
   const body = document.getElementById('accountBody');
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
-  let authHtml;
-  if(auth){
-    authHtml = `
+  const authHtml = auth ? `
       <div class="card" style="text-align:center; padding:24px 16px;">
         <div class="icon-circle" style="width:60px; height:60px; font-size:26px; margin:0 auto 12px; color:var(--gold);">👤</div>
         <p class="card-sub" style="margin:0;">${t('logged_in_as')}</p>
         <p style="font-size:17px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
         <button class="btn-ghost" onclick="authSignOut()">${t('logout')}</button>
-      </div>`;
-  } else {
-    authHtml = `
-      <div style="display:flex; gap:8px; margin-bottom:16px;">
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">${t('signin')}</div>
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">${t('signup')}</div>
-      </div>
-      <div id="authFieldsWrap"></div>
-      <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
-      <button class="btn-primary" id="authSubmitBtn">${t('signin')}</button>
-      <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">${t('social_login_note')}</p>
-    `;
-  }
+      </div>` : '';
   body.innerHTML = authHtml + renderSettingsSection();
-  if(!auth){
-    const isFirstTime = !localStorage.getItem('eihyaha_ever_used_auth');
-    setAuthMode(isFirstTime ? 'signup' : 'signin');
-    if(isFirstTime){
-      const note = document.createElement('p');
-      note.style.cssText = 'font-size:12px; color:var(--gold); text-align:center; margin:-10px 0 14px; font-weight:700;';
-      note.textContent = 'أول مرة معانا؟ اعمل حسابك دلوقتي 👋';
-      document.getElementById('tabSignin').parentElement.after(note);
-    }
-  }
 }
 
 // ============================================================
@@ -549,8 +857,8 @@ function setTheme(name){
 // حاليًا، لأن ترجمته محتاج دقة خاصة (خصوصًا الآيات القرآنية) — دي مرحلة تانية.
 const TRANSLATIONS = {
   ar: {
-    brand:"إحياها باستمتاع", nav_home:"الرئيسية", nav_journal:"دفتري", nav_account:"حسابي",
-    ehkily:"احكيلي", merat:"مرآة العقل", tabiei:"هل أنا طبيعي؟", daftar:"مرآتي اليومية",
+    brand:"إحياها باستمتاع", nav_home:"الرئيسية", nav_journal:"دفتري", nav_account:"حسابي", nav_tasks:"المهام",
+    ehkily:"احكيلي", merat:"مرآة العقل", tabiei:"هل أنا طبيعي؟", daftar:"مرآتي اليومية", tasks:"المهام",
     report:"جهزني للدكتور", account:"حسابي", available:"متاح الآن", soon:"قريبًا",
     theme_title:"لون الواجهة", lang_title:"اللغة", lang_note:"المحتوى النفسي والديني العميق لسه بالعربي فقط حاليًا",
     logged_in_as:"مسجل دخول باسم", logout:"تسجيل الخروج", signin:"تسجيل الدخول", signup:"حساب جديد",
@@ -558,8 +866,8 @@ const TRANSLATIONS = {
     social_login_note:"تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق",
   },
   en: {
-    brand:"Eihyaha Bestemtaa", nav_home:"Home", nav_journal:"My journal", nav_account:"Account",
-    ehkily:"Talk to me", merat:"Mirror of the mind", tabiei:"Am I normal?", daftar:"My daily mirror",
+    brand:"Eihyaha Bestemtaa", nav_home:"Home", nav_journal:"My journal", nav_account:"Account", nav_tasks:"Tasks",
+    ehkily:"Talk to me", merat:"Mirror of the mind", tabiei:"Am I normal?", daftar:"My daily mirror", tasks:"Tasks",
     report:"Prep for the doctor", account:"Account", available:"Available now", soon:"Coming soon",
     theme_title:"App color", lang_title:"Language", lang_note:"Deep psychological and religious content is still Arabic-only for now",
     logged_in_as:"Logged in as", logout:"Log out", signin:"Log in", signup:"New account",
@@ -585,7 +893,7 @@ function applyLanguage(){
   document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
   const map = {
     'h1-brand':'brand', 'h1-ehkily':'ehkily', 'h1-merat':'merat', 'h1-tabiei':'tabiei',
-    'h1-daftar':'daftar', 'h1-report':'report', 'h1-account':'account',
+    'h1-daftar':'daftar', 'h1-report':'report', 'h1-account':'account', 'h1-tasks':'tasks',
   };
   for(const id in map){
     const el = document.getElementById(id);
@@ -594,6 +902,7 @@ function applyLanguage(){
   document.getElementById('navlabel-home').textContent = t('nav_home');
   document.getElementById('navlabel-daftar').textContent = t('nav_journal');
   document.getElementById('navlabel-account').textContent = t('nav_account');
+  document.getElementById('navlabel-tasks').textContent = t('nav_tasks');
   renderHome();
 }
 
@@ -1391,6 +1700,12 @@ function renderJournalHistory(){
         ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
       </div>`;
     }
+    if(e.type === 'sticky'){
+      return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
+        <div style="font-weight:600; color:var(--text);">${e.date} — 📌 ملاحظة سريعة</div>
+        <div style="margin-top:4px; color:var(--muted); line-height:1.6;">${e.text}</div>
+      </div>`;
+    }
     return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
       <div style="font-weight:600; color:var(--text);">${e.date} — قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} ساعات</div>
       ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
@@ -1398,8 +1713,221 @@ function renderJournalHistory(){
   }).join('');
 }
 
+// ================= ملاحظات سريعة (Sticky Notes) =================
+function getStickyNotes(){ return JSON.parse(localStorage.getItem('eihyaha_sticky_notes') || '[]'); }
+
+function saveStickyPrompt(){
+  const input = document.getElementById('stickyNoteInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(checkSafety(text)){ showSafety(); return; }
+
+  const chooser = document.getElementById('stickyChooserWrap');
+  chooser.innerHTML = `
+    <div class="card" style="background:var(--navy-dark); margin-top:0;">
+      <p style="color:var(--gold); font-size:12px; font-weight:700; margin:0 0 10px;">تحب تحفظها فين؟</p>
+      <div style="display:flex; gap:8px;">
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky(true)">في مرآتي اليومية</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky(false)">في الملاحظات بس</div>
+      </div>
+    </div>`;
+}
+
+async function finalizeSticky(alsoJournal){
+  const input = document.getElementById('stickyNoteInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const dateLabel = new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+
+  // 1) دايمًا تتخزن في الملاحظات السريعة محليًا
+  const notes = getStickyNotes();
+  notes.unshift({ text, date: dateLabel });
+  localStorage.setItem('eihyaha_sticky_notes', JSON.stringify(notes.slice(0,100)));
+
+  // 2) لو اختار "مرآتي اليومية" كمان، تتسجل في Firebase وفي سجل الجورنال المحلي
+  if(alsoJournal){
+    await firestoreWrite('journal', { uid:getUserId(), note:text, source:'sticky', date:new Date().toISOString() });
+    const localJournal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+    localJournal.unshift({ type:'sticky', text, date: dateLabel });
+    localStorage.setItem('eihyaha_journal', JSON.stringify(localJournal.slice(0,200)));
+    renderJournalHistory();
+  }
+
+  input.value = '';
+  document.getElementById('stickyChooserWrap').innerHTML = '';
+  renderStickyNotes();
+}
+
+function renderStickyNotes(){
+  const notes = getStickyNotes();
+  const wrap = document.getElementById('stickyNotesList');
+  if(!wrap) return;
+  if(notes.length === 0){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = notes.slice(0,10).map(n => `
+    <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; padding:10px 14px; margin-bottom:6px;">
+      <p style="font-size:11px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
+      <p style="font-size:12.5px; color:var(--text); margin:0;">${n.text}</p>
+    </div>`).join('');
+}
+
 // ================= قراءة السجل الكامل من Firestore (كل الأجهزة) مقسّم بالتاريخ =================
 const ARABIC_MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+// ================= المهام + التقويم + إشعارات محلية =================
+// ملاحظة صادقة: دي إشعارات محلية بتشتغل بس لو التطبيق مفتوح في المتصفح/الخلفية.
+// إشعارات حقيقية توصل والتطبيق مقفول محتاجة Firebase Cloud Messaging + سيرفر،
+// وده هيتضاف في مرحلة لاحقة بعد استقرار الميزات الأساسية.
+let selectedTaskDate = new Date();
+let currentCalendarMonth = new Date();
+
+function formatDateKey(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function getTasks(){ return JSON.parse(localStorage.getItem('eihyaha_tasks') || '[]'); }
+function saveTasksLocal(tasks){ localStorage.setItem('eihyaha_tasks', JSON.stringify(tasks)); }
+function getTasksForDate(key){ return getTasks().filter(t => t.date === key); }
+
+function openTasksScreen(){
+  renderTaskCalendar();
+  renderTaskList();
+  showScreen('screen-tasks');
+}
+
+function renderTaskCalendar(){
+  const wrap = document.getElementById('taskCalendar');
+  const year = currentCalendarMonth.getFullYear();
+  const month = currentCalendarMonth.getMonth();
+  const startWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayKey = formatDateKey(new Date());
+  const selectedKey = formatDateKey(selectedTaskDate);
+
+  let cells = '';
+  for(let i=0;i<startWeekday;i++) cells += `<div></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const key = formatDateKey(new Date(year, month, d));
+    const hasTasks = getTasksForDate(key).length > 0;
+    const isToday = key === todayKey;
+    const isSelected = key === selectedKey;
+    let style = 'text-align:center; padding:6px 0; border-radius:8px; cursor:pointer; font-size:12px; position:relative;';
+    if(isSelected) style += 'background:var(--gold); color:var(--navy-dark); font-weight:700;';
+    else if(isToday) style += 'border:1px solid var(--gold); color:var(--text);';
+    else style += 'color:var(--text);';
+    const dot = hasTasks ? `<div style="width:4px; height:4px; border-radius:50%; background:${isSelected ? 'var(--navy-dark)' : 'var(--gold)'}; margin:2px auto 0;"></div>` : '';
+    cells += `<div onclick="selectTaskDate('${key}')" style="${style}">${d}${dot}</div>`;
+  }
+
+  wrap.innerHTML = `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div onclick="changeCalendarMonth(-1)" style="cursor:pointer; font-size:16px; color:var(--gold); padding:0 6px;">›</div>
+        <p style="font-weight:700; font-size:13px; margin:0; color:var(--text);">${ARABIC_MONTHS[month]} ${year}</p>
+        <div onclick="changeCalendarMonth(1)" style="cursor:pointer; font-size:16px; color:var(--gold); padding:0 6px;">‹</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:10px; color:var(--muted); margin-bottom:4px; text-align:center;">
+        <div>أحد</div><div>اثن</div><div>ثلا</div><div>أرب</div><div>خمي</div><div>جمعة</div><div>سبت</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px;">${cells}</div>
+    </div>`;
+}
+
+function changeCalendarMonth(delta){
+  currentCalendarMonth = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth()+delta, 1);
+  renderTaskCalendar();
+}
+
+function selectTaskDate(key){
+  selectedTaskDate = new Date(key + 'T00:00:00');
+  renderTaskCalendar();
+  renderTaskList();
+}
+
+function renderTaskList(){
+  const key = formatDateKey(selectedTaskDate);
+  const tasks = getTasksForDate(key).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
+  const wrap = document.getElementById('taskListWrap');
+  if(tasks.length === 0){
+    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:14px 0;">مفيش مهام في اليوم ده</p>`;
+    return;
+  }
+  wrap.innerHTML = tasks.map(t => `
+    <div class="card" style="display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:8px;">
+      <div onclick="toggleTaskDone('${t.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <div style="flex:1;">
+        <p style="font-size:13px; font-weight:600; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
+        ${t.time ? `<p style="font-size:11px; color:var(--muted); margin:2px 0 0;">🕐 ${t.time}</p>` : ''}
+      </div>
+      <div onclick="deleteTask('${t.id}')" style="cursor:pointer; color:var(--danger); font-size:18px; padding:0 4px;">×</div>
+    </div>`).join('');
+}
+
+function addTask(){
+  const titleInput = document.getElementById('newTaskTitle');
+  const timeInput = document.getElementById('newTaskTime');
+  const title = titleInput.value.trim();
+  if(!title) return;
+  if(checkSafety(title)){ showSafety(); return; }
+  const tasks = getTasks();
+  tasks.push({ id:'task_' + Date.now(), date:formatDateKey(selectedTaskDate), title, time:timeInput.value, done:false, notified:false });
+  saveTasksLocal(tasks);
+  titleInput.value = '';
+  timeInput.value = '';
+  renderTaskCalendar();
+  renderTaskList();
+}
+
+function toggleTaskDone(id){
+  const tasks = getTasks();
+  const task = tasks.find(x => x.id === id);
+  if(!task) return;
+  task.done = !task.done;
+  saveTasksLocal(tasks);
+  renderTaskList();
+  if(task.done) showLocalNotification('تمت المهمة ✅', task.title);
+}
+
+function deleteTask(id){
+  saveTasksLocal(getTasks().filter(x => x.id !== id));
+  renderTaskCalendar();
+  renderTaskList();
+}
+
+// ---------- إشعارات محلية (تعمل بس لو التطبيق مفتوح) ----------
+function showLocalNotification(title, body){
+  if(localStorage.getItem('eihyaha_task_notifications') === 'off') return;
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'granted'){
+    try{ new Notification(title, { body }); }catch(e){}
+  } else if(Notification.permission !== 'denied'){
+    Notification.requestPermission();
+  }
+}
+
+function checkDueTasks(){
+  if(localStorage.getItem('eihyaha_task_notifications') === 'off') return;
+  const now = new Date();
+  const key = formatDateKey(now);
+  const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const tasks = getTasks();
+  let changed = false;
+  tasks.forEach(t => {
+    if(t.date === key && t.time === hhmm && !t.done && !t.notified){
+      showLocalNotification('⏰ موعد مهمة', t.title);
+      t.notified = true;
+      changed = true;
+    }
+  });
+  if(changed) saveTasksLocal(tasks);
+}
+setInterval(checkDueTasks, 30000);
+
+function setTaskNotifications(state){
+  localStorage.setItem('eihyaha_task_notifications', state);
+  if(state === 'on' && 'Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+  renderAccountScreen();
+}
 
 async function firestoreListAll(collection){
   let results = [];
@@ -1442,7 +1970,10 @@ async function loadFullHistory(){
 
   let entries = [];
   journalDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => {
-    entries.push({ ...e, type: e.mood !== undefined ? 'mood' : 'journal' });
+    let type = 'journal';
+    if(e.mood !== undefined) type = 'mood';
+    else if(e.source === 'sticky') type = 'sticky';
+    entries.push({ ...e, type });
   });
   moodDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'mood'}));
 
@@ -1483,6 +2014,9 @@ async function loadFullHistory(){
                   const shownLabel = e.subLabel || (info ? info.label : String(e.mood));
                   return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji : ''} ${shownLabel}${noteText}</div>`;
                 }
+                if(e.type === 'sticky'){
+                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">📌 ${e.note}</div>`;
+                }
                 return `<div style="font-size:12px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
               }).join('')}
             </div>
@@ -1497,6 +2031,12 @@ async function loadFullHistory(){
 applyTheme(localStorage.getItem('eihyaha_theme') || 'classic');
 applyLanguage();
 renderJournalHistory();
+renderStickyNotes();
+
+// بوابة تسجيل دخول إجبارية — بتظهر في كل مرة يتفتح فيها التطبيق، بصرف النظر
+// عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
+renderGateScreen();
+showScreen('screen-gate');
 </script>
 </body>
 </html>
