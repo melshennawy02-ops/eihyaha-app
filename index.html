@@ -20,7 +20,7 @@
   .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 8px;}
   .topbar h1{font-size:16px; margin:0; font-weight:600;}
   .backbtn{width:34px; height:34px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid #E4DFCF; font-size:16px;}
-  .sos{width:34px; height:34px; border-radius:50%; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; font-size:13px;}
+  .sos{padding:8px 14px; border-radius:20px; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; font-size:12px; white-space:nowrap;}
 
   /* ===== Cards ===== */
   .card{background:var(--white); border-radius:14px; padding:14px 16px; margin-bottom:12px; border:1px solid #EDE8D8;}
@@ -105,7 +105,7 @@
   <div class="screen active" id="screen-home">
     <div class="topbar">
       <h1>إحياها باستمتاع</h1>
-      <div class="sos" onclick="showSafety()">SOS</div>
+      <div class="sos" onclick="showSafety()">محتاج مختص</div>
     </div>
     <div style="padding:0 16px;">
       <p class="greeting">أهلًا بيك 👋</p>
@@ -138,7 +138,7 @@
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(2)">→</div>
       <h1>احكيلي</h1>
-      <div class="sos" onclick="showSafety()">SOS</div>
+      <div class="sos" onclick="showSafety()">محتاج مختص</div>
     </div>
     <div style="padding:0 16px;">
       <div class="chat-window" id="chatWindow"></div>
