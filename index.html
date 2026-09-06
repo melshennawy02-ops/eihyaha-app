@@ -119,9 +119,6 @@
       </div>
       <div id="moodFeedback" style="display:none; margin:-6px 0 16px;"></div>
 
-      <div id="moreMoodsToggle" onclick="toggleMoreMoods()" style="text-align:center; font-size:12px; color:#8A6A1E; font-weight:700; padding:6px 0; border-top:1px dashed #D8CBA8; margin-bottom:10px; cursor:pointer;">مشاعر تانية <span id="moreMoodsArrow">▾</span></div>
-      <div id="moreMoodsGrid" style="display:none; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;"></div>
-
       <p class="pillars-title">الأركان السبعة لحياتك</p>
       <div class="pillars-grid" id="pillarsGrid"></div>
     </div>
@@ -267,14 +264,9 @@ function getUserId(){
   return uid;
 }
 
-// ================= تسجيل الدخول باسم مستخدم وكلمة مرور (عبر Firebase Auth REST) =================
+// ================= تسجيل الدخول باسم مستخدم + إيميل + كلمة مرور (Firebase Auth REST) =================
 // ملاحظة: جوجل وفيسبوك مش هيشتغلوا صح جوه تطبيق APK مغلّف بـWebView (سياسة أمان
 // من جوجل نفسها منذ 2021 بتمنع تسجيل الدخول بجوجل من جوه أي WebView مضمّن).
-// هنستخدم اسم مستخدم عادي، ونحوّله داخليًا لصيغة إيميل وهمية عشان نظام Firebase
-// Auth يقبله، من غير ما المستخدم يحس إنه بيسجل بإيميل.
-function usernameToPseudoEmail(username){
-  return username.trim().toLowerCase().replace(/\s+/g, '_') + '@eihyaha.local';
-}
 
 async function authRequest(endpoint, body){
   const url = `${IDENTITY_BASE}/accounts:${endpoint}?key=${FIREBASE_API_KEY}`;
@@ -288,8 +280,32 @@ async function authRequest(endpoint, body){
   }
 }
 
-function saveAuthSession(uid, username){
-  localStorage.setItem('eihyaha_auth', JSON.stringify({ uid, username }));
+// حفظ/جلب اسم المستخدم المرتبط بالحساب في Firestore (document واحد لكل مستخدم، الـid بتاعه هو الـuid)
+async function firestoreSetDoc(collection, docId, fields){
+  const url = `${FIRESTORE_BASE}/${collection}/${docId}?key=${FIREBASE_API_KEY}`;
+  const body = { fields: {} };
+  for(const k in fields){
+    const v = fields[k];
+    body.fields[k] = (typeof v === 'number') ? { integerValue: v } : { stringValue: String(v) };
+  }
+  try{
+    const res = await fetch(url, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    return res.ok;
+  }catch(err){ return false; }
+}
+
+async function firestoreGetDoc(collection, docId){
+  const url = `${FIRESTORE_BASE}/${collection}/${docId}?key=${FIREBASE_API_KEY}`;
+  try{
+    const res = await fetch(url);
+    if(!res.ok) return null;
+    return parseFirestoreDoc(await res.json());
+  }catch(err){ return null; }
+}
+
+function saveAuthSession(uid, username, email){
+  localStorage.setItem('eihyaha_auth', JSON.stringify({ uid, username, email }));
+  localStorage.setItem('eihyaha_ever_used_auth', '1');
 }
 
 function authSignOut(){
@@ -304,39 +320,66 @@ function showAuthError(msg){
 
 async function doSignUp(){
   const username = document.getElementById('authUsername').value.trim();
+  const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
-  if(!username || !password){ showAuthError('اكتب اسم المستخدم وكلمة المرور'); return; }
+  if(!username || !email || !password){ showAuthError('لازم تملأ اسم المستخدم والإيميل وكلمة المرور'); return; }
+  if(!email.includes('@') || !email.includes('.')){ showAuthError('اكتب إيميل صحيح'); return; }
   if(password.length < 6){ showAuthError('كلمة المرور لازم تكون 6 حروف على الأقل'); return; }
-  const email = usernameToPseudoEmail(username);
+
   const { data, error } = await authRequest('signUp', { email, password, returnSecureToken:true });
   if(error){
-    if(error.includes('EMAIL_EXISTS')) showAuthError('اسم المستخدم ده متسجل قبل كده، جرب تدخل بدل ما تعمل حساب جديد');
+    if(error.includes('EMAIL_EXISTS')) showAuthError('الإيميل ده متسجل قبل كده، جرب تدخل بدل ما تعمل حساب جديد');
     else showAuthError('حصل خطأ: ' + error);
     return;
   }
-  saveAuthSession(data.localId, username);
+  await firestoreSetDoc('users', data.localId, { username, email });
+  saveAuthSession(data.localId, username, email);
   renderAccountScreen();
 }
 
 async function doSignIn(){
-  const username = document.getElementById('authUsername').value.trim();
+  const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
-  if(!username || !password){ showAuthError('اكتب اسم المستخدم وكلمة المرور'); return; }
-  const email = usernameToPseudoEmail(username);
+  if(!email || !password){ showAuthError('اكتب الإيميل وكلمة المرور'); return; }
+
   const { data, error } = await authRequest('signInWithPassword', { email, password, returnSecureToken:true });
   if(error){
-    if(error.includes('EMAIL_NOT_FOUND') || error.includes('INVALID_LOGIN_CREDENTIALS') || error.includes('INVALID_PASSWORD')) showAuthError('اسم المستخدم أو كلمة المرور غلط');
+    if(error.includes('EMAIL_NOT_FOUND') || error.includes('INVALID_LOGIN_CREDENTIALS') || error.includes('INVALID_PASSWORD')) showAuthError('الإيميل أو كلمة المرور غلط');
     else showAuthError('حصل خطأ: ' + error);
     return;
   }
-  saveAuthSession(data.localId, username);
+  const profile = await firestoreGetDoc('users', data.localId);
+  const username = (profile && profile.username) || email.split('@')[0];
+  saveAuthSession(data.localId, username, email);
   renderAccountScreen();
+}
+
+function renderAuthFields(mode){
+  const wrap = document.getElementById('authFieldsWrap');
+  if(mode === 'signup'){
+    wrap.innerHTML = `
+      <label class="flabel">اسم المستخدم</label>
+      <input type="text" id="authUsername" placeholder="مثال: mohamed_2026">
+      <label class="flabel">الإيميل</label>
+      <input type="email" id="authEmail" placeholder="name@example.com">
+      <label class="flabel">كلمة المرور</label>
+      <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
+    `;
+  } else {
+    wrap.innerHTML = `
+      <label class="flabel">الإيميل</label>
+      <input type="email" id="authEmail" placeholder="name@example.com">
+      <label class="flabel">كلمة المرور</label>
+      <input type="password" id="authPassword" placeholder="كلمة المرور">
+    `;
+  }
 }
 
 function setAuthMode(mode){
   const btn = document.getElementById('authSubmitBtn');
   document.getElementById('tabSignin').style.background = mode === 'signin' ? 'var(--sand)' : 'transparent';
   document.getElementById('tabSignup').style.background = mode === 'signup' ? 'var(--sand)' : 'transparent';
+  renderAuthFields(mode);
   if(mode === 'signin'){ btn.textContent = 'دخول'; btn.onclick = doSignIn; }
   else { btn.textContent = 'إنشاء الحساب'; btn.onclick = doSignUp; }
   document.getElementById('authError').style.display = 'none';
@@ -394,17 +437,23 @@ function renderAccountScreen(){
         <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">${t('signin')}</div>
         <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">${t('signup')}</div>
       </div>
-      <label class="flabel">${t('username')}</label>
-      <input type="text" id="authUsername" placeholder="mohamed_2026">
-      <label class="flabel">${t('password')}</label>
-      <input type="password" id="authPassword" placeholder="${t('password_hint')}">
+      <div id="authFieldsWrap"></div>
       <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
-      <button class="btn-primary" id="authSubmitBtn" onclick="doSignIn()">${t('signin')}</button>
+      <button class="btn-primary" id="authSubmitBtn">${t('signin')}</button>
       <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">${t('social_login_note')}</p>
     `;
   }
   body.innerHTML = authHtml + renderSettingsSection();
-  if(!auth) setAuthMode('signin');
+  if(!auth){
+    const isFirstTime = !localStorage.getItem('eihyaha_ever_used_auth');
+    setAuthMode(isFirstTime ? 'signup' : 'signin');
+    if(isFirstTime){
+      const note = document.createElement('p');
+      note.style.cssText = 'font-size:12px; color:var(--gold); text-align:center; margin:-10px 0 14px; font-weight:700;';
+      note.textContent = 'أول مرة معانا؟ اعمل حسابك دلوقتي 👋';
+      document.getElementById('tabSignin').parentElement.after(note);
+    }
+  }
 }
 
 // ============================================================
@@ -1167,53 +1216,100 @@ function generateReport(){
 }
 
 // ================= المزاج السريع من الرئيسية — مربوط بـ"هل أنا طبيعي؟" ودفتر النفس =================
+// ================= شجرة المشاعر: 5 مشاعر رئيسية، كل واحدة ليها مشاعر فرعية أدق =================
 const MOOD_INFO = {
-  5: { emoji:"😌", label:"متحمس", tabieiIndex:null },
-  4: { emoji:"🙂", label:"سعيد", tabieiIndex:null },
-  3: { emoji:"😐", label:"عادي", tabieiIndex:null },
-  2: { emoji:"😔", label:"متوتر", tabieiIndex:0 },
-  1: { emoji:"😣", label:"زعلان", tabieiIndex:3 },
-  // مشاعر إضافية (مربوطة مباشرة بأنماط مرآة العقل أو باحكيلي)
-  6:  { emoji:"😡", label:"غاضب",        meratId:"anger" },
-  7:  { emoji:"😨", label:"خايف",        meratId:"fear_confrontation" },
-  8:  { emoji:"😔", label:"مذنب",        meratId:"guilt_return" },
-  9:  { emoji:"😪", label:"مرهق",        meratId:"chronic_illness" },
-  10: { emoji:"🥱", label:"فاقد الحماس", meratId:"grief" },
-  11: { emoji:"😶", label:"وحيد",        meratId:"isolation" },
-  12: { emoji:"🤔", label:"محتار",       action:"chat" },
-  13: { emoji:"🙏", label:"مطمئن" },
-  14: { emoji:"💔", label:"مجروح",       meratId:"envy_betrayal" },
+  5: { emoji:"😌", label:"متحمس" },
+  4: { emoji:"🙂", label:"سعيد" },
+  3: { emoji:"😐", label:"عادي" },
+  2: { emoji:"😔", label:"متوتر" },
+  1: { emoji:"😣", label:"زعلان" },
 };
-const EXTRA_MOOD_IDS = [6,7,8,9,10,11,12,13,14];
 
-function renderExtraMoods(){
-  const grid = document.getElementById('moreMoodsGrid');
-  grid.innerHTML = EXTRA_MOOD_IDS.map((id, i) => {
-    const m = MOOD_INFO[id];
-    const spanFull = (EXTRA_MOOD_IDS.length % 2 === 1 && i === EXTRA_MOOD_IDS.length - 1);
-    return `
-      <div onclick="showMoodNoteForm(${id})" style="background:#FFFFFF; border:1px solid #EDE8D8; border-radius:12px; padding:10px 8px; display:flex; align-items:center; gap:8px; cursor:pointer; ${spanFull ? 'grid-column:1 / span 2; justify-content:center;' : ''}">
-        <span style="font-size:20px;">${m.emoji}</span>
-        <span style="font-size:12.5px; font-weight:600; color:var(--text);">${m.label}</span>
-      </div>`;
-  }).join('');
-}
+const MOOD_TREE = {
+  5: [
+    { label:"متحمس لحاجة جديدة" },
+    { label:"فخور بنفسي" },
+    { label:"مبسوط بإنجاز" },
+  ],
+  4: [
+    { label:"مرتاح" },
+    { label:"ممتن" },
+    { label:"مطمئن" },
+  ],
+  3: [
+    { label:"محايد" },
+    { label:"مشغول ذهنيًا", tabieiIndex:10 },
+    { label:"هادي" },
+  ],
+  2: [
+    { label:"قلقان", meratId:"anxiety", tabieiIndex:0 },
+    { label:"خايف من حاجة معينة", meratId:"fear_confrontation" },
+    { label:"مرهق", meratId:"chronic_illness" },
+    { label:"محتار", action:"chat" },
+  ],
+  1: [
+    { label:"حزين", meratId:"grief", tabieiIndex:3 },
+    { label:"غاضب", meratId:"anger" },
+    { label:"وحيد", meratId:"isolation" },
+    { label:"مجروح من حد قريب", meratId:"envy_betrayal" },
+    { label:"مذنب", meratId:"guilt_return" },
+  ],
+};
 
-function toggleMoreMoods(){
-  const grid = document.getElementById('moreMoodsGrid');
-  const arrow = document.getElementById('moreMoodsArrow');
-  const isOpen = grid.style.display === 'grid';
-  grid.style.display = isOpen ? 'none' : 'grid';
-  arrow.textContent = isOpen ? '▾' : '▴';
-}
+let currentMoodPick = null; // {primary, sub}
 
 document.getElementById('moodRow').addEventListener('click', (e) => {
   const el = e.target.closest('.mood-emoji');
   if(!el) return;
   document.querySelectorAll('.mood-emoji').forEach(m => m.classList.remove('selected'));
   el.classList.add('selected');
-  showMoodNoteForm(Number(el.dataset.mood));
+  showMoodSubChoices(Number(el.dataset.mood));
 });
+
+// الخطوة 1: دوس الإيموجي الرئيسي بيفتح دايرة مشاعر فرعية أدق تحته
+function showMoodSubChoices(primary){
+  const info = MOOD_INFO[primary];
+  const subs = MOOD_TREE[primary];
+  const feedback = document.getElementById('moodFeedback');
+  feedback.style.display = 'block';
+  feedback.innerHTML = `
+    <div class="card" style="margin-bottom:0;">
+      <p class="card-sub" style="margin-bottom:10px;">${info.emoji} حاسس إنك <b style="color:var(--text);">${info.label}</b> — اختار الأقرب لإحساسك بالظبط:</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        ${subs.map((s, i) => `
+          <div class="choice-btn" style="margin:0; padding:8px 14px; font-size:12.5px;" onclick="pickSubMood(${primary}, ${i})">${s.label}</div>
+        `).join('')}
+        <div class="choice-btn" style="margin:0; padding:8px 14px; font-size:12.5px; opacity:.75;" onclick="pickSubMood(${primary}, -1)">حاجة تانية غير كده</div>
+      </div>
+    </div>`;
+  feedback.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// الخطوة 2: بعد اختيار الشعور الفرعي، تظهر خانة الكتابة الفعلية
+function pickSubMood(primary, subIndex){
+  const info = MOOD_INFO[primary];
+  const sub = subIndex >= 0 ? MOOD_TREE[primary][subIndex] : { label: info.label };
+  currentMoodPick = { primary, sub };
+  const feedback = document.getElementById('moodFeedback');
+
+  let linkBtn = '';
+  if(sub.tabieiIndex !== undefined && sub.tabieiIndex !== null){
+    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openTabieiQuestion(${sub.tabieiIndex})">${TABIEI_QUESTIONS[sub.tabieiIndex].q} ←</div>`;
+  } else if(sub.meratId){
+    const p = MERAT_PATTERNS.find(x => x.id === sub.meratId);
+    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openMeratPattern('${sub.meratId}')">شوف تحليل «${p.title}» في مرآة العقل ←</div>`;
+  } else if(sub.action === 'chat'){
+    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="startEhkily()">احكيلي عن اللي محيرك ←</div>`;
+  }
+
+  feedback.innerHTML = `
+    <div class="card" style="margin-bottom:0;">
+      <p class="card-sub" style="margin-bottom:8px;">${info.emoji} ${sub.label} — سجّل مشاعرك الآن:</p>
+      <textarea id="moodNoteInput" placeholder="اكتب اللي حاسس بيه دلوقتي..." style="min-height:56px;"></textarea>
+      <button class="btn-primary" style="margin-top:8px;" onclick="saveMoodWithNote()">حفظ</button>
+      ${linkBtn}
+    </div>`;
+}
 
 async function firestoreWrite(collection, fields){
   // يفترض إعداد قواعد Firestore للسماح بالكتابة، أو استبدال هذا بمسار مصادقة لاحقًا
@@ -1242,44 +1338,20 @@ function openTabieiQuestion(index){
   setTimeout(() => revealTabiei(index), 60);
 }
 
-// دوس أي إيموجي (أساسي أو من مشاعر تانية) بيفتح خانة كتابة فورية تحته
-function showMoodNoteForm(mood){
-  const info = MOOD_INFO[mood];
-  const feedback = document.getElementById('moodFeedback');
-  feedback.style.display = 'block';
-
-  let linkBtn = '';
-  if(info.tabieiIndex !== undefined && info.tabieiIndex !== null){
-    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openTabieiQuestion(${info.tabieiIndex})">${TABIEI_QUESTIONS[info.tabieiIndex].q} ←</div>`;
-  } else if(info.meratId){
-    const p = MERAT_PATTERNS.find(x => x.id === info.meratId);
-    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openMeratPattern('${info.meratId}')">شوف تحليل «${p.title}» في مرآة العقل ←</div>`;
-  } else if(info.action === 'chat'){
-    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="startEhkily()">احكيلي عن اللي محيرك ←</div>`;
-  }
-
-  feedback.innerHTML = `
-    <div class="card" style="margin-bottom:0;">
-      <p class="card-sub" style="margin-bottom:8px;">${info.emoji} حاسس إنك <b style="color:var(--text);">${info.label}</b> — سجّل مشاعرك الآن:</p>
-      <textarea id="moodNoteInput" placeholder="اكتب اللي حاسس بيه دلوقتي..." style="min-height:56px;"></textarea>
-      <button class="btn-primary" style="margin-top:8px;" onclick="saveMoodWithNote(${mood})">حفظ</button>
-      ${linkBtn}
-    </div>`;
-  feedback.scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-
-async function saveMoodWithNote(mood){
-  const info = MOOD_INFO[mood];
+async function saveMoodWithNote(){
+  if(!currentMoodPick) return;
+  const { primary, sub } = currentMoodPick;
+  const info = MOOD_INFO[primary];
   const noteInput = document.getElementById('moodNoteInput');
   const note = noteInput ? noteInput.value.trim() : '';
   if(checkSafety(note)){ showSafety(); return; }
 
   // 1) حفظ على Firebase — في مرآتي اليومية (journal) عشان يبقى جزء من نفس السجل
-  const ok = await firestoreWrite('journal', { uid:getUserId(), mood:mood, moodLabel:info.label, note: note || '(بدون كتابة)', date:new Date().toISOString() });
+  const ok = await firestoreWrite('journal', { uid:getUserId(), mood:primary, moodLabel:info.label, subLabel:sub.label, note: note || '(بدون كتابة)', date:new Date().toISOString() });
 
   // 2) تسجيل محلي فوري في نفس صفحة مرآتي اليومية
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, text: note, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
+  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, subLabel: sub.label, text: note, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
   localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
 
@@ -1315,7 +1387,7 @@ function renderJournalHistory(){
   wrap.innerHTML = local.map(e => {
     if(e.type === 'mood'){
       return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
-        <div style="font-weight:600; color:var(--text);">${e.date} — مزاج: ${e.moodEmoji} ${e.moodLabel}</div>
+        <div style="font-weight:600; color:var(--text);">${e.date} — مزاج: ${e.moodEmoji} ${e.subLabel || e.moodLabel}</div>
         ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
       </div>`;
     }
@@ -1408,7 +1480,8 @@ async function loadFullHistory(){
                 if(e.type === 'mood'){
                   const info = MOOD_INFO[e.mood];
                   const noteText = (e.note && e.note !== '(بدون كتابة)') ? ' — 📝 ' + e.note : '';
-                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji + ' ' + info.label : 'مزاج: ' + e.mood}${noteText}</div>`;
+                  const shownLabel = e.subLabel || (info ? info.label : String(e.mood));
+                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji : ''} ${shownLabel}${noteText}</div>`;
                 }
                 return `<div style="font-size:12px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
               }).join('')}
@@ -1424,7 +1497,6 @@ async function loadFullHistory(){
 applyTheme(localStorage.getItem('eihyaha_theme') || 'classic');
 applyLanguage();
 renderJournalHistory();
-renderExtraMoods();
 </script>
 </body>
 </html>
