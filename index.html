@@ -119,6 +119,9 @@
       </div>
       <div id="moodFeedback" style="display:none; margin:-6px 0 16px;"></div>
 
+      <div id="moreMoodsToggle" onclick="toggleMoreMoods()" style="text-align:center; font-size:12px; color:#8A6A1E; font-weight:700; padding:6px 0; border-top:1px dashed #D8CBA8; margin-bottom:10px; cursor:pointer;">مشاعر تانية <span id="moreMoodsArrow">▾</span></div>
+      <div id="moreMoodsGrid" style="display:none; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;"></div>
+
       <p class="pillars-title">الأركان السبعة لحياتك</p>
       <div class="pillars-grid" id="pillarsGrid"></div>
     </div>
@@ -206,11 +209,21 @@
     <div style="padding:0 16px;" id="reportBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: ACCOUNT (تسجيل الدخول) ===================== -->
+  <div class="screen" id="screen-account">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1>حسابي</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="accountBody"></div>
+  </div>
+
   <!-- ===================== BOTTOM NAV ===================== -->
   <div class="bottomnav">
     <div class="navitem active" data-nav="home" onclick="goHome()"><span class="navicon">🏠</span>الرئيسية</div>
     <div class="navitem" data-nav="daftar" onclick="showScreen('screen-daftar')"><span class="navicon">📓</span>دفتري</div>
-    <div class="navitem" data-nav="settings" onclick="alert('الإعدادات — قريبًا')"><span class="navicon">⚙️</span>حسابي</div>
+    <div class="navitem" data-nav="settings" onclick="openAccountScreen()"><span class="navicon">⚙️</span>حسابي</div>
   </div>
 
   <!-- ===================== SAFETY OVERLAY ===================== -->
@@ -243,12 +256,124 @@
 const FIREBASE_PROJECT_ID = "ehyaha-bestimtaa";
 const FIREBASE_API_KEY = "AIzaSyCyJbFGficR93vSybbbEwXbAHZi7ILaW78";
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+const IDENTITY_BASE = "https://identitytoolkit.googleapis.com/v1";
 
-// معرف مستخدم مؤقت محلي (هيتم استبداله بنظام تسجيل دخول حقيقي لاحقًا)
+// معرف المستخدم: لو مسجل دخول بحساب حقيقي بيستخدم الـuid بتاعه، غير كده معرف مؤقت محلي
 function getUserId(){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(auth && auth.uid) return auth.uid;
   let uid = localStorage.getItem('eihyaha_uid');
   if(!uid){ uid = 'u_' + Math.random().toString(36).slice(2,10); localStorage.setItem('eihyaha_uid', uid); }
   return uid;
+}
+
+// ================= تسجيل الدخول باسم مستخدم وكلمة مرور (عبر Firebase Auth REST) =================
+// ملاحظة: جوجل وفيسبوك مش هيشتغلوا صح جوه تطبيق APK مغلّف بـWebView (سياسة أمان
+// من جوجل نفسها منذ 2021 بتمنع تسجيل الدخول بجوجل من جوه أي WebView مضمّن).
+// هنستخدم اسم مستخدم عادي، ونحوّله داخليًا لصيغة إيميل وهمية عشان نظام Firebase
+// Auth يقبله، من غير ما المستخدم يحس إنه بيسجل بإيميل.
+function usernameToPseudoEmail(username){
+  return username.trim().toLowerCase().replace(/\s+/g, '_') + '@eihyaha.local';
+}
+
+async function authRequest(endpoint, body){
+  const url = `${IDENTITY_BASE}/accounts:${endpoint}?key=${FIREBASE_API_KEY}`;
+  try{
+    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const data = await res.json();
+    if(!res.ok){ return { error: (data.error && data.error.message) || 'خطأ غير معروف' }; }
+    return { data };
+  }catch(err){
+    return { error: 'تعذّر الاتصال بالسيرفر — تأكد من النت' };
+  }
+}
+
+function saveAuthSession(uid, username){
+  localStorage.setItem('eihyaha_auth', JSON.stringify({ uid, username }));
+}
+
+function authSignOut(){
+  localStorage.removeItem('eihyaha_auth');
+  renderAccountScreen();
+}
+
+function showAuthError(msg){
+  const el = document.getElementById('authError');
+  if(el){ el.textContent = msg; el.style.display = 'block'; }
+}
+
+async function doSignUp(){
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if(!username || !password){ showAuthError('اكتب اسم المستخدم وكلمة المرور'); return; }
+  if(password.length < 6){ showAuthError('كلمة المرور لازم تكون 6 حروف على الأقل'); return; }
+  const email = usernameToPseudoEmail(username);
+  const { data, error } = await authRequest('signUp', { email, password, returnSecureToken:true });
+  if(error){
+    if(error.includes('EMAIL_EXISTS')) showAuthError('اسم المستخدم ده متسجل قبل كده، جرب تدخل بدل ما تعمل حساب جديد');
+    else showAuthError('حصل خطأ: ' + error);
+    return;
+  }
+  saveAuthSession(data.localId, username);
+  renderAccountScreen();
+}
+
+async function doSignIn(){
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if(!username || !password){ showAuthError('اكتب اسم المستخدم وكلمة المرور'); return; }
+  const email = usernameToPseudoEmail(username);
+  const { data, error } = await authRequest('signInWithPassword', { email, password, returnSecureToken:true });
+  if(error){
+    if(error.includes('EMAIL_NOT_FOUND') || error.includes('INVALID_LOGIN_CREDENTIALS') || error.includes('INVALID_PASSWORD')) showAuthError('اسم المستخدم أو كلمة المرور غلط');
+    else showAuthError('حصل خطأ: ' + error);
+    return;
+  }
+  saveAuthSession(data.localId, username);
+  renderAccountScreen();
+}
+
+function setAuthMode(mode){
+  const btn = document.getElementById('authSubmitBtn');
+  document.getElementById('tabSignin').style.background = mode === 'signin' ? 'var(--sand)' : 'transparent';
+  document.getElementById('tabSignup').style.background = mode === 'signup' ? 'var(--sand)' : 'transparent';
+  if(mode === 'signin'){ btn.textContent = 'دخول'; btn.onclick = doSignIn; }
+  else { btn.textContent = 'إنشاء الحساب'; btn.onclick = doSignUp; }
+  document.getElementById('authError').style.display = 'none';
+}
+
+function openAccountScreen(){
+  renderAccountScreen();
+  showScreen('screen-account');
+}
+
+function renderAccountScreen(){
+  const body = document.getElementById('accountBody');
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(auth){
+    body.innerHTML = `
+      <div class="card" style="text-align:center; padding:24px 16px;">
+        <div class="icon-circle" style="width:60px; height:60px; font-size:26px; margin:0 auto 12px; background:var(--navy-dark); color:var(--gold);">👤</div>
+        <p class="card-sub" style="margin:0;">مسجل دخول باسم</p>
+        <p style="font-size:17px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
+        <button class="btn-ghost" onclick="authSignOut()">تسجيل الخروج</button>
+      </div>`;
+  } else {
+    body.innerHTML = `
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">تسجيل الدخول</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">حساب جديد</div>
+      </div>
+      <label class="flabel">اسم المستخدم</label>
+      <input type="text" id="authUsername" placeholder="مثال: mohamed_2026">
+      <label class="flabel">كلمة المرور</label>
+      <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
+      <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
+      <button class="btn-primary" id="authSubmitBtn" onclick="doSignIn()">دخول</button>
+      <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق</p>
+    `;
+    setAuthMode('signin');
+  }
 }
 
 // ============================================================
@@ -906,19 +1031,51 @@ function generateReport(){
 
 // ================= المزاج السريع من الرئيسية — مربوط بـ"هل أنا طبيعي؟" ودفتر النفس =================
 const MOOD_INFO = {
-  1: { emoji:"😣", label:"مش كويس خالص", tabieiIndex:4 },
-  2: { emoji:"😔", label:"مش مرتاح", tabieiIndex:3 },
+  5: { emoji:"😌", label:"متحمس", tabieiIndex:null },
+  4: { emoji:"🙂", label:"سعيد", tabieiIndex:null },
   3: { emoji:"😐", label:"عادي", tabieiIndex:null },
-  4: { emoji:"🙂", label:"كويس", tabieiIndex:null },
-  5: { emoji:"😌", label:"مبسوط", tabieiIndex:null },
+  2: { emoji:"😔", label:"متوتر", tabieiIndex:0 },
+  1: { emoji:"😣", label:"زعلان", tabieiIndex:3 },
+  // مشاعر إضافية (مربوطة مباشرة بأنماط مرآة العقل أو باحكيلي)
+  6:  { emoji:"😡", label:"غاضب",        meratId:"anger" },
+  7:  { emoji:"😨", label:"خايف",        meratId:"fear_confrontation" },
+  8:  { emoji:"😔", label:"مذنب",        meratId:"guilt_return" },
+  9:  { emoji:"😪", label:"مرهق",        meratId:"chronic_illness" },
+  10: { emoji:"🥱", label:"فاقد الحماس", meratId:"grief" },
+  11: { emoji:"😶", label:"وحيد",        meratId:"isolation" },
+  12: { emoji:"🤔", label:"محتار",       action:"chat" },
+  13: { emoji:"🙏", label:"مطمئن" },
+  14: { emoji:"💔", label:"مجروح",       meratId:"envy_betrayal" },
 };
+const EXTRA_MOOD_IDS = [6,7,8,9,10,11,12,13,14];
+
+function renderExtraMoods(){
+  const grid = document.getElementById('moreMoodsGrid');
+  grid.innerHTML = EXTRA_MOOD_IDS.map((id, i) => {
+    const m = MOOD_INFO[id];
+    const spanFull = (EXTRA_MOOD_IDS.length % 2 === 1 && i === EXTRA_MOOD_IDS.length - 1);
+    return `
+      <div onclick="showMoodNoteForm(${id})" style="background:#FFFFFF; border:1px solid #EDE8D8; border-radius:12px; padding:10px 8px; display:flex; align-items:center; gap:8px; cursor:pointer; ${spanFull ? 'grid-column:1 / span 2; justify-content:center;' : ''}">
+        <span style="font-size:20px;">${m.emoji}</span>
+        <span style="font-size:12.5px; font-weight:600; color:var(--text);">${m.label}</span>
+      </div>`;
+  }).join('');
+}
+
+function toggleMoreMoods(){
+  const grid = document.getElementById('moreMoodsGrid');
+  const arrow = document.getElementById('moreMoodsArrow');
+  const isOpen = grid.style.display === 'grid';
+  grid.style.display = isOpen ? 'none' : 'grid';
+  arrow.textContent = isOpen ? '▾' : '▴';
+}
 
 document.getElementById('moodRow').addEventListener('click', (e) => {
   const el = e.target.closest('.mood-emoji');
   if(!el) return;
   document.querySelectorAll('.mood-emoji').forEach(m => m.classList.remove('selected'));
   el.classList.add('selected');
-  handleMoodTap(Number(el.dataset.mood));
+  showMoodNoteForm(Number(el.dataset.mood));
 });
 
 async function firestoreWrite(collection, fields){
@@ -948,30 +1105,49 @@ function openTabieiQuestion(index){
   setTimeout(() => revealTabiei(index), 60);
 }
 
-async function handleMoodTap(mood){
+// دوس أي إيموجي (أساسي أو من مشاعر تانية) بيفتح خانة كتابة فورية تحته
+function showMoodNoteForm(mood){
   const info = MOOD_INFO[mood];
+  const feedback = document.getElementById('moodFeedback');
+  feedback.style.display = 'block';
 
-  // 1) حفظ على Firebase
-  const ok = await firestoreWrite('moods', { uid:getUserId(), mood:mood, date:new Date().toISOString() });
+  let linkBtn = '';
+  if(info.tabieiIndex !== undefined && info.tabieiIndex !== null){
+    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openTabieiQuestion(${info.tabieiIndex})">${TABIEI_QUESTIONS[info.tabieiIndex].q} ←</div>`;
+  } else if(info.meratId){
+    const p = MERAT_PATTERNS.find(x => x.id === info.meratId);
+    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openMeratPattern('${info.meratId}')">شوف تحليل «${p.title}» في مرآة العقل ←</div>`;
+  } else if(info.action === 'chat'){
+    linkBtn = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="startEhkily()">احكيلي عن اللي محيرك ←</div>`;
+  }
 
-  // 2) تسجيل في دفتر النفس محليًا (بديل مؤقت لحد ما نقرأ من Firestore مباشرة)
+  feedback.innerHTML = `
+    <div class="card" style="margin-bottom:0;">
+      <p class="card-sub" style="margin-bottom:8px;">${info.emoji} حاسس إنك <b style="color:var(--text);">${info.label}</b> — سجّل مشاعرك الآن:</p>
+      <textarea id="moodNoteInput" placeholder="اكتب اللي حاسس بيه دلوقتي..." style="min-height:56px;"></textarea>
+      <button class="btn-primary" style="margin-top:8px;" onclick="saveMoodWithNote(${mood})">حفظ</button>
+      ${linkBtn}
+    </div>`;
+  feedback.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+async function saveMoodWithNote(mood){
+  const info = MOOD_INFO[mood];
+  const noteInput = document.getElementById('moodNoteInput');
+  const note = noteInput ? noteInput.value.trim() : '';
+  if(checkSafety(note)){ showSafety(); return; }
+
+  // 1) حفظ على Firebase — في مرآتي اليومية (journal) عشان يبقى جزء من نفس السجل
+  const ok = await firestoreWrite('journal', { uid:getUserId(), mood:mood, moodLabel:info.label, note: note || '(بدون كتابة)', date:new Date().toISOString() });
+
+  // 2) تسجيل محلي فوري في نفس صفحة مرآتي اليومية
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
+  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, text: note, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
   localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
 
-  // 3) اقتراح سؤال مناسب من "هل أنا طبيعي؟" لو المزاج سلبي
   const feedback = document.getElementById('moodFeedback');
-  feedback.style.display = 'block';
-  if(info.tabieiIndex !== null){
-    feedback.innerHTML = `
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:0;">
-        <p class="card-sub" style="margin-bottom:8px;">حاسس إنك ${info.label} النهاردة — ده سؤال قريب من إحساسك:</p>
-        <div class="choice-btn" style="display:inline-block; margin:0;" onclick="openTabieiQuestion(${info.tabieiIndex})">${TABIEI_QUESTIONS[info.tabieiIndex].q} ←</div>
-      </div>`;
-  } else {
-    feedback.innerHTML = `<p style="font-size:11px; color:var(--muted); padding:0 2px;">${ok ? 'تم الحفظ ✓' : 'اتحفظ محليًا بس'}</p>`;
-  }
+  feedback.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:8px 0;">${ok ? '✅ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس (مشكلة في الاتصال)'}</p>`;
 }
 
 async function saveJournal(){
@@ -1002,7 +1178,8 @@ function renderJournalHistory(){
   wrap.innerHTML = local.map(e => {
     if(e.type === 'mood'){
       return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
-        <div style="font-weight:600; color:var(--text);">${e.date} — مزاج من الرئيسية: ${e.moodEmoji} ${e.moodLabel}</div>
+        <div style="font-weight:600; color:var(--text);">${e.date} — مزاج: ${e.moodEmoji} ${e.moodLabel}</div>
+        ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
       </div>`;
     }
     return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
@@ -1055,7 +1232,9 @@ async function loadFullHistory(){
   ]);
 
   let entries = [];
-  journalDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'journal'}));
+  journalDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => {
+    entries.push({ ...e, type: e.mood !== undefined ? 'mood' : 'journal' });
+  });
   moodDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'mood'}));
 
   if(entries.length === 0){
@@ -1091,7 +1270,8 @@ async function loadFullHistory(){
               ${tree[y][m][day].map(e => {
                 if(e.type === 'mood'){
                   const info = MOOD_INFO[e.mood];
-                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji + ' ' + info.label : 'مزاج: ' + e.mood}</div>`;
+                  const noteText = (e.note && e.note !== '(بدون كتابة)') ? ' — 📝 ' + e.note : '';
+                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji + ' ' + info.label : 'مزاج: ' + e.mood}${noteText}</div>`;
                 }
                 return `<div style="font-size:12px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
               }).join('')}
@@ -1106,6 +1286,7 @@ async function loadFullHistory(){
 // ---------- تشغيل أولي ----------
 renderHome();
 renderJournalHistory();
+renderExtraMoods();
 </script>
 </body>
 </html>
