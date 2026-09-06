@@ -117,6 +117,7 @@
         <div class="mood-emoji" data-mood="2">😔</div>
         <div class="mood-emoji" data-mood="1">😣</div>
       </div>
+      <div id="moodFeedback" style="display:none; margin:-6px 0 16px;"></div>
 
       <p class="pillars-title">الأركان السبعة لحياتك</p>
       <div class="pillars-grid" id="pillarsGrid"></div>
@@ -901,13 +902,21 @@ function generateReport(){
   `;
 }
 
-// ================= دفتر النفس — تخزين عبر Firestore REST =================
+// ================= المزاج السريع من الرئيسية — مربوط بـ"هل أنا طبيعي؟" ودفتر النفس =================
+const MOOD_INFO = {
+  1: { emoji:"😣", label:"مش كويس خالص", tabieiIndex:4 },
+  2: { emoji:"😔", label:"مش مرتاح", tabieiIndex:3 },
+  3: { emoji:"😐", label:"عادي", tabieiIndex:null },
+  4: { emoji:"🙂", label:"كويس", tabieiIndex:null },
+  5: { emoji:"😌", label:"مبسوط", tabieiIndex:null },
+};
+
 document.getElementById('moodRow').addEventListener('click', (e) => {
   const el = e.target.closest('.mood-emoji');
   if(!el) return;
   document.querySelectorAll('.mood-emoji').forEach(m => m.classList.remove('selected'));
   el.classList.add('selected');
-  saveMoodQuick(el.dataset.mood);
+  handleMoodTap(Number(el.dataset.mood));
 });
 
 async function firestoreWrite(collection, fields){
@@ -932,9 +941,35 @@ async function firestoreWrite(collection, fields){
   }
 }
 
-async function saveMoodQuick(mood){
-  const ok = await firestoreWrite('moods', { uid:getUserId(), mood:Number(mood), date:new Date().toISOString() });
-  showFirebaseStatus(ok, 'مزاجك');
+function openTabieiQuestion(index){
+  startTabiei();
+  setTimeout(() => revealTabiei(index), 60);
+}
+
+async function handleMoodTap(mood){
+  const info = MOOD_INFO[mood];
+
+  // 1) حفظ على Firebase
+  const ok = await firestoreWrite('moods', { uid:getUserId(), mood:mood, date:new Date().toISOString() });
+
+  // 2) تسجيل في دفتر النفس محليًا (بديل مؤقت لحد ما نقرأ من Firestore مباشرة)
+  const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, date: new Date().toLocaleDateString('ar-EG') });
+  localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,10)));
+  renderJournalHistory();
+
+  // 3) اقتراح سؤال مناسب من "هل أنا طبيعي؟" لو المزاج سلبي
+  const feedback = document.getElementById('moodFeedback');
+  feedback.style.display = 'block';
+  if(info.tabieiIndex !== null){
+    feedback.innerHTML = `
+      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:0;">
+        <p class="card-sub" style="margin-bottom:8px;">حاسس إنك ${info.label} النهاردة — ده سؤال قريب من إحساسك:</p>
+        <div class="choice-btn" style="display:inline-block; margin:0;" onclick="openTabieiQuestion(${info.tabieiIndex})">${TABIEI_QUESTIONS[info.tabieiIndex].q} ←</div>
+      </div>`;
+  } else {
+    feedback.innerHTML = `<p style="font-size:11px; color:var(--muted); padding:0 2px;">${ok ? 'اتسجل مزاجك ✓' : 'اتسجل محليًا — هيتزامن لما النت يرجع'}</p>`;
+  }
 }
 
 async function saveJournal(){
@@ -966,7 +1001,12 @@ function renderJournalHistory(){
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
   const wrap = document.getElementById('journalHistory');
   if(local.length === 0){ wrap.textContent = 'لسه معملتش تسجيل'; return; }
-  wrap.innerHTML = local.map(e => `<div style="padding:6px 0; border-bottom:1px solid #F0EDE2;">${e.date} — قلق ${e.anxiety}/10، طاقة ${e.energy}/10</div>`).join('');
+  wrap.innerHTML = local.map(e => {
+    if(e.type === 'mood'){
+      return `<div style="padding:6px 0; border-bottom:1px solid #F0EDE2;">${e.date} — مزاج من الرئيسية: ${e.moodEmoji} ${e.moodLabel}</div>`;
+    }
+    return `<div style="padding:6px 0; border-bottom:1px solid #F0EDE2;">${e.date} — قلق ${e.anxiety}/10، طاقة ${e.energy}/10</div>`;
+  }).join('');
 }
 
 // ---------- تشغيل أولي ----------
