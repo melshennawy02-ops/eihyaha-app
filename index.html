@@ -27,7 +27,7 @@
   .card-title{font-size:14px; font-weight:600; margin:0 0 4px;}
   .card-sub{font-size:12px; color:var(--muted); margin:0;}
   .row{display:flex; align-items:center; gap:12px;}
-  .icon-circle{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;}
+  .icon-circle{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; background:var(--white); border:1.5px solid var(--gold);}
 
   /* ===== Home ===== */
   .greeting{font-size:20px; font-weight:700; margin:4px 0 2px;}
@@ -104,7 +104,7 @@
   <!-- ===================== SCREEN: HOME ===================== -->
   <div class="screen active" id="screen-home">
     <div class="topbar">
-      <h1>إحياها باستمتاع</h1>
+      <h1 id="h1-brand">إحياها باستمتاع</h1>
       <div class="sos" onclick="showSafety()">محتاج مختص</div>
     </div>
     <div style="padding:0 16px;">
@@ -141,7 +141,7 @@
   <div class="screen" id="screen-ehkily">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(2)">→</div>
-      <h1>احكيلي</h1>
+      <h1 id="h1-ehkily">احكيلي</h1>
       <div class="sos" onclick="showSafety()">محتاج مختص</div>
     </div>
     <div style="padding:0 16px;">
@@ -157,7 +157,7 @@
   <div class="screen" id="screen-merat">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(2)">→</div>
-      <h1>مرآة العقل</h1>
+      <h1 id="h1-merat">مرآة العقل</h1>
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;" id="meratBody"></div>
@@ -167,7 +167,7 @@
   <div class="screen" id="screen-tabiei">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(2)">→</div>
-      <h1>هل أنا طبيعي؟</h1>
+      <h1 id="h1-tabiei">هل أنا طبيعي؟</h1>
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;" id="tabieiBody"></div>
@@ -177,7 +177,7 @@
   <div class="screen" id="screen-daftar">
     <div class="topbar">
       <div class="backbtn" onclick="goHome()">→</div>
-      <h1>مرآتي اليومية</h1>
+      <h1 id="h1-daftar">مرآتي اليومية</h1>
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;">
@@ -203,7 +203,7 @@
   <div class="screen" id="screen-report">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(2)">→</div>
-      <h1>جهزني للدكتور</h1>
+      <h1 id="h1-report">جهزني للدكتور</h1>
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;" id="reportBody"></div>
@@ -213,7 +213,7 @@
   <div class="screen" id="screen-account">
     <div class="topbar">
       <div class="backbtn" onclick="goHome()">→</div>
-      <h1>حسابي</h1>
+      <h1 id="h1-account">حسابي</h1>
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;" id="accountBody"></div>
@@ -221,9 +221,9 @@
 
   <!-- ===================== BOTTOM NAV ===================== -->
   <div class="bottomnav">
-    <div class="navitem active" data-nav="home" onclick="goHome()"><span class="navicon">🏠</span>الرئيسية</div>
-    <div class="navitem" data-nav="daftar" onclick="showScreen('screen-daftar')"><span class="navicon">📓</span>دفتري</div>
-    <div class="navitem" data-nav="settings" onclick="openAccountScreen()"><span class="navicon">⚙️</span>حسابي</div>
+    <div class="navitem active" data-nav="home" onclick="goHome()"><span class="navicon">🏠</span><span id="navlabel-home">الرئيسية</span></div>
+    <div class="navitem" data-nav="daftar" onclick="showScreen('screen-daftar')"><span class="navicon">📓</span><span id="navlabel-daftar">دفتري</span></div>
+    <div class="navitem" data-nav="settings" onclick="openAccountScreen()"><span class="navicon">⚙️</span><span id="navlabel-account">حسابي</span></div>
   </div>
 
   <!-- ===================== SAFETY OVERLAY ===================== -->
@@ -347,33 +347,64 @@ function openAccountScreen(){
   showScreen('screen-account');
 }
 
+function renderSettingsSection(){
+  const currentTheme = localStorage.getItem('eihyaha_theme') || 'classic';
+  const currentLang = localStorage.getItem('eihyaha_lang') || 'ar';
+  return `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">${t('theme_title')}</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        ${Object.keys(THEMES).map(key => `
+          <div onclick="setTheme('${key}')" style="cursor:pointer; border-radius:12px; padding:10px; border:2px solid ${currentTheme === key ? 'var(--gold)' : 'transparent'}; background:${THEMES[key].sand};">
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <div style="width:16px; height:16px; border-radius:50%; background:${THEMES[key].navyDark};"></div>
+              <div style="width:16px; height:16px; border-radius:50%; background:${THEMES[key].gold};"></div>
+            </div>
+            <p style="font-size:11.5px; font-weight:700; margin:0; color:${THEMES[key].text};">${THEMES[key].label}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">${t('lang_title')}</p>
+      <div style="display:flex; gap:8px;">
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${currentLang === 'ar' ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setLanguage('ar')">العربية</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${currentLang === 'en' ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setLanguage('en')">English</div>
+      </div>
+      ${currentLang === 'en' ? `<p style="font-size:11px; color:var(--muted); margin-top:10px;">${t('lang_note')}</p>` : ''}
+    </div>
+  `;
+}
+
 function renderAccountScreen(){
   const body = document.getElementById('accountBody');
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  let authHtml;
   if(auth){
-    body.innerHTML = `
+    authHtml = `
       <div class="card" style="text-align:center; padding:24px 16px;">
-        <div class="icon-circle" style="width:60px; height:60px; font-size:26px; margin:0 auto 12px; background:var(--navy-dark); color:var(--gold);">👤</div>
-        <p class="card-sub" style="margin:0;">مسجل دخول باسم</p>
+        <div class="icon-circle" style="width:60px; height:60px; font-size:26px; margin:0 auto 12px; color:var(--gold);">👤</div>
+        <p class="card-sub" style="margin:0;">${t('logged_in_as')}</p>
         <p style="font-size:17px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
-        <button class="btn-ghost" onclick="authSignOut()">تسجيل الخروج</button>
+        <button class="btn-ghost" onclick="authSignOut()">${t('logout')}</button>
       </div>`;
   } else {
-    body.innerHTML = `
+    authHtml = `
       <div style="display:flex; gap:8px; margin-bottom:16px;">
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">تسجيل الدخول</div>
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">حساب جديد</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">${t('signin')}</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">${t('signup')}</div>
       </div>
-      <label class="flabel">اسم المستخدم</label>
-      <input type="text" id="authUsername" placeholder="مثال: mohamed_2026">
-      <label class="flabel">كلمة المرور</label>
-      <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
+      <label class="flabel">${t('username')}</label>
+      <input type="text" id="authUsername" placeholder="mohamed_2026">
+      <label class="flabel">${t('password')}</label>
+      <input type="password" id="authPassword" placeholder="${t('password_hint')}">
       <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
-      <button class="btn-primary" id="authSubmitBtn" onclick="doSignIn()">دخول</button>
-      <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق</p>
+      <button class="btn-primary" id="authSubmitBtn" onclick="doSignIn()">${t('signin')}</button>
+      <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">${t('social_login_note')}</p>
     `;
-    setAuthMode('signin');
   }
+  body.innerHTML = authHtml + renderSettingsSection();
+  if(!auth) setAuthMode('signin');
 }
 
 // ============================================================
@@ -437,15 +468,95 @@ const PILLARS = [
   {id:7, title:"الركن الصحي", icon:"🩺", ready:false, desc:"صحتك الجسدية والنفسية"},
 ];
 
+// ================= نظام الألوان المتعددة (Premium Themes) =================
+const THEMES = {
+  classic:  { label:"الأصلي",  navy:"#0B3D3A", navyDark:"#072B28", sand:"#F2EEE3", gold:"#C9A24B", white:"#FFFFFF", text:"#1C2B29", muted:"#5B6C69" },
+  midnight: { label:"الليلي الفاخر", navy:"#154A43", navyDark:"#0B2B27", sand:"#081F1C", gold:"#D4AF6A", white:"#102F2A", text:"#F0EAD6", muted:"#8FA39D" },
+  ivory:    { label:"العاجي الذهبي", navy:"#5C4A2E", navyDark:"#3E3220", sand:"#FBF6EC", gold:"#B8860B", white:"#FFFFFF", text:"#3A2E1F", muted:"#8A7A5C" },
+  emerald:  { label:"الزمردي",  navy:"#0F3D2E", navyDark:"#0A2A20", sand:"#EFE9D8", gold:"#C9A24B", white:"#FFFFFF", text:"#1C2B22", muted:"#5B6C61" },
+};
+
+function applyTheme(name){
+  const th = THEMES[name] || THEMES.classic;
+  const root = document.documentElement.style;
+  root.setProperty('--navy', th.navy);
+  root.setProperty('--navy-dark', th.navyDark);
+  root.setProperty('--sand', th.sand);
+  root.setProperty('--gold', th.gold);
+  root.setProperty('--white', th.white);
+  root.setProperty('--text', th.text);
+  root.setProperty('--muted', th.muted);
+  document.body.style.background = th.sand;
+}
+
+function setTheme(name){
+  localStorage.setItem('eihyaha_theme', name);
+  applyTheme(name);
+  renderAccountScreen();
+}
+
+// ================= نظام اللغة (عربي / إنجليزي) — واجهة أساسية فقط =================
+// ملاحظة: المحتوى العميق (بنك مرآة العقل، هل أنا طبيعي، شجرة احكيلي) لسه عربي بس
+// حاليًا، لأن ترجمته محتاج دقة خاصة (خصوصًا الآيات القرآنية) — دي مرحلة تانية.
+const TRANSLATIONS = {
+  ar: {
+    brand:"إحياها باستمتاع", nav_home:"الرئيسية", nav_journal:"دفتري", nav_account:"حسابي",
+    ehkily:"احكيلي", merat:"مرآة العقل", tabiei:"هل أنا طبيعي؟", daftar:"مرآتي اليومية",
+    report:"جهزني للدكتور", account:"حسابي", available:"متاح الآن", soon:"قريبًا",
+    theme_title:"لون الواجهة", lang_title:"اللغة", lang_note:"المحتوى النفسي والديني العميق لسه بالعربي فقط حاليًا",
+    logged_in_as:"مسجل دخول باسم", logout:"تسجيل الخروج", signin:"تسجيل الدخول", signup:"حساب جديد",
+    username:"اسم المستخدم", password:"كلمة المرور", password_hint:"6 حروف على الأقل",
+    social_login_note:"تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق",
+  },
+  en: {
+    brand:"Eihyaha Bestemtaa", nav_home:"Home", nav_journal:"My journal", nav_account:"Account",
+    ehkily:"Talk to me", merat:"Mirror of the mind", tabiei:"Am I normal?", daftar:"My daily mirror",
+    report:"Prep for the doctor", account:"Account", available:"Available now", soon:"Coming soon",
+    theme_title:"App color", lang_title:"Language", lang_note:"Deep psychological and religious content is still Arabic-only for now",
+    logged_in_as:"Logged in as", logout:"Log out", signin:"Log in", signup:"New account",
+    username:"Username", password:"Password", password_hint:"At least 6 characters",
+    social_login_note:"Google and Facebook sign-in will be enabled later with the pro version of the app",
+  },
+};
+
+function t(key){
+  const lang = localStorage.getItem('eihyaha_lang') || 'ar';
+  return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.ar[key] || key;
+}
+
+function setLanguage(lang){
+  localStorage.setItem('eihyaha_lang', lang);
+  applyLanguage();
+  renderAccountScreen();
+}
+
+function applyLanguage(){
+  const lang = localStorage.getItem('eihyaha_lang') || 'ar';
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
+  const map = {
+    'h1-brand':'brand', 'h1-ehkily':'ehkily', 'h1-merat':'merat', 'h1-tabiei':'tabiei',
+    'h1-daftar':'daftar', 'h1-report':'report', 'h1-account':'account',
+  };
+  for(const id in map){
+    const el = document.getElementById(id);
+    if(el) el.textContent = t(map[id]);
+  }
+  document.getElementById('navlabel-home').textContent = t('nav_home');
+  document.getElementById('navlabel-daftar').textContent = t('nav_journal');
+  document.getElementById('navlabel-account').textContent = t('nav_account');
+  renderHome();
+}
+
 function renderHome(){
   const grid = document.getElementById('pillarsGrid');
   grid.innerHTML = PILLARS.map(p => `
     <div class="pillar-card ${p.ready ? '' : 'soon'}" onclick="goToPillar(${p.id})">
       <div>
-        <div style="font-size:22px; margin-bottom:6px;">${p.icon}</div>
+        <div style="width:38px; height:38px; border-radius:50%; border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:8px; background:rgba(201,162,75,.08);">${p.icon}</div>
         <div class="ptitle">${p.title}</div>
       </div>
-      <div class="pnum">${p.ready ? 'متاح الآن' : 'قريبًا'}</div>
+      <div class="pnum">${p.ready ? t('available') : t('soon')}</div>
     </div>
   `).join('');
 }
@@ -477,27 +588,27 @@ function goToPillar(id){
     // الركن الشخصي — الأدوات المتاحة
     body.innerHTML = `
       <div class="tool-row" onclick="startEhkily()">
-        <div class="icon-circle" style="background:#E6F0EE;">💬</div>
+        <div class="icon-circle">💬</div>
         <div><div class="card-title">طبيبك النفسي السري</div><div class="card-sub">احكيلي — مساحة آمنة ومجهولة</div></div>
         <div class="arrow">‹</div>
       </div>
       <div class="tool-row" onclick="startMerat()">
-        <div class="icon-circle" style="background:#FBF3E3;">🪞</div>
+        <div class="icon-circle">🪞</div>
         <div><div class="card-title">مرآة العقل</div><div class="card-sub">افهم أنماطك الفكرية والشعورية</div></div>
         <div class="arrow">‹</div>
       </div>
       <div class="tool-row" onclick="startTabiei()">
-        <div class="icon-circle" style="background:#F2EEE3;">❓</div>
+        <div class="icon-circle">❓</div>
         <div><div class="card-title">هل أنا طبيعي؟</div><div class="card-sub">إجابات سريعة على أسئلتك</div></div>
         <div class="arrow">‹</div>
       </div>
       <div class="tool-row" onclick="showScreen('screen-daftar')">
-        <div class="icon-circle" style="background:#E6F0EE;">📓</div>
+        <div class="icon-circle">📓</div>
         <div><div class="card-title">مرآتي اليومية</div><div class="card-sub">تتبع مزاجك وطاقتك يوميًا</div></div>
         <div class="arrow">‹</div>
       </div>
       <div class="tool-row" onclick="startReport()">
-        <div class="icon-circle" style="background:#FBF3E3;">📋</div>
+        <div class="icon-circle">📋</div>
         <div><div class="card-title">جهزني للدكتور</div><div class="card-sub">تقرير مبسط قبل زيارة المتخصص</div></div>
         <div class="arrow">‹</div>
       </div>
@@ -631,27 +742,27 @@ function renderEhkilyNode(key){
 // هذا نظام مبدئي بالكلمات المفتاحية فقط، وليس فهمًا حقيقيًا للغة — سيُستبدل
 // بتكامل حقيقي مع Claude API في مرحلة لاحقة بعد استقرار الهيكل.
 const FREE_TEXT_KEYWORDS = {
-  anger: ["غضب","غضبان","عصبي","عصبية","اتخانقت","انفعلت","زعقت","اتنرفزت"],
-  grief: ["حزن","حزين","زعلان","زعلانة","فقدت","فاقد","مكتئب","مكتئبة"],
-  isolation: ["وحدة","عزلة","لوحدي","محدش فاهمني","رفضوني","مقاطعني"],
-  chronic_illness: ["مرض","مريض","مريضة","تعبان جسمي","وجع مستمر","ابتلاء صحي"],
-  anxiety: ["قلق","قلقان","قلقانة","خايف","خايفة","توتر","متوتر","خوف من المستقبل"],
-  envy_betrayal: ["خيانة","اتخنت","خانوني","ظلموني","حسدوني","اتلفق","لفقوا"],
-  fear_confrontation: ["خايف اواجه","مش قادر اواجه","مديري بيهددني","مواجهة"],
-  guilt_return: ["ذنب","غلطة","نادم","نادمة","غلطت","حاسس بالذنب"],
-  facing_arrogance: ["متكبر","مغرور","مستحيل اتكلم معاه","استكبار"],
-  unjust_blame: ["اتلمت","لاموني","اتحاسبت ظلم","اتظلمت في الشغل"],
-  long_wait_hope: ["مستني","انتظار","لسه ما حصلش","استنى من زمان"],
-  false_accusation: ["اتهموني","إشاعة","اتهام ظالم","اتكلموا عليا غلط"],
-  standing_alone_deviation: ["كل الناس غلط وأنا لوحدي","محدش زيي","مختلف عن الكل"],
-  sacrifice: ["أضحي","تضحية","أسيب حلمي","أتنازل عن"],
-  keeping_promise: ["وعدت","التزام بوعد","تعبت من الالتزام"],
-  power_fairness: ["أحكم بالعدل","متحيز","ميول شخصية في قرار"],
-  gratitude_success: ["نجحت","نجاح كبير","خايف النجاح يغيرني"],
-  biased_rejection: ["رفضوني بواسطة","قبلوني بواسطة مش بحقي"],
-  unseen_effort: ["محدش واخد باله من مجهودي","بشتغل بصمت","محدش بيقدرني"],
-  corrupt_environment: ["فساد حواليا","بيئة فاسدة","كله بيغش وأنا رافض"],
-  letting_go_grudge: ["مش قادر أسامح","مرارة","حاقد على"],
+  anger: ["غضب","غضبان","غضبانة","عصبي","عصبية","اتخانقت","انفعلت","زعقت","اتنرفزت","فاقد أعصابي","مقهور","استفزني","مستفز","حاسس بغيظ","اتنرفزت من","معصب","مقرف اللي حصل","نار من جوايا"],
+  grief: ["حزن","حزين","حزينة","زعلان","زعلانة","فقدت","فاقد","مكتئب","مكتئبة","دموعي نازلة","قلبي مكسور","تعبان نفسيًا","مافيش حاجة بتفرحني","حاسس بفراغ","ضايق","ضايقة","مخنوق"],
+  isolation: ["وحدة","عزلة","لوحدي","محدش فاهمني","رفضوني","مقاطعني","حاسس إني غريب","محدش حاسس بيا","اتجنبت","معزول","مفيش حد بيتكلم معايا","بعدوا عني"],
+  chronic_illness: ["مرض","مريض","مريضة","تعبان جسمي","وجع مستمر","ابتلاء صحي","تعبت من المرض","الألم مستمر","دوخة مستمرة","إرهاق دائم","جسمي مش قد كده"],
+  anxiety: ["قلق","قلقان","قلقانة","خايف","خايفة","توتر","متوتر","خوف من المستقبل","حاسس بترقب","قلبي بيدق بسرعة","مش قادر أرتاح","فكري مشتت","وسواس","بخاف من اللي جاي","حاسس إن حاجة وحشة هتحصل"],
+  envy_betrayal: ["خيانة","اتخنت","خانوني","ظلموني","حسدوني","اتلفق","لفقوا","اتظلمت","مش عارف أثق في حد تاني","اتغدروا بيا","طعنوني في ضهري"],
+  fear_confrontation: ["خايف اواجه","مش قادر اواجه","مديري بيهددني","مواجهة","خايف أتكلم قدامه","مش قادر أقول لأ","بخاف من رد فعله"],
+  guilt_return: ["ذنب","غلطة","نادم","نادمة","غلطت","حاسس بالذنب","مش قادر أسامح نفسي","عملت غلط كبير","ضميري بيأنبني"],
+  facing_arrogance: ["متكبر","مغرور","مستحيل اتكلم معاه","استكبار","بيستقوى عليا","حاسس إنه فوق الكل"],
+  unjust_blame: ["اتلمت","لاموني","اتحاسبت ظلم","اتظلمت في الشغل","حملوني غلطة مش غلطتي"],
+  long_wait_hope: ["مستني","انتظار","لسه ما حصلش","استنى من زمان","تعبت من الانتظار","حاسس إن الأمل بيموت"],
+  false_accusation: ["اتهموني","إشاعة","اتهام ظالم","اتكلموا عليا غلط","بيقولوا عليا حاجات مش صحيحة"],
+  standing_alone_deviation: ["كل الناس غلط وأنا لوحدي","محدش زيي","مختلف عن الكل","بحس إني الوحيد اللي شايف الصح"],
+  sacrifice: ["أضحي","تضحية","أسيب حلمي","أتنازل عن","محتاج أضحي بحاجة غالية"],
+  keeping_promise: ["وعدت","التزام بوعد","تعبت من الالتزام","لسه مستمر في وعد صعب"],
+  power_fairness: ["أحكم بالعدل","متحيز","ميول شخصية في قرار","صعب أكون عادل"],
+  gratitude_success: ["نجحت","نجاح كبير","خايف النجاح يغيرني","حاسس إني بتغير بعد النجاح"],
+  biased_rejection: ["رفضوني بواسطة","قبلوني بواسطة مش بحقي","مش حقيقي كلامي اتسمع"],
+  unseen_effort: ["محدش واخد باله من مجهودي","بشتغل بصمت","محدش بيقدرني","تعبي مالوش قيمة عند حد"],
+  corrupt_environment: ["فساد حواليا","بيئة فاسدة","كله بيغش وأنا رافض","محاط بغلط وأنا مش قادر أتغير"],
+  letting_go_grudge: ["مش قادر أسامح","مرارة","حاقد على","لسه فاكر اللي عمله فيا"],
 };
 
 function matchFreeText(text){
@@ -718,6 +829,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "يونس عليه السلام — الغضب، والهروب، والعودة",
     prophet: "غضب يونس من إصرار قومه على الكفر، وغادرهم من غير أن ينتظر إذن الله. لما وقع في الشدة (بطن الحوت)، لم يبرر فعله ولم يلق اللوم على قومه، بل اعترف بوضوح تام: ﴿لَا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ﴾ — وهذا الاعتراف الكامل، الخالي من أي تبرير، كان مفتاح النجاة. والأعجب أن قومه أنفسهم تابوا بعد رحيله، فتأثير الحق قد يمتد حتى بعد أن نظن أننا فشلنا.",
     submission: "الغضب من نتائج حياتك أو ممن حولك، لو تحول لسخط مستمر على القدر، بيقفل عليك دايرة من ضيق القلب وفقدان البركة. الحل مش كبت الغضب، لكن تذكّر أن الرضا بقضاء الله راحة للقلب، والسخط سجن لا باب له — ﴿وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ﴾.",
+    causes: ["حد قال أو عمل حاجة مش عاجباك ومقدرتش ترد وقتها", "تراكم ضغط من كذا يوم، مش نتيجة موقف واحد بس", "حاسس إن مفيش حد بيسمعك أو بياخد كلامك بجدية"],
+    actionStep: "قبل ما ترد فورًا، اعترف بغضبك لنفسك الأول (زي يونس) — قول لنفسك 'أنا زعلان من كذا' بصوت عالي أو مكتوب. وبعدين قرر خطوة واحدة صغيرة تعملها بعد ما تهدأ، مش وأنت لسه في لحظة الانفعال.",
   },
   {
     id: "grief",
@@ -727,6 +840,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "سيدنا يعقوب عليه السلام — فقد الابن الأقرب",
     prophet: "لما فقد يعقوب ابنه يوسف، طال حزنه سنين حتى أثّر في جسده: ﴿وَابْيَضَّتْ عَيْنَاهُ مِنَ الْحُزْنِ فَهُوَ كَظِيمٌ﴾. لام أبناؤه استمرار حزنه، فكان رده: ﴿إِنَّمَا أَشْكُو بَثِّي وَحُزْنِي إِلَى اللَّهِ﴾ — لم يشتكِ لأحد من الناس، بل وجّه حزنه بالكامل لله وحده. وهذا فرق جوهري بين من يبكي طلبًا للمواساة، ومن يبكي وهو متيقن أن الفرج عند الله وحده.",
     submission: "لما القلب يتعلق بالمخلوق أو بالموقف تعلقًا مطلقًا، بيصاحبه إحباط شديد وانكسار كل ما الأمور ما تسيرش زي المتوقع. الرجاء الصحي في الله معناه: مهما كانت الظروف، ما تشوفش إن الطريق انتهى — فيه أمل وتفاؤل وطمأنينة لأن المستقبل مش متروك للصدفة.",
+    causes: ["فقد شخص أو حاجة كانت مهمة ليك", "حلم أو أمنية ما تحققتش في الوقت المتوقع", "حزن متراكم من فترة طويلة من غير تنفيس"],
+    actionStep: "زي يعقوب، وجّه حزنك لله مباشرة (بدعاء أو كتابة) بدل ما تدور على تعاطف من الناس بس — وسجّل إحساسك في دفتر النفس يوميًا لمدة أسبوع تراقب هل بيقل ولا بيزيد.",
   },
   {
     id: "isolation",
@@ -736,6 +851,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "سيدنا نوح عليه السلام — الوحدة، واليأس من التغيير",
     prophet: "دعا نوح قومه لتوحيد الله ليلًا ونهارًا لمدة تجاوزت تسعمائة وخمسين عامًا، ومع ذلك لم يستجب له إلا قلة قليلة جدًا. حتى زوجته وابنه كانا من الرافضين له. لم يتوقف عن العمل بسبب السخرية، ولم يرد عليها بالجدال، بل استمر — لأن أحيانًا يكون المضي في الطريق الصحيح، رغم السخرية، هو الرد الوحيد الذي يستحق أن يُقال.",
     submission: "لما الرجاء يتعلق بموافقة الناس أو تفهّمهم تعلقًا مطلقًا، بيصير الإنسان أسيرًا لردود أفعالهم — لو فهموه فرح، ولو رفضوه انكسر. الحل: تعتمد على الله مع الأخذ بالأسباب، فالثقة به بتديك ثبات مش متوقف على قبول أو رفض أي حد.",
+    causes: ["رفض من ناس قريبين حاولت توصلهم رأيك", "قرار غيّرته وحسيت بعده إن محدش فاهمك", "ابتعاد تدريجي مش مقصود من محيطك"],
+    actionStep: "زي نوح، استمر في اللي تعرف إنه صح حتى لو حد مش شايفك دلوقتي — وحدد شخص واحد بس (مش الكل) تقدر تتواصل معاه بصدق النهاردة.",
   },
   {
     id: "chronic_illness",
@@ -745,6 +862,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "سيدنا أيوب عليه السلام — الصبر بلا شكوى للناس",
     prophet: "سُلب أيوب صحته وماله وأبناءه في ابتلاءات متتالية نادرة، ومع ذلك لم يرد عنه في القرآن أي شكوى للناس ولا طلب تعاطف. أثنى الله عليه: ﴿إِنَّا وَجَدْنَاهُ صَابِرًا نِّعْمَ الْعَبْدُ﴾ — ليس لأنه لم يتألم، بل لأنه تألم بصمت أمام الناس وحمل شكواه لله وحده. لما دعا، لم يطلب رفع الضر مباشرة، بل ذكّر نفسه أولًا: ﴿وَأَنتَ أَرْحَمُ الرَّاحِمِينَ﴾ — حسن الظن بالله يسبق طلب الفرج.",
     submission: "الصبر هنا مش معناه إنكار الوجع، لكن توجيهه للجهة الصحيحة. الرضا بقضاء الله بيدّي القلب استقرارًا حتى وسط الألم، وده تحرر حقيقي — مش مجرد شعار.",
+    causes: ["ألم جسدي أو نفسي مستمر من فترة طويلة", "تعب من تكرار شرح حالتك للناس كل مرة", "إحساس إن محدش قادر يستوعب حجم الألم اللي إنت فيه"],
+    actionStep: "زي أيوب، وجّه شكواك لله في الخفاء بدل ما تستنزف نفسك في شرحها لكل حد — وسجّل درجة الألم يوميًا في دفتر النفس عشان تلاحظ التغيّر بمرور الوقت.",
   },
   {
     id: "anxiety",
@@ -754,6 +873,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "من زاوية القرآن — الخوف الذي يسكن القلب بلا سبب واضح",
     prophet: "القلق المستمر والخوف من رأي الناس والمستقبل، من غير سبب واضح، من أكتر المشاعر اللي بتستنزف القلب، وده بالظبط ما يوضحه الكتاب في تحليل مشاعر 'الخوف من غير الله'.",
     submission: "الخوف من غير الله (الناس، المستقبل، المجهول) بيولّد: قلق مستمر، ترقب دائم، حذر مفرط، ووسواس في الاحتمالات ('ماذا لو حصل كذا؟'). لأن القلب بيدور على أمان في حاجة مالهاش أمان مطلق أصلًا. في المقابل، الخوف من الله (خشية وتعظيم، مش رعب) بيولّد: مراقبة النفس، انضباط، وطمأنينة — لأنه بيرافقه دايمًا الرجاء: مهما كانت الظروف صعبة، رحمة الله أكبر.",
+    causes: ["قلق من موقف مستقبلي غير مؤكد النتيجة", "خوف من رأي أو حكم الناس عليك", "إحساس بفقدان السيطرة على قرار مهم"],
+    actionStep: "فرّق بين القلق (تكرار نفس الفكرة في دماغك) والفعل (خطوة واحدة تقدر تاخدها دلوقتي). اكتب أسوأ سيناريو متخيله، وقيّم بصدق هل فعلاً محتمل الحدوث ولا مجرد وسواس.",
   },
   {
     id: "envy_betrayal",
@@ -763,6 +884,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "سيدنا يوسف عليه السلام — الخيانة، والسجن، والصبر على الظلم",
     prophet: "حسد إخوة يوسف رؤياه، فألقوه في بئر وباعوه كعبد، ثم اتُّهم زورًا وسُجن رغم براءته: ﴿قَالَ رَبِّ السِّجْنُ أَحَبُّ إِلَيَّ مِمَّا يَدْعُونَنِي إِلَيْهِ﴾ — فضّل عقوبة ظالمة على معصية يعلم حقيقتها، وطلب العون من الله لا من قوته الذاتية. بقي في السجن سنين رغم براءته حتى نسيه من كان بإمكانه أن يشفع له. لم يكن السجن نهاية القصة، بل الفترة التي صقلت صبره وهيّأته لمنصب لم يكن يتخيله وهو خلف القضبان: ﴿اجْعَلْنِي عَلَىٰ خَزَائِنِ الْأَرْضِ إِنِّي حَفِيظٌ عَلِيمٌ﴾.",
     submission: "لما تحاسب نفسك على الظلم اللي وقع عليك وتفضل تدور على تعاطف الناس أو انتقام فوري، بتتحول المرارة لعبء بيكبر. أما التسليم الحقيقي فمعناه: تثبت وتصبر مع بذل الأسباب (زي رفض يوسف الفتنة ودعائه لله)، وتوقن أن الرفعة بعد الظلم ممكن تكون أكبر بكتير مما فقدته، حتى لو المسافة بينهم سنين.",
+    causes: ["خيانة فعلية من حد قريب منك", "مقارنة نفسك بحد نجح على حسابك", "إحساس بالظلم من قرار مش في يدك"],
+    actionStep: "زي يوسف، ثبّت على موقفك الصح وابعد عن التفكير في الانتقام — واكتب حاجة واحدة تقدر تتعلمها من الموقف ده، بدل ما تفضل مركّز على اللي ظلمك.",
   },
   {
     id: "fear_confrontation",
@@ -772,6 +895,8 @@ const MERAT_PATTERNS = [
     prophetTitle: "سيدنا موسى عليه السلام — الخوف، والهروب، ومواجهة الظالم",
     prophet: "هرب موسى من مصر بعد أن قتل رجلًا خطأً وهو يدافع عن مظلوم، خائفًا يترقب: ﴿رَبِّ نَجِّنِي مِنَ الْقَوْمِ الظَّالِمِينَ﴾. القرآن لا يخفي خوف الأنبياء بل يصوره بصدق. لما جاءه التكليف بمواجهة فرعون نفسه، لم يتظاهر بشجاعة زائفة، بل صرّح بخوفه الحقيقي وطلب العون بصراحة: ﴿رَبِّ إِنِّي قَتَلْتُ مِنْهُمْ نَفْسًا فَأَخَافُ أَن يَقْتُلُونِ﴾ ثم ﴿رَبِّ اشْرَحْ لِي صَدْرِي﴾. طمأنه الله قبل المواجهة: ﴿لَا تَخَافَا إِنَّنِي مَعَكُمَا أَسْمَعُ وَأَرَىٰ﴾.",
     submission: "الخوف من مواجهة شخص أقوى منك، لو استمر بلا حدود، بيولّد خضوع دائم وفقدان القدرة على اتخاذ القرار. الاعتراف بالخوف بصراحة (زي موسى) مش نقص في الإيمان، بل الخطوة الأولى الصحيحة. الحل مش إنكار الخوف، لكن طلب العون من الله والاستعانة به قبل المواجهة — فالخوف المشروع لا يمنع من المواجهة لما يجي وقتها.",
+    causes: ["خايف من رد فعل شخص عنده سلطة عليك", "تجربة سابقة اتعرضت فيها لعقاب بعد ما واجهت حد", "إحساس إنك أضعف من الطرف التاني"],
+    actionStep: "زي موسى، اعترف بخوفك بصراحة قبل المواجهة (لنفسك أو لحد تثق فيه)، وحدد جملة واحدة قصيرة هتقولها في المواجهة بدل ما تحاول تحفظ خطاب طويل.",
   },
   {
     id: "guilt_return",
@@ -916,7 +1041,7 @@ function startMerat(){
     <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">اختار النمط الأقرب لإحساسك دلوقتي:</p>
     ${MERAT_PATTERNS.map(p => `
       <div class="tool-row" onclick="showMeratResult('${p.id}')">
-        <div class="icon-circle" style="background:#F2EEE3;">${p.icon}</div>
+        <div class="icon-circle">${p.icon}</div>
         <div><div class="card-title">${p.title}</div></div>
         <div class="arrow">‹</div>
       </div>
@@ -933,6 +1058,13 @@ function showMeratResult(id){
       <p class="layer-title" style="color:var(--navy-dark);">🧠 الوصف النفسي</p>
       <p class="layer-text">${p.psych}</p>
     </div>
+    ${p.causes ? `
+    <div class="layer-card" style="background:#F2EEE3; border:1px solid #E4DFCF;">
+      <p class="layer-title" style="color:var(--navy-dark);">🔍 الأسباب المحتملة</p>
+      <ul style="margin:4px 0 0; padding-right:18px;">
+        ${p.causes.map(c => `<li class="layer-text" style="margin-bottom:4px;">${c}</li>`).join('')}
+      </ul>
+    </div>` : ''}
     <div class="layer-card l2">
       <p class="layer-title" style="color:#8A6A1E;">📖 ${p.prophetTitle}</p>
       <p class="layer-text">${p.prophet}</p>
@@ -943,6 +1075,11 @@ function showMeratResult(id){
       <p class="layer-text">${p.submission}</p>
       <p style="font-size:11px; color:var(--muted); margin-top:6px;">من كتاب «بوصلة التسليم»</p>
     </div>
+    ${p.actionStep ? `
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff;">${p.actionStep}</p>
+    </div>` : ''}
     <button class="btn-ghost" onclick="startMerat()">اختار نمط تاني</button>
   `;
 }
@@ -1284,7 +1421,8 @@ async function loadFullHistory(){
 }
 
 // ---------- تشغيل أولي ----------
-renderHome();
+applyTheme(localStorage.getItem('eihyaha_theme') || 'classic');
+applyLanguage();
 renderJournalHistory();
 renderExtraMoods();
 </script>
