@@ -142,6 +142,10 @@
     </div>
     <div style="padding:0 16px;">
       <div class="chat-window" id="chatWindow"></div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+        <input type="text" id="freeTextInput" placeholder="أو اكتب اللي حاسس بيه بنفسك..." style="flex:1;" onkeypress="if(event.key==='Enter') sendFreeText()">
+        <button class="btn-primary" style="width:auto; margin:0; padding:11px 16px;" onclick="sendFreeText()">ابعت</button>
+      </div>
     </div>
   </div>
 
@@ -383,6 +387,9 @@ const EHKILY_TREE = {
       {label:"حاسس بقلق مستمر", next:"anxiety"},
       {label:"حاسس بحزن أو فقدان حماس", next:"sadness"},
       {label:"مشكلة في علاقة مع حد", next:"relationship"},
+      {label:"اتظلمت أو اتخنت من حد قريب", next:"go_merat_envy_betrayal"},
+      {label:"خايف أواجه حد أقوى مني", next:"go_merat_fear_confrontation"},
+      {label:"حاسس بذنب من غلطة عملتها", next:"go_merat_guilt_return"},
       {label:"مش عارف أوصف اللي حاسس بيه", next:"unsure"},
     ]
   },
@@ -442,6 +449,11 @@ const EHKILY_TREE = {
   },
 };
 
+function openMeratPattern(id){
+  showMeratResult(id);
+  showScreen('screen-merat');
+}
+
 let ehkilyCurrent = "start";
 function startEhkily(){
   ehkilyCurrent = "start";
@@ -473,6 +485,7 @@ function renderEhkilyNode(key){
       if(c.next === 'go_merat'){ startMerat(); return; }
       if(c.next === 'go_tabiei'){ startTabiei(); return; }
       if(c.next === 'go_report'){ startReport(); return; }
+      if(c.next && c.next.startsWith('go_merat_')){ openMeratPattern(c.next.replace('go_merat_','')); return; }
       ehkilyCurrent = c.next;
       renderEhkilyNode(c.next);
       win.scrollTop = win.scrollHeight;
@@ -480,6 +493,87 @@ function renderEhkilyNode(key){
     choicesWrap.appendChild(btn);
   });
   win.appendChild(choicesWrap);
+  win.scrollTop = win.scrollHeight;
+}
+
+// ================= الكتابة الحرة — مطابقة كلمات مفتاحية لبنك المحتوى =================
+// هذا نظام مبدئي بالكلمات المفتاحية فقط، وليس فهمًا حقيقيًا للغة — سيُستبدل
+// بتكامل حقيقي مع Claude API في مرحلة لاحقة بعد استقرار الهيكل.
+const FREE_TEXT_KEYWORDS = {
+  anger: ["غضب","غضبان","عصبي","عصبية","اتخانقت","انفعلت","زعقت","اتنرفزت"],
+  grief: ["حزن","حزين","زعلان","زعلانة","فقدت","فاقد","مكتئب","مكتئبة"],
+  isolation: ["وحدة","عزلة","لوحدي","محدش فاهمني","رفضوني","مقاطعني"],
+  chronic_illness: ["مرض","مريض","مريضة","تعبان جسمي","وجع مستمر","ابتلاء صحي"],
+  anxiety: ["قلق","قلقان","قلقانة","خايف","خايفة","توتر","متوتر","خوف من المستقبل"],
+  envy_betrayal: ["خيانة","اتخنت","خانوني","ظلموني","حسدوني","اتلفق","لفقوا"],
+  fear_confrontation: ["خايف اواجه","مش قادر اواجه","مديري بيهددني","مواجهة"],
+  guilt_return: ["ذنب","غلطة","نادم","نادمة","غلطت","حاسس بالذنب"],
+  facing_arrogance: ["متكبر","مغرور","مستحيل اتكلم معاه","استكبار"],
+  unjust_blame: ["اتلمت","لاموني","اتحاسبت ظلم","اتظلمت في الشغل"],
+  long_wait_hope: ["مستني","انتظار","لسه ما حصلش","استنى من زمان"],
+  false_accusation: ["اتهموني","إشاعة","اتهام ظالم","اتكلموا عليا غلط"],
+  standing_alone_deviation: ["كل الناس غلط وأنا لوحدي","محدش زيي","مختلف عن الكل"],
+  sacrifice: ["أضحي","تضحية","أسيب حلمي","أتنازل عن"],
+  keeping_promise: ["وعدت","التزام بوعد","تعبت من الالتزام"],
+  power_fairness: ["أحكم بالعدل","متحيز","ميول شخصية في قرار"],
+  gratitude_success: ["نجحت","نجاح كبير","خايف النجاح يغيرني"],
+  biased_rejection: ["رفضوني بواسطة","قبلوني بواسطة مش بحقي"],
+  unseen_effort: ["محدش واخد باله من مجهودي","بشتغل بصمت","محدش بيقدرني"],
+  corrupt_environment: ["فساد حواليا","بيئة فاسدة","كله بيغش وأنا رافض"],
+  letting_go_grudge: ["مش قادر أسامح","مرارة","حاقد على"],
+};
+
+function matchFreeText(text){
+  const scores = {};
+  for(const id in FREE_TEXT_KEYWORDS){
+    scores[id] = FREE_TEXT_KEYWORDS[id].filter(k => text.includes(k)).length;
+  }
+  let bestId = null, bestScore = 0;
+  for(const id in scores){
+    if(scores[id] > bestScore){ bestScore = scores[id]; bestId = id; }
+  }
+  return bestScore > 0 ? bestId : null;
+}
+
+function sendFreeText(){
+  const input = document.getElementById('freeTextInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(checkSafety(text)){ showSafety(); return; }
+
+  const win = document.getElementById('chatWindow');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'bubble user';
+  userMsg.textContent = text;
+  win.appendChild(userMsg);
+  input.value = '';
+
+  const matchedId = matchFreeText(text);
+  const bot = document.createElement('div');
+  bot.className = 'bubble bot';
+
+  if(matchedId){
+    const p = MERAT_PATTERNS.find(x => x.id === matchedId);
+    bot.textContent = p.psych + " — ده أقرب نمط لقيته لإحساسك.";
+    win.appendChild(bot);
+    const choicesWrap = document.createElement('div');
+    choicesWrap.className = 'choices';
+    const btn1 = document.createElement('div');
+    btn1.className = 'choice-btn';
+    btn1.textContent = 'شوف التحليل الكامل';
+    btn1.onclick = () => openMeratPattern(matchedId);
+    choicesWrap.appendChild(btn1);
+    const btn2 = document.createElement('div');
+    btn2.className = 'choice-btn';
+    btn2.textContent = 'ارجع للقائمة';
+    btn2.onclick = () => { choicesWrap.remove(); ehkilyCurrent = 'start'; renderEhkilyNode('start'); };
+    choicesWrap.appendChild(btn2);
+    win.appendChild(choicesWrap);
+  } else {
+    bot.textContent = "مش لاقي نمط مطابق بالظبط لكلامك دلوقتي (النظام لسه بيتعلم بالكلمات المفتاحية بس). جرب تختار من القائمة دي أقرب حاجة لإحساسك:";
+    win.appendChild(bot);
+    renderEhkilyNode('start');
+  }
   win.scrollTop = win.scrollHeight;
 }
 
