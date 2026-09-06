@@ -188,9 +188,11 @@
       <textarea id="journalText" placeholder="اكتب سطرين عن يومك..."></textarea>
       <button class="btn-primary" onclick="saveJournal()">حفظ اليوم</button>
       <div class="card" style="margin-top:16px;">
-        <p class="card-title">سجلك (آخر الأيام)</p>
+        <p class="card-title">سجلك (على الجهاز ده بس)</p>
         <div id="journalHistory" style="font-size:12px; color:var(--muted);">لسه معملتش تسجيل</div>
       </div>
+      <button class="btn-ghost" onclick="loadFullHistory()">📂 شوف سجلي الكامل من Firebase (كل الأجهزة)</button>
+      <div id="fullHistoryWrap" style="margin-top:14px;"></div>
     </div>
   </div>
 
@@ -954,8 +956,8 @@ async function handleMoodTap(mood){
 
   // 2) تسجيل في دفتر النفس محليًا (بديل مؤقت لحد ما نقرأ من Firestore مباشرة)
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, date: new Date().toLocaleDateString('ar-EG') });
-  localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,10)));
+  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
+  localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
 
   // 3) اقتراح سؤال مناسب من "هل أنا طبيعي؟" لو المزاج سلبي
@@ -968,7 +970,7 @@ async function handleMoodTap(mood){
         <div class="choice-btn" style="display:inline-block; margin:0;" onclick="openTabieiQuestion(${info.tabieiIndex})">${TABIEI_QUESTIONS[info.tabieiIndex].q} ←</div>
       </div>`;
   } else {
-    feedback.innerHTML = `<p style="font-size:11px; color:var(--muted); padding:0 2px;">${ok ? 'اتسجل مزاجك ✓' : 'اتسجل محليًا — هيتزامن لما النت يرجع'}</p>`;
+    feedback.innerHTML = `<p style="font-size:11px; color:var(--muted); padding:0 2px;">${ok ? 'اتسجل مزاجك ✓ (Firebase → moods، وشايفه تحت في سجلك)' : 'اتسجل محليًا بس (سجلك تحت) — هيتزامن لما النت يرجع'}</p>`;
   }
 }
 
@@ -983,18 +985,18 @@ async function saveJournal(){
 
   // تخزين محلي مبسط لعرض السجل فورًا (بديل مؤقت لحد ما نقرأ من Firestore)
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  local.unshift({ anxiety, energy, sleep, text, date: new Date().toLocaleDateString('ar-EG') });
-  localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,10)));
+  local.unshift({ anxiety, energy, sleep, text, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
+  localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
   document.getElementById('journalText').value = '';
-  showFirebaseStatus(ok, 'يومك');
+  showFirebaseStatus(ok, 'يومك', 'journal');
 }
 
-function showFirebaseStatus(ok, label){
+function showFirebaseStatus(ok, label, collectionName){
   if(ok){
-    alert(`✅ اتحفظ ${label} فعليًا على Firebase (مش محلي بس). افتح Firebase Console → Firestore Database وشوف الداتا هناك.`);
+    alert(`✅ اتحفظ ${label} في قاعدة بيانات Firebase (داخل "${collectionName}"). تقدر تشوفه فورًا هنا تحت في "سجلك"، أو من Firebase Console → Firestore Database → ${collectionName}.`);
   } else {
-    alert(`⚠️ اتحفظ ${label} محليًا على الجهاز بس — الاتصال بـ Firebase فشل. اتأكد من: 1) قواعد الأمان في Firestore لسه "test mode"، 2) النت شغال، 3) الـAPI key والـprojectId صح في الكود.`);
+    alert(`⚠️ اتحفظ ${label} على جهازك بس (محليًا) — شايفه تحت في "سجلك" هنا، لكن لو غيّرت الجهاز أو مسحت بيانات المتصفح هيضيع لأنه معملش نسخة على Firebase. السبب المحتمل: مشكلة اتصال بالنت أو قواعد الأمان في Firestore.`);
   }
 }
 function renderJournalHistory(){
@@ -1003,10 +1005,106 @@ function renderJournalHistory(){
   if(local.length === 0){ wrap.textContent = 'لسه معملتش تسجيل'; return; }
   wrap.innerHTML = local.map(e => {
     if(e.type === 'mood'){
-      return `<div style="padding:6px 0; border-bottom:1px solid #F0EDE2;">${e.date} — مزاج من الرئيسية: ${e.moodEmoji} ${e.moodLabel}</div>`;
+      return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
+        <div style="font-weight:600; color:var(--text);">${e.date} — مزاج من الرئيسية: ${e.moodEmoji} ${e.moodLabel}</div>
+      </div>`;
     }
-    return `<div style="padding:6px 0; border-bottom:1px solid #F0EDE2;">${e.date} — قلق ${e.anxiety}/10، طاقة ${e.energy}/10</div>`;
+    return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
+      <div style="font-weight:600; color:var(--text);">${e.date} — قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} ساعات</div>
+      ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
+    </div>`;
   }).join('');
+}
+
+// ================= قراءة السجل الكامل من Firestore (كل الأجهزة) مقسّم بالتاريخ =================
+const ARABIC_MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+async function firestoreListAll(collection){
+  let results = [];
+  let pageToken = null;
+  try{
+    do {
+      let url = `${FIRESTORE_BASE}/${collection}?pageSize=300&key=${FIREBASE_API_KEY}`;
+      if(pageToken) url += `&pageToken=${pageToken}`;
+      const res = await fetch(url);
+      if(!res.ok) break;
+      const data = await res.json();
+      if(data.documents) results = results.concat(data.documents);
+      pageToken = data.nextPageToken;
+    } while(pageToken);
+  }catch(err){
+    console.error('فشل تحميل السجل من Firestore:', err);
+  }
+  return results;
+}
+
+function parseFirestoreDoc(doc){
+  const out = {};
+  for(const k in doc.fields){
+    const f = doc.fields[k];
+    if(f.stringValue !== undefined) out[k] = f.stringValue;
+    else if(f.integerValue !== undefined) out[k] = Number(f.integerValue);
+  }
+  return out;
+}
+
+async function loadFullHistory(){
+  const wrap = document.getElementById('fullHistoryWrap');
+  wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">جاري التحميل من Firebase...</p>`;
+
+  const uid = getUserId();
+  const [journalDocs, moodDocs] = await Promise.all([
+    firestoreListAll('journal'),
+    firestoreListAll('moods'),
+  ]);
+
+  let entries = [];
+  journalDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'journal'}));
+  moodDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'mood'}));
+
+  if(entries.length === 0){
+    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">مفيش سجل محفوظ على Firebase لحد دلوقتي (أو تعذّر الاتصال).</p>`;
+    return;
+  }
+
+  entries.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  // تقسيم إلى: سنة → شهر → يوم
+  const tree = {};
+  entries.forEach(e => {
+    const d = new Date(e.date);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const day = d.getDate();
+    tree[y] = tree[y] || {};
+    tree[y][m] = tree[y][m] || {};
+    tree[y][m][day] = tree[y][m][day] || [];
+    tree[y][m][day].push(e);
+  });
+
+  const years = Object.keys(tree).sort((a,b) => b - a);
+  wrap.innerHTML = years.map(y => `
+    <div class="card" style="margin-bottom:10px;">
+      <p class="card-title" style="margin-bottom:8px;">📅 سنة ${y}</p>
+      ${Object.keys(tree[y]).sort((a,b) => b - a).map(m => `
+        <div style="margin-bottom:8px; padding-right:8px; border-right:2px solid #EFDBAE;">
+          <p style="font-size:13px; font-weight:600; color:var(--navy-dark); margin:6px 0;">${ARABIC_MONTHS[m]}</p>
+          ${Object.keys(tree[y][m]).sort((a,b) => b - a).map(day => `
+            <div style="margin-bottom:6px; padding-right:8px;">
+              <p style="font-size:12px; font-weight:600; color:var(--muted); margin:0 0 4px;">يوم ${day}</p>
+              ${tree[y][m][day].map(e => {
+                if(e.type === 'mood'){
+                  const info = MOOD_INFO[e.mood];
+                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji + ' ' + info.label : 'مزاج: ' + e.mood}</div>`;
+                }
+                return `<div style="font-size:12px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
+              }).join('')}
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
 }
 
 // ---------- تشغيل أولي ----------
