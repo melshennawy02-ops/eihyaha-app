@@ -892,25 +892,30 @@ async function firestoreWrite(collection, fields){
   }
   try{
     const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if(!res.ok){
+      const errText = await res.text();
+      console.error('Firestore رفض الطلب:', res.status, errText);
+    }
     return res.ok;
   }catch(err){
-    console.warn('Firestore غير متاح حاليًا (يحتاج إعداد FIREBASE_PROJECT_ID الحقيقي):', err);
+    console.error('تعذّر الوصول لـ Firestore (مشكلة شبكة أو رابط):', err);
     return false;
   }
 }
 
-function saveMoodQuick(mood){
-  firestoreWrite('moods', { uid:getUserId(), mood:Number(mood), date:new Date().toISOString() });
+async function saveMoodQuick(mood){
+  const ok = await firestoreWrite('moods', { uid:getUserId(), mood:Number(mood), date:new Date().toISOString() });
+  showFirebaseStatus(ok, 'مزاجك');
 }
 
-function saveJournal(){
+async function saveJournal(){
   const anxiety = document.getElementById('rngAnxiety').value;
   const energy = document.getElementById('rngEnergy').value;
   const sleep = document.getElementById('rngSleep').value;
   const text = document.getElementById('journalText').value;
   if(checkSafety(text)){ showSafety(); return; }
 
-  firestoreWrite('journal', { uid:getUserId(), anxiety:Number(anxiety), energy:Number(energy), sleep:Number(sleep), note:text, date:new Date().toISOString() });
+  const ok = await firestoreWrite('journal', { uid:getUserId(), anxiety:Number(anxiety), energy:Number(energy), sleep:Number(sleep), note:text, date:new Date().toISOString() });
 
   // تخزين محلي مبسط لعرض السجل فورًا (بديل مؤقت لحد ما نقرأ من Firestore)
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
@@ -918,7 +923,15 @@ function saveJournal(){
   localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,10)));
   renderJournalHistory();
   document.getElementById('journalText').value = '';
-  alert('تم حفظ يومك');
+  showFirebaseStatus(ok, 'يومك');
+}
+
+function showFirebaseStatus(ok, label){
+  if(ok){
+    alert(`✅ اتحفظ ${label} فعليًا على Firebase (مش محلي بس). افتح Firebase Console → Firestore Database وشوف الداتا هناك.`);
+  } else {
+    alert(`⚠️ اتحفظ ${label} محليًا على الجهاز بس — الاتصال بـ Firebase فشل. اتأكد من: 1) قواعد الأمان في Firestore لسه "test mode"، 2) النت شغال، 3) الـAPI key والـprojectId صح في الكود.`);
+  }
 }
 function renderJournalHistory(){
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
