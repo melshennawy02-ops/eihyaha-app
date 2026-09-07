@@ -354,6 +354,16 @@
     <div style="padding:0 16px;" id="tawbaBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: WORSHIP INSIGHTS (الانتظام والربط بالمزاج) ===================== -->
+  <div class="screen" id="screen-worship-insights">
+    <div class="topbar">
+      <div class="backbtn" onclick="openWorshipScreen()">→</div>
+      <h1>مؤشرات روحانيتك</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="worshipInsightsBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: DUA (ذكر ودعاء اليوم) ===================== -->
   <div class="screen" id="screen-dua">
     <div class="topbar">
@@ -1725,10 +1735,18 @@ function showClosenessDetail(i){
 }
 
 // ---------- 2) متابعة عباداتك: تتبع يومي للصلاة والقرآن والأذكار ----------
+// حالات الصلاة: 0=لم تُصلَّ، 1=في وقتها منفردًا، 2=في وقتها جماعة، 3=قضاء
+const PRAYER_STATE_LABELS = ["", "✓ منفرد", "✓✓ جماعة", "قضاء"];
+const PRAYER_STATE_COLORS = ["transparent", "#C9A24B", "#2E6459", "#8A6A1E"];
+
 function getWorshipToday(){
   const key = formatDateKey(new Date());
   const all = JSON.parse(localStorage.getItem('eihyaha_worship') || '{}');
-  return all[key] || { fajr:false, dhuhr:false, asr:false, maghrib:false, isha:false, quran:false, azkarSubh:false, azkarMasaa:false };
+  return all[key] || {
+    fajr:0, dhuhr:0, asr:0, maghrib:0, isha:0,
+    quranPages:0, azkarSubh:false, azkarMasaa:false,
+    qiyam:false, siyam:false, sadaqa:false, silaRahim:false, dars:false,
+  };
 }
 function saveWorshipToday(data){
   const key = formatDateKey(new Date());
@@ -1749,43 +1767,171 @@ function renderWorshipScreen(){
     {id:'fajr', label:'الفجر'}, {id:'dhuhr', label:'الظهر'}, {id:'asr', label:'العصر'},
     {id:'maghrib', label:'المغرب'}, {id:'isha', label:'العشاء'},
   ];
+  const extras = [
+    {id:'qiyam', label:'قيام الليل / الوتر', icon:'🌙'},
+    {id:'siyam', label:'صيام نافلة اليوم', icon:'🌾'},
+    {id:'sadaqa', label:'صدقة (ولو رمزية)', icon:'💛'},
+    {id:'silaRahim', label:'صلة رحم (اتصال/زيارة)', icon:'👨‍👩‍👧'},
+    {id:'dars', label:'حضرت خطبة أو درس ديني', icon:'📚'},
+  ];
   body.innerHTML = `
     <div class="card">
-      <p class="card-title" style="margin-bottom:10px;">صلوات اليوم</p>
+      <p class="card-title" style="margin-bottom:4px;">صلوات اليوم</p>
+      <p style="font-size:10.5px; color:var(--muted); margin-bottom:10px;">دوس على الصلاة عشان تنقّل بين: منفرد ← جماعة ← قضاء ← إلغاء</p>
       ${prayers.map(p => `
         <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-          <div onclick="toggleWorship('${p.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:var(--navy-dark); ${w[p.id] ? 'background:var(--gold);' : ''}">${w[p.id] ? '✓' : ''}</div>
+          <div onclick="cyclePrayer('${p.id}')" style="min-width:76px; text-align:center; padding:5px 8px; border-radius:10px; border:1.5px solid var(--gold); cursor:pointer; font-size:11.5px; font-weight:700; color:${w[p.id] > 0 ? '#fff' : 'var(--text)'}; background:${PRAYER_STATE_COLORS[w[p.id]]};">${w[p.id] > 0 ? PRAYER_STATE_LABELS[w[p.id]] : 'لسه'}</div>
           <p style="font-size:13px; margin:0;">${p.label}</p>
         </div>
       `).join('')}
     </div>
+
     <div class="card">
-      <p class="card-title" style="margin-bottom:10px;">القرآن والأذكار</p>
-      <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-        <div onclick="toggleWorship('quran')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.quran ? 'background:var(--gold);' : ''}">${w.quran ? '✓' : ''}</div>
-        <p style="font-size:13px; margin:0;">قرأت من القرآن النهاردة</p>
+      <p class="card-title" style="margin-bottom:10px;">القرآن</p>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <p style="font-size:13px; margin:0; flex:1;">كام صفحة قرأت النهاردة؟</p>
+        <input type="number" min="0" id="quranPagesInput" value="${w.quranPages || 0}" style="width:70px; text-align:center;" onchange="setQuranPages(this.value)">
       </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">الأذكار</p>
       <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-        <div onclick="toggleWorship('azkarSubh')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarSubh ? 'background:var(--gold);' : ''}">${w.azkarSubh ? '✓' : ''}</div>
+        <div onclick="toggleWorshipBool('azkarSubh')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarSubh ? 'background:var(--gold);' : ''}">${w.azkarSubh ? '✓' : ''}</div>
         <p style="font-size:13px; margin:0;">أذكار الصباح</p>
       </div>
       <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-        <div onclick="toggleWorship('azkarMasaa')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarMasaa ? 'background:var(--gold);' : ''}">${w.azkarMasaa ? '✓' : ''}</div>
+        <div onclick="toggleWorshipBool('azkarMasaa')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarMasaa ? 'background:var(--gold);' : ''}">${w.azkarMasaa ? '✓' : ''}</div>
         <p style="font-size:13px; margin:0;">أذكار المساء</p>
       </div>
     </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">عبادات إضافية</p>
+      ${extras.map(e => `
+        <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+          <div onclick="toggleWorshipBool('${e.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w[e.id] ? 'background:var(--gold);' : ''}">${w[e.id] ? '✓' : ''}</div>
+          <p style="font-size:13px; margin:0;">${e.icon} ${e.label}</p>
+        </div>
+      `).join('')}
+    </div>
+
     <p id="worshipStatus" style="font-size:11.5px; color:var(--muted); text-align:center;"></p>
+    <button class="btn-ghost" onclick="openWorshipInsights()">📊 شوف مؤشر انتظامك ونمط مزاجك</button>
   `;
 }
 
-async function toggleWorship(field){
-  const w = getWorshipToday();
-  w[field] = !w[field];
+async function saveWorshipAndSync(w){
   saveWorshipToday(w);
-  const ok = await firestoreWrite('worship', { uid:getUserId(), date:new Date().toISOString(), ...Object.fromEntries(Object.entries(w).map(([k,v]) => [k, v ? 1 : 0])) });
-  renderWorshipScreen();
+  const numericFields = {};
+  for(const k in w){
+    numericFields[k] = typeof w[k] === 'boolean' ? (w[k] ? 1 : 0) : Number(w[k]) || 0;
+  }
+  const ok = await firestoreWrite('worship', { uid:getUserId(), date:new Date().toISOString(), ...numericFields });
   const status = document.getElementById('worshipStatus');
   if(status) status.textContent = ok ? '✓ محفوظ' : '⚠️ اتحفظ محليًا بس';
+}
+
+async function cyclePrayer(id){
+  const w = getWorshipToday();
+  w[id] = ((w[id] || 0) + 1) % 4; // 0->1->2->3->0
+  await saveWorshipAndSync(w);
+  renderWorshipScreen();
+}
+
+async function toggleWorshipBool(field){
+  const w = getWorshipToday();
+  w[field] = !w[field];
+  await saveWorshipAndSync(w);
+  renderWorshipScreen();
+}
+
+async function setQuranPages(value){
+  const w = getWorshipToday();
+  w.quranPages = Math.max(0, Number(value) || 0);
+  await saveWorshipAndSync(w);
+}
+
+// ================= مؤشر انتظام العبادة + الربط الذكي بالمزاج =================
+function prayerScoreForDay(doc){
+  // نعتبر أي حالة (منفرد/جماعة/قضاء) = صلاة مؤدّاة، والقضاء بوزن أقل شوية
+  const fields = ['fajr','dhuhr','asr','maghrib','isha'];
+  let score = 0;
+  fields.forEach(f => { const v = Number(doc[f]) || 0; if(v === 1 || v === 2) score += 1; else if(v === 3) score += 0.5; });
+  return score; // من 0 إلى 5
+}
+
+async function openWorshipInsights(){
+  const body = document.getElementById('worshipInsightsBody');
+  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">جاري تحليل بياناتك...</p>`;
+  showScreen('screen-worship-insights');
+
+  const uid = getUserId();
+  const [worshipDocs, journalDocs, moodDocs] = await Promise.all([
+    firestoreListAll('worship'),
+    firestoreListAll('journal'),
+    firestoreListAll('moods'),
+  ]);
+
+  const worship = worshipDocs.map(parseFirestoreDoc).filter(d => d.uid === uid && d.date);
+  const moodEntries = [];
+  journalDocs.map(parseFirestoreDoc).filter(d => d.uid === uid && d.date && d.mood !== undefined).forEach(d => moodEntries.push(d));
+  moodDocs.map(parseFirestoreDoc).filter(d => d.uid === uid && d.date).forEach(d => moodEntries.push(d));
+
+  if(worship.length === 0){
+    body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">لسه معندناش بيانات كفاية — سجّل عباداتك كذا يوم وارجع تاني تشوف مؤشرك هنا.</p>`;
+    return;
+  }
+
+  // ---------- 1) مؤشر الانتظام (آخر 30 يوم) ----------
+  const now = new Date();
+  const last30 = worship.filter(w => (now - new Date(w.date)) / 86400000 <= 30);
+  const avgScore = last30.reduce((s,w) => s + prayerScoreForDay(w), 0) / (last30.length || 1);
+  const consistencyPct = Math.round((avgScore / 5) * 100);
+
+  // ---------- 2) الربط الذكي بالمزاج ----------
+  const worshipByDay = {};
+  worship.forEach(w => { worshipByDay[formatDateKey(new Date(w.date))] = prayerScoreForDay(w); });
+  const moodByDay = {};
+  moodEntries.forEach(m => { moodByDay[formatDateKey(new Date(m.date))] = Number(m.mood); });
+
+  const highDays = [], lowDays = [];
+  for(const day in worshipByDay){
+    if(moodByDay[day] === undefined) continue;
+    if(worshipByDay[day] >= 4) highDays.push(moodByDay[day]);
+    else lowDays.push(moodByDay[day]);
+  }
+
+  let correlationHtml = '';
+  const MIN_DAYS = 5;
+  if(highDays.length >= MIN_DAYS && lowDays.length >= MIN_DAYS){
+    const avgHigh = (highDays.reduce((a,b)=>a+b,0) / highDays.length).toFixed(1);
+    const avgLow = (lowDays.reduce((a,b)=>a+b,0) / lowDays.length).toFixed(1);
+    correlationHtml = `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:10px;">📊 لاحظنا نمط في بياناتك</p>
+        <p class="layer-text">الأيام اللي صليت فيها ٤ صلوات أو أكتر، متوسط مزاجك كان <b style="color:var(--navy-dark);">${avgHigh} من ٥</b></p>
+        <p class="layer-text" style="margin-top:6px;">الأيام اللي صليت فيها ٣ صلوات أو أقل، متوسط مزاجك كان <b style="color:var(--navy-dark);">${avgLow} من ٥</b></p>
+        <p style="font-size:11px; color:var(--muted); margin-top:10px;">ده نمط لاحظناه في بياناتك إنت تحديدًا، مش قاعدة عامة — يستاهل تلاحظه بنفسك وتفكّر فيه.</p>
+      </div>`;
+  } else {
+    correlationHtml = `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:8px;">📊 الربط بالمزاج</p>
+        <p style="font-size:12px; color:var(--muted); line-height:1.7;">لسه محتاجين بيانات أكتر من الفئتين (أيام التزام عالي وأيام التزام منخفض) عشان نطلعلك نمط موثوق — كمّل تسجّل مزاجك وعباداتك يوميًا وهنعرضلك هنا.</p>
+      </div>`;
+  }
+
+  body.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <p style="font-size:11px; color:var(--muted); margin:0 0 6px;">مؤشر انتظامك الروحاني (آخر ٣٠ يوم)</p>
+      <p style="font-size:32px; font-weight:700; color:var(--navy-dark); margin:0;">${consistencyPct}٪</p>
+      <div style="height:6px; background:var(--sand); border-radius:3px; margin-top:10px;">
+        <div style="width:${consistencyPct}%; height:100%; background:var(--gold); border-radius:3px;"></div>
+      </div>
+    </div>
+    ${correlationHtml}
+  `;
 }
 
 // ---------- 3) قصص الأنبياء والتسليم — نفس بنك مرآة العقل بزاوية عبادية ----------
