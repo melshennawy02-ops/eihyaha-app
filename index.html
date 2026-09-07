@@ -1329,10 +1329,11 @@ function renderSpiritualDashboard(){
   let html = `<div class="card" style="background:var(--sand); margin-bottom:14px;">`;
   if(consistency !== null){
     html += `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <p style="font-size:12px; color:var(--muted); margin:0;">انتظام عباداتك آخر ٧ أيام</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+        <p style="font-size:12px; color:var(--muted); margin:0;">انتظامك آخر ٧ أيام (على الجهاز ده)</p>
         <p style="font-size:16px; font-weight:700; color:var(--navy-dark); margin:0;">${consistency}٪</p>
-      </div>`;
+      </div>
+      <p style="font-size:10.5px; color:var(--gold); margin:0 0 8px; cursor:pointer;" onclick="openWorshipInsights()">شوف مؤشرك الكامل (٣٠ يوم من كل بياناتك) ←</p>`;
   }
   if(tawbaLog.length > 0){
     const daysSince = Math.floor((Date.now() - new Date(tawbaLog[0].date)) / 86400000);
@@ -1582,6 +1583,13 @@ function answerWhoIsAllah(qIndex, oIndex){
   renderWhoIsAllahQuestion(qIndex + 1);
 }
 
+const WHO_IS_ALLAH_INTRO_MSGS = {
+  clear: "واضح إن عندك أساس حقيقي في معرفتك بربنا، وده حاجة نبني عليها. خلينا نعمّق الصورة دي أكتر بدل ما نبدأ من الصفر.",
+  vague: "إحساسك بربنا موجود بس لسه محتاج يتوضّح أكتر — ده طبيعي جدًا ومحدش بيولد بمعرفة كاملة، المعرفة بتتبني بالوقت. خلينا نبني الصورة مع بعض خطوة خطوة.",
+  lost: "لو حاسس إنك تايه في السؤال ده، إنت مش لوحدك خالص — ده سؤال كتير من الناس بتتجنبه لأنه محرج يعترفوا إنهم مش متأكدين منه. الشجاعة إنك تسأل دلوقتي هي أول خطوة حقيقية.",
+  fear: "حاسس إن علاقتك بربنا فيها خوف أو ذنب أكتر من طمأنينة — ده مؤشر مهم إن الصورة اللي في دماغك عن ربنا محتاجة تتصحح، مش تتحذف. خلينا نشوف مع بعض.",
+};
+
 function revealWhoIsAllah(){
   const counts = { clear:0, vague:0, lost:0, fear:0 };
   whoIsAllahAnswers.forEach(t => counts[t] = (counts[t]||0) + 1);
@@ -1589,19 +1597,20 @@ function revealWhoIsAllah(){
   let max = -1;
   for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
   localStorage.setItem('eihyaha_who_is_allah_state', dominant);
-
-  const introMsgs = {
-    clear: "واضح إن عندك أساس حقيقي في معرفتك بربنا، وده حاجة نبني عليها. خلينا نعمّق الصورة دي أكتر بدل ما نبدأ من الصفر.",
-    vague: "إحساسك بربنا موجود بس لسه محتاج يتوضّح أكتر — ده طبيعي جدًا ومحدش بيولد بمعرفة كاملة، المعرفة بتتبني بالوقت. خلينا نبني الصورة مع بعض خطوة خطوة.",
-    lost: "لو حاسس إنك تايه في السؤال ده، إنت مش لوحدك خالص — ده سؤال كتير من الناس بتتجنبه لأنه محرج يعترفوا إنهم مش متأكدين منه. الشجاعة إنك تسأل دلوقتي هي أول خطوة حقيقية.",
-    fear: "حاسس إن علاقتك بربنا فيها خوف أو ذنب أكتر من طمأنينة — ده مؤشر مهم إن الصورة اللي في دماغك عن ربنا محتاجة تتصحح، مش تتحذف. خلينا نشوف مع بعض.",
-  };
-
   document.getElementById('whoIsAllahQuiz').innerHTML = '';
+  renderWhoIsAllahContent(dominant);
+}
+
+function renderWhoIsAllahContent(dominant){
   const content = document.getElementById('whoIsAllahContent');
   content.style.display = 'block';
   content.innerHTML = `
-    <p style="font-size:13px; color:var(--text); line-height:1.8; margin-bottom:18px; background:var(--sand); padding:12px 14px; border-radius:12px;">${introMsgs[dominant]}</p>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px;">
+      <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0; background:var(--sand); padding:12px 14px; border-radius:12px; flex:1;">${WHO_IS_ALLAH_INTRO_MSGS[dominant]}</p>
+    </div>
+    <div style="text-align:left; margin-bottom:14px;">
+      <span style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;" onclick="renderWhoIsAllahQuiz()">🔄 أعد تقييم علاقتك</span>
+    </div>
 
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
       <span style="font-size:14px;">✨</span>
@@ -1704,7 +1713,13 @@ function openRabbekScreen(){
       `).join('')}
     </div>
   `;
-  renderWhoIsAllahQuiz();
+  const savedState = localStorage.getItem('eihyaha_who_is_allah_state');
+  if(savedState){
+    document.getElementById('whoIsAllahQuiz').innerHTML = '';
+    renderWhoIsAllahContent(savedState);
+  } else {
+    renderWhoIsAllahQuiz();
+  }
   showScreen('screen-rabbek');
 }
 
@@ -2016,25 +2031,36 @@ function openProphetsScreen(){
   renderProphetsList();
   showScreen('screen-prophets');
 }
+function getReadProphets(){ return JSON.parse(localStorage.getItem('eihyaha_prophets_read') || '[]'); }
+function markProphetRead(id){
+  const read = getReadProphets();
+  if(!read.includes(id)){ read.push(id); localStorage.setItem('eihyaha_prophets_read', JSON.stringify(read)); }
+}
+
 function renderProphetsList(){
   const wrap = document.getElementById('prophetsListWrap');
   const input = document.getElementById('prophetsSearchInput');
   const q = input ? input.value.trim() : '';
   const filtered = q ? MERAT_PATTERNS.filter(p => p.prophetTitle.includes(q) || p.title.includes(q)) : MERAT_PATTERNS;
+  const readList = getReadProphets();
   if(filtered.length === 0){
     wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
     return;
   }
-  wrap.innerHTML = filtered.map(p => `
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">قريت ${readList.length} من ${MERAT_PATTERNS.length} قصة</p>
+    ${filtered.map(p => `
     <div class="tool-row" onclick="showProphetDetail('${p.id}')">
       <div class="icon-circle" style="font-size:15px;">📖</div>
       <div><div class="card-title" style="font-size:13px;">${p.prophetTitle}</div></div>
+      ${readList.includes(p.id) ? '<span style="font-size:11px; color:var(--gold); margin-left:6px;">✓ قريتها</span>' : ''}
       <div class="arrow">‹</div>
     </div>
-  `).join('');
+  `).join('')}`;
 }
 function showProphetDetail(id){
   const p = MERAT_PATTERNS.find(x => x.id === id);
+  markProphetRead(id);
   const body = document.getElementById('prophetsBody');
   body.innerHTML = `
     <div class="layer-card l2">
@@ -2077,7 +2103,8 @@ function openTawbaScreen(){
       <p class="layer-text" style="margin-top:8px;">${adam.prophet}</p>
     </div>
     <div class="card" style="background:var(--navy-dark);">
-      <p style="color:var(--gold); font-size:13px; font-weight:700; margin:0 0 8px;">اعترافك بينك وبين ربك</p>
+      <p style="color:var(--gold); font-size:13px; font-weight:700; margin:0 0 4px;">اعترافك بينك وبين ربك</p>
+      <p style="color:#9FB3AE; font-size:10.5px; margin:0 0 8px;">🔒 اللي بتكتبه هنا خاص بينك وبين ربك ومحفوظ في حسابك بس — محدش تاني بيشوفه.</p>
       <textarea id="tawbaInput" placeholder="اكتب اللي حاسس إنك عايز تعترف بيه وترجع فيه لله..." style="min-height:70px; background:rgba(255,255,255,.05); color:#fff; border-color:var(--gold);"></textarea>
       <button class="btn-primary" style="margin-top:8px;" onclick="saveTawba()">سجّل واستغفر</button>
       <p id="tawbaStatus" style="font-size:11px; color:#9FB3AE; margin-top:8px; text-align:center;"></p>
