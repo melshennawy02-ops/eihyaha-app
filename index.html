@@ -226,6 +226,11 @@
         <div id="homeDailyProphet"></div>
         <p style="font-size:10.5px; color:#F0EAD6; margin:8px 0 0; font-weight:700;">شوف كل قصص الأنبياء ‹</p>
       </div>
+
+      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:20px; cursor:pointer;" onclick="openAsmaOfDayDetail()">
+        <div id="homeDailyAsma"></div>
+        <p style="font-size:10.5px; color:#8A6A1E; margin:8px 0 0; font-weight:700;">شوف كل أسماء الله الحسنى ‹</p>
+      </div>
     </div>
   </div>
 
@@ -337,6 +342,16 @@
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;" id="worshipBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: ASMA ALLAH (أسماء الله الحسنى) ===================== -->
+  <div class="screen" id="screen-asma">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>أسماء الله الحسنى</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="asmaBody"></div>
   </div>
 
   <!-- ===================== SCREEN: PROPHETS (قصص الأنبياء والتسليم) ===================== -->
@@ -1290,6 +1305,7 @@ function goHome(){
   renderStickyNotes('homeStickyNotesList', 3);
   renderHomeDailyFlash();
   renderHomeDailyProphet();
+  renderHomeDailyAsma();
 }
 
 // ---------- لوحة ملخص سريعة للركن الروحاني (محلية وفورية، من غير انتظار Firestore) ----------
@@ -1380,6 +1396,11 @@ function goToPillar(id){
       <div class="tool-row" onclick="openTawbaScreen()">
         <div class="icon-circle">🕊️</div>
         <div><div class="card-title">التوبة والعودة</div><div class="card-sub">لحظة رجوعك لله بعد أي غلطة</div></div>
+        <div class="arrow">‹</div>
+      </div>
+      <div class="tool-row" onclick="openAsmaScreen()">
+        <div class="icon-circle">📿</div>
+        <div><div class="card-title">أسماء الله الحسنى</div><div class="card-sub">معنى، أثر نفسي، وتطبيق عملي لكل اسم</div></div>
         <div class="arrow">‹</div>
       </div>
     `;
@@ -1500,6 +1521,26 @@ const EHKILY_TREE = {
 
 // ---------- 1) علاقتك بربك: الخوف والرجاء والحب لله مقابل لغير الله ----------
 // بنك أنواع التوحيد الثلاثة — تعريف + أثر نفسي + آية + سؤال تأملي يساعد المستخدم يحدد وضعه
+// بنك أسماء الله الحسنى — معنى + أثر نفسي + تطبيق عملي يومي لكل اسم (دفعة أولى، ١٦ اسم)
+const ASMA_ALLAH_BANK = [
+  { name:"الرحمن", meaning:"صاحب الرحمة الواسعة اللي شملت كل الخلق، مؤمنهم وكافرهم، في الدنيا.", psych:"لو استحضرت الاسم ده، هتفهم إن رحمة الله وصلتك حتى في أضعف لحظاتك، مش بس وقت ما تكون 'مستاهل'.", practice:"النهاردة، لاحظ ٣ نعم وصلتك من غير ما تطلبها (هوا تتنفسه، عافية، وقت) وقول 'يا رحمن' عليهم." },
+  { name:"الرحيم", meaning:"رحمته الخاصة بالمؤمنين يوم القيامة والمتوجهين ليه في الدنيا.", psych:"الفرق بين الرحمن والرحيم بيخليك تفهم إن رحمة الله مش عشوائية، هي متجددة كل ما ترجع ليه.", practice:"لو حاسس إنك بعيد، قول 'يا رحيم ارحمني' بصدق قبل ما تنام النهاردة." },
+  { name:"الغفور", meaning:"الساتر للذنوب، الماحي أثرها لمن تاب.", psych:"معرفة الاسم ده بتكسر حلقة 'أنا مش هتغفر ليّا' اللي بتمنع ناس كتير من الرجوع.", practice:"استغفر ١٠ مرات دلوقتي وأنت متذكر إن ربنا اسمه الغفور مش 'المتربص'." },
+  { name:"التواب", meaning:"اللي بيرجع على عبده بالقبول والمغفرة كل ما رجع هو ليه، مهما تكررت التوبة.", psych:"بيحل مشكلة الخوف من 'تكرار الرجوع' — التوبة مش فرصة واحدة، هي باب مفتوح.", practice:"لو رجعت في نفس الغلطة، فكّر في الاسم ده قبل ما تحكم على نفسك بالفشل." },
+  { name:"الودود", meaning:"المحب لعباده الصالحين، اللي بيحببهم لبعض وبيحبهم هو سبحانه.", psych:"بيصحح صورة 'الله البعيد اللي بس بيراقب' — ربنا بيحب عباده فعليًا مش مجرد يتسامح معاهم.", practice:"قول 'يا ودود' في دعائك، واطلب منه يرزقك محبته ومحبة من يحبه." },
+  { name:"اللطيف", meaning:"العليم بدقائق الأمور، اللي بيوصّل لطفه لعبده من حيث لا يحتسب.", psych:"بيدّيك سكينة إن ربنا شايف تفاصيلك الصغيرة اللي محدش واخد باله منها.", practice:"دوّر على 'لطف' حصلك النهاردة كنت هتفوته لو مكنتش منتبه، واشكر ربنا عليه." },
+  { name:"الحكيم", meaning:"اللي كل أفعاله وأقداره في محلها الصح، حتى لو مش فاهم الحكمة وقتها.", psych:"بيقلل السؤال المؤلم 'ليه أنا' ويحوّله لـ'أنا واثق إن فيه حكمة حتى لو مش شايفها دلوقتي'.", practice:"افتكر موقف صعب فات عليك وطلعت وراه حكمة ما كنتش متوقعها، وثبّت الثقة دي لموقف بتواجهه دلوقتي." },
+  { name:"العليم", meaning:"العالم بكل شيء، ظاهره وباطنه، من غير ما يحتاج يسأل أو يتعلم.", psych:"بيريحك من عبء 'إزاي أشرح لربنا اللي جوايا' — هو عارف قبل ما تتكلم.", practice:"بدل ما تفضل تلف في شرح موقفك لنفسك بس، قول لربنا 'يا عليم انت عارف اللي جوايا' وسيبها له." },
+  { name:"القدير", meaning:"القادر على كل شيء، ما فيش حاجة تعجزه.", psych:"بيشيل عنك إحساس 'الموقف ده مستحيل يتحل' — لو ربنا قادر، فمفيش باب مقفول قدامه.", practice:"اكتب حاجة حاسس إنها 'مستحيلة' في حياتك دلوقتي، وقول 'يا قدير' وانت بتدعو بيها." },
+  { name:"الوكيل", meaning:"الكافي لمن توكل عليه، المتولي لأمور عباده.", psych:"بيفرّق بين 'التواكل' (سيب الأسباب) و'التوكل' (اعمل اللي عليك وسلّم الباقي).", practice:"بعد ما تاخد قرار مدروس النهاردة، قول 'حسبي الله ونعم الوكيل' وسيب القلق." },
+  { name:"الصبور", meaning:"اللي ما بيعجّلش بالعقوبة على عباده رغم معصيتهم، بيمهلهم فرصة ورا فرصة.", psych:"لو ربنا صبور عليك بكل تقصيرك، تقدر تكون صبور على نفسك شوية وانت بتتغير.", practice:"لما تتضايق من بطء تغيّرك، افتكر إن ربنا نفسه صبور عليك، وطوّل بالك على نفسك زيه." },
+  { name:"الشكور", meaning:"اللي بيجازي على القليل من الطاعة بالكثير من الأجر، وبيقدّر أي مجهود ولو صغير.", psych:"بيشيل إحساس 'مجهودي مش كفاية' — ربنا بيقدّر التفاصيل الصغيرة اللي إنت نفسك بتقلل من قيمتها.", practice:"اعمل عبادة صغيرة حسيت إنها 'مش كبيرة كفاية' (ركعتين، صدقة بسيطة) وثق إن ربنا الشكور شايفها." },
+  { name:"السلام", meaning:"السالم من كل نقص، والمانح للسلامة والطمأنينة لعباده.", psych:"مصدر السلام النفسي الحقيقي مش في ظروف حياتك، هو في اسم من أسماء ربنا.", practice:"لما تحس بقلق، قول 'يا سلام سلّمني' بدل ما تدور على السلام في حاجة برّه." },
+  { name:"الولي", meaning:"الناصر والمتولي أمور من آمن به، القريب منه بالحفظ والرعاية.", psych:"بيقلل إحساس 'أنا لوحدي في المعركة دي' — عندك وليّ حقيقي مش مجازي.", practice:"في موقف حاسس فيه إنك لوحدك، قول 'يا ولي توليني' واطلب نصرته." },
+  { name:"القريب", meaning:"القريب من عباده بعلمه وإجابته لدعائهم، من غير حاجة لوسيط.", psych:"بيكسر إحساس 'ربنا بعيد ومش سامعني' — القرب ده حقيقي مش مجازي، بلا حاجز.", practice:"ادعِ دلوقتي بصوت هادي وانت متيقن إنه قريب مش بعيد، مهما حسّيت العكس." },
+  { name:"الحق", meaning:"الثابت الذي لا يتغير، الموجود حقًا، الذي كل ما سواه باطل أو زائل.", psych:"وسط دنيا بتتغيّر وناس بتخيب ظنك، ربنا هو الثابت الوحيد اللي مايتزعزعش.", practice:"لما تتعلق بحاجة دنيوية وتخاف تفقدها، افتكر إن الحق سبحانه هو الباقي، والباقي زائل." },
+];
+
 const TAWHEED_BANK = [
   {
     icon:"🌍", title:"توحيد الربوبية",
@@ -1548,6 +1589,14 @@ const WHO_IS_ALLAH_QUESTIONS = [
       { label:"آه، من زمان وده أثّر فيّا لحد دلوقتي", tag:"clear" },
       { label:"سمعت كلام كتير بس ما لخبطنيش أو ما وصلنيش", tag:"vague" },
       { label:"لأ، حاسس إني بكتشف الموضوع ده لوحدي دلوقتي", tag:"lost" },
+    ],
+  },
+  {
+    q: "لو حد قالك اسم من أسماء الله زي 'اللطيف' أو 'الودود'، تقدر تشرحه ولا لأ؟",
+    options: [
+      { label:"آه، أعرف معناه وأثره عليّ", tag:"clear" },
+      { label:"سمعت الاسم بس مش فاهم معناه بالظبط", tag:"vague" },
+      { label:"لأ، أسماء الله الحسنى موضوع لسه غريب عليّا", tag:"lost" },
     ],
   },
 ];
@@ -1608,6 +1657,7 @@ function renderWhoIsAllahContent(dominant){
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px;">
       <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0; background:var(--sand); padding:12px 14px; border-radius:12px; flex:1;">${WHO_IS_ALLAH_INTRO_MSGS[dominant]}</p>
     </div>
+    ${(dominant === 'lost' || dominant === 'vague') ? `<div class="choice-btn" style="text-align:center; margin-bottom:14px;" onclick="openAsmaScreen()">ابدأ من أسماء الله الحسنى — أساس المعرفة 📿</div>` : ''}
     <div style="text-align:left; margin-bottom:14px;">
       <span style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;" onclick="renderWhoIsAllahQuiz()">🔄 أعد تقييم علاقتك</span>
     </div>
@@ -1658,7 +1708,75 @@ function showTawheedDetail(i){
       <p class="layer-title" style="color:var(--gold);">🔍 سؤال لنفسك</p>
       <p class="layer-text" style="color:#fff; margin-top:6px;">${t.question}</p>
     </div>
+    ${i === 2 ? `<div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="openAsmaScreen()">اعرف أسماء الله الحسنى بالتفصيل 📿</div>` : ''}
   `;
+}
+
+// ================= أسماء الله الحسنى — معنى + أثر نفسي + تطبيق عملي =================
+function getReadAsma(){ return JSON.parse(localStorage.getItem('eihyaha_asma_read') || '[]'); }
+function markAsmaRead(name){
+  const read = getReadAsma();
+  if(!read.includes(name)){ read.push(name); localStorage.setItem('eihyaha_asma_read', JSON.stringify(read)); }
+}
+
+function openAsmaScreen(){
+  const body = document.getElementById('asmaBody');
+  const readList = getReadAsma();
+  body.innerHTML = `
+    <p style="font-size:11px; color:var(--muted); margin-bottom:12px;">تعرّف على ${readList.length} من ${ASMA_ALLAH_BANK.length} اسم — دفعة أولى، هنزود أكتر تباعًا</p>
+    ${ASMA_ALLAH_BANK.map((a,i) => `
+      <div class="tool-row" onclick="showAsmaDetail(${i})">
+        <div class="icon-circle" style="font-size:15px;">📿</div>
+        <div><div class="card-title" style="font-size:13px;">${a.name}</div></div>
+        ${readList.includes(a.name) ? '<span style="font-size:11px; color:var(--gold); margin-left:6px;">✓</span>' : ''}
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-asma');
+}
+
+function showAsmaDetail(i){
+  const a = ASMA_ALLAH_BANK[i];
+  markAsmaRead(a.name);
+  const body = document.getElementById('asmaBody');
+  body.innerHTML = `
+    <div class="layer-card l3" style="text-align:center; padding:20px 16px;">
+      <p style="font-size:20px; font-weight:700; color:var(--navy-dark); margin:0;">${a.name}</p>
+    </div>
+    <div class="layer-card l1">
+      <p class="layer-title" style="color:var(--navy-dark);">📖 المعنى</p>
+      <p class="layer-text" style="margin-top:6px;">${a.meaning}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">🧠 الأثر النفسي</p>
+      <p class="layer-text" style="margin-top:6px;">${a.psych}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ تطبيق عملي النهاردة</p>
+      <p class="layer-text" style="color:#fff; margin-top:6px;">${a.practice}</p>
+    </div>
+    <button class="btn-ghost" onclick="openAsmaScreen()">رجوع للقائمة</button>
+  `;
+}
+
+function getAsmaOfDay(){
+  const dayIndex = Math.floor(Date.now() / 86400000) % ASMA_ALLAH_BANK.length;
+  return ASMA_ALLAH_BANK[dayIndex];
+}
+function renderHomeDailyAsma(){
+  const wrap = document.getElementById('homeDailyAsma');
+  if(!wrap) return;
+  const a = getAsmaOfDay();
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:#8A6A1E; font-weight:700; margin:0 0 6px;">📿 اسم الله اليوم — ${a.name}</p>
+    <p style="font-size:12.5px; color:var(--text); line-height:1.7; margin:0;">${a.practice}</p>
+  `;
+}
+function openAsmaOfDayDetail(){
+  const idx = ASMA_ALLAH_BANK.findIndex(a => a.name === getAsmaOfDay().name);
+  showAsmaDetail(idx);
+  showScreen('screen-asma');
 }
 
 function openRabbekScreen(){
@@ -3436,6 +3554,7 @@ renderStickyNotes('homeStickyNotesList', 3);
 renderHomeTasksPreview();
 renderHomeDailyFlash();
 renderHomeDailyProphet();
+renderHomeDailyAsma();
 
 // بوابة تسجيل دخول إجبارية — بتظهر في كل مرة يتفتح فيها التطبيق، بصرف النظر
 // عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
