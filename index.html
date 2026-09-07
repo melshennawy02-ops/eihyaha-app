@@ -299,6 +299,56 @@
     <div style="padding:0 16px;" id="reportBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: RABBEK (علاقتك بربك) ===================== -->
+  <div class="screen" id="screen-rabbek">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>علاقتك بربك</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="rabbekBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: WORSHIP (متابعة عباداتك) ===================== -->
+  <div class="screen" id="screen-worship">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>متابعة عباداتك</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="worshipBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: PROPHETS (قصص الأنبياء والتسليم) ===================== -->
+  <div class="screen" id="screen-prophets">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>قصص الأنبياء والتسليم</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="prophetsBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: TAWBA (التوبة والعودة) ===================== -->
+  <div class="screen" id="screen-tawba">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>التوبة والعودة</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="tawbaBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: DUA (ذكر ودعاء اليوم) ===================== -->
+  <div class="screen" id="screen-dua">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>ذكر ودعاء اليوم</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="duaBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: FLASH (ومضة نفسية) ===================== -->
   <div class="screen" id="screen-flash">
     <div class="topbar">
@@ -1057,7 +1107,7 @@ function hideSafety(){ document.getElementById('safetyOverlay').classList.remove
 
 // ---------- تعريف الأركان السبعة ----------
 const PILLARS = [
-  {id:1, title:"الركن الروحاني", icon:"🕌", ready:false, tag:"قربك من الله .. راحة لقلبك", grad:"linear-gradient(135deg, #7A5A1C, #C9A24B)", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:1, title:"الركن الروحاني", icon:"🕌", ready:true, tag:"قربك من الله .. راحة لقلبك", grad:"linear-gradient(135deg, #7A5A1C, #C9A24B)", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, tag:"اكتشف نفسك .. وكن أفضل نسخة منها", grad:"linear-gradient(135deg, #0B3D3A, #145048)", img:"https://images.unsplash.com/photo-1617791160536-598cf32026fb?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:3, title:"الركن العائلي", icon:"👪", ready:false, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
@@ -1205,6 +1255,35 @@ function goToPillar(id){
         <h2>${p.title}</h2>
         <p>${p.tag}<br>الأدوات الخاصة بهذا الركن قيد الإعداد حاليًا، وستُضاف في مرحلة تالية.</p>
       </div>`;
+  } else if(id === 1){
+    // الركن الروحاني — الأدوات المتاحة
+    body.innerHTML = `
+      <div class="tool-row" onclick="openRabbekScreen()">
+        <div class="icon-circle">🤲</div>
+        <div><div class="card-title">علاقتك بربك</div><div class="card-sub">الخوف والرجاء والحب .. لمين موجّهين؟</div></div>
+        <div class="arrow">‹</div>
+      </div>
+      <div class="tool-row" onclick="openWorshipScreen()">
+        <div class="icon-circle">📿</div>
+        <div><div class="card-title">متابعة عباداتك</div><div class="card-sub">الصلاة، القرآن، والأذكار يوميًا</div></div>
+        <div class="arrow">‹</div>
+      </div>
+      <div class="tool-row" onclick="openProphetsScreen()">
+        <div class="icon-circle">📖</div>
+        <div><div class="card-title">قصص الأنبياء والتسليم</div><div class="card-sub">٢٢ نبيًا .. إزاي طبّقوا التسليم لله</div></div>
+        <div class="arrow">‹</div>
+      </div>
+      <div class="tool-row" onclick="openTawbaScreen()">
+        <div class="icon-circle">🕊️</div>
+        <div><div class="card-title">التوبة والعودة</div><div class="card-sub">لحظة رجوعك لله بعد أي غلطة</div></div>
+        <div class="arrow">‹</div>
+      </div>
+      <div class="tool-row" onclick="openDuaScreen()">
+        <div class="icon-circle">✨</div>
+        <div><div class="card-title">ذكر ودعاء اليوم</div><div class="card-sub">آية ودعاء بيتغيّروا كل يوم</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `;
   } else {
     // الركن الشخصي — الأدوات المتاحة
     body.innerHTML = `
@@ -1318,6 +1397,193 @@ const EHKILY_TREE = {
 };
 
 // ================= ومضة نفسية — بنك الـ١٠٠ بند =================
+// ================= الركن الروحاني — الأدوات الخمس =================
+
+// ---------- 1) علاقتك بربك: الخوف والرجاء والحب لله مقابل لغير الله ----------
+function openRabbekScreen(){
+  const body = document.getElementById('rabbekBody');
+  body.innerHTML = `
+    <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px; line-height:1.7;">قلبك دايمًا بيخاف من حاجة، بيرجو حاجة، وبيحب حاجة — والسؤال مش "هل تخاف/ترجو/تحب؟" لكن "لمين موجّه ده؟"</p>
+
+    <div class="layer-card l1">
+      <p class="layer-title" style="color:var(--navy-dark);">😰 الخوف</p>
+      <p class="layer-text" style="margin-top:6px;"><b>لغير الله:</b> خوف من الناس، من المستقبل، من المجهول — بيولّد قلق مستمر وترقب دائم ووسواس في الاحتمالات، لأن القلب بيدور على أمان في حاجة مالهاش أمان مطلق أصلًا.</p>
+      <p class="layer-text" style="margin-top:6px;"><b>لله:</b> خشية وتعظيم (مش رعب) — بيولّد مراقبة النفس، انضباط، وطمأنينة، لأنه بيرافقه دايمًا الرجاء: مهما كانت الظروف صعبة، رحمة الله أكبر.</p>
+    </div>
+
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">🌤️ الرجاء</p>
+      <p class="layer-text" style="margin-top:6px;"><b>في غير الله:</b> تعلّق الأمل بشخص أو موقف بعينه — بيولّد إحباط شديد وانكسار كل ما الأمور ما تسيرش زي المتوقع.</p>
+      <p class="layer-text" style="margin-top:6px;"><b>في الله:</b> مهما كانت الظروف، الطريق ما انتهاش — أمل وتفاؤل وطمأنينة، لأن المستقبل مش متروك للصدفة.</p>
+    </div>
+
+    <div class="layer-card l3">
+      <p class="layer-title" style="color:#2E6459;">❤️ الحب</p>
+      <p class="layer-text" style="margin-top:6px;"><b>لغير الله (تعلّق مرضي):</b> لما شخص واحد يبقى مصدر قيمتك وأمانك كله — بتفقد نفسك، ونومك، وقراراتك في غيابه أو غضبه.</p>
+      <p class="layer-text" style="margin-top:6px;"><b>لله:</b> أحب الناس والأشياء، لكن خلّي حبك الأكبر لله — كده محدش وقراره بيبقى قادر يهزّك من جذورك.</p>
+    </div>
+
+    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">من كتاب «بوصلة التسليم»</p>
+  `;
+  showScreen('screen-rabbek');
+}
+
+// ---------- 2) متابعة عباداتك: تتبع يومي للصلاة والقرآن والأذكار ----------
+function getWorshipToday(){
+  const key = formatDateKey(new Date());
+  const all = JSON.parse(localStorage.getItem('eihyaha_worship') || '{}');
+  return all[key] || { fajr:false, dhuhr:false, asr:false, maghrib:false, isha:false, quran:false, azkarSubh:false, azkarMasaa:false };
+}
+function saveWorshipToday(data){
+  const key = formatDateKey(new Date());
+  const all = JSON.parse(localStorage.getItem('eihyaha_worship') || '{}');
+  all[key] = data;
+  localStorage.setItem('eihyaha_worship', JSON.stringify(all));
+}
+
+function openWorshipScreen(){
+  renderWorshipScreen();
+  showScreen('screen-worship');
+}
+
+function renderWorshipScreen(){
+  const w = getWorshipToday();
+  const body = document.getElementById('worshipBody');
+  const prayers = [
+    {id:'fajr', label:'الفجر'}, {id:'dhuhr', label:'الظهر'}, {id:'asr', label:'العصر'},
+    {id:'maghrib', label:'المغرب'}, {id:'isha', label:'العشاء'},
+  ];
+  body.innerHTML = `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">صلوات اليوم</p>
+      ${prayers.map(p => `
+        <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+          <div onclick="toggleWorship('${p.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:var(--navy-dark); ${w[p.id] ? 'background:var(--gold);' : ''}">${w[p.id] ? '✓' : ''}</div>
+          <p style="font-size:13px; margin:0;">${p.label}</p>
+        </div>
+      `).join('')}
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">القرآن والأذكار</p>
+      <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+        <div onclick="toggleWorship('quran')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.quran ? 'background:var(--gold);' : ''}">${w.quran ? '✓' : ''}</div>
+        <p style="font-size:13px; margin:0;">قرأت من القرآن النهاردة</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+        <div onclick="toggleWorship('azkarSubh')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarSubh ? 'background:var(--gold);' : ''}">${w.azkarSubh ? '✓' : ''}</div>
+        <p style="font-size:13px; margin:0;">أذكار الصباح</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+        <div onclick="toggleWorship('azkarMasaa')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarMasaa ? 'background:var(--gold);' : ''}">${w.azkarMasaa ? '✓' : ''}</div>
+        <p style="font-size:13px; margin:0;">أذكار المساء</p>
+      </div>
+    </div>
+    <p id="worshipStatus" style="font-size:11.5px; color:var(--muted); text-align:center;"></p>
+  `;
+}
+
+async function toggleWorship(field){
+  const w = getWorshipToday();
+  w[field] = !w[field];
+  saveWorshipToday(w);
+  const ok = await firestoreWrite('worship', { uid:getUserId(), date:new Date().toISOString(), ...Object.fromEntries(Object.entries(w).map(([k,v]) => [k, v ? 1 : 0])) });
+  renderWorshipScreen();
+  const status = document.getElementById('worshipStatus');
+  if(status) status.textContent = ok ? '✓ محفوظ' : '⚠️ اتحفظ محليًا بس';
+}
+
+// ---------- 3) قصص الأنبياء والتسليم — نفس بنك مرآة العقل بزاوية عبادية ----------
+function openProphetsScreen(){
+  const body = document.getElementById('prophetsBody');
+  body.innerHTML = MERAT_PATTERNS.map(p => `
+    <div class="tool-row" onclick="showProphetDetail('${p.id}')">
+      <div class="icon-circle" style="font-size:15px;">📖</div>
+      <div><div class="card-title" style="font-size:13px;">${p.prophetTitle}</div></div>
+      <div class="arrow">‹</div>
+    </div>
+  `).join('');
+  showScreen('screen-prophets');
+}
+function showProphetDetail(id){
+  const p = MERAT_PATTERNS.find(x => x.id === id);
+  const body = document.getElementById('prophetsBody');
+  body.innerHTML = `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 ${p.prophetTitle}</p>
+      <p class="layer-text" style="margin-top:8px;">${p.prophet}</p>
+      <p style="font-size:11px; color:var(--muted); margin-top:6px;">من كتاب «مرآة الأنبياء»</p>
+    </div>
+    <div class="layer-card l3">
+      <p class="layer-title" style="color:#2E6459;">🤲 زاوية التسليم</p>
+      <p class="layer-text" style="margin-top:8px;">${p.submission}</p>
+    </div>
+    <button class="btn-ghost" onclick="openProphetsScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- 4) التوبة والعودة ----------
+function openTawbaScreen(){
+  const adam = MERAT_PATTERNS.find(x => x.id === 'guilt_return');
+  const body = document.getElementById('tawbaBody');
+  body.innerHTML = `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 ${adam.prophetTitle}</p>
+      <p class="layer-text" style="margin-top:8px;">${adam.prophet}</p>
+    </div>
+    <div class="card" style="background:var(--navy-dark);">
+      <p style="color:var(--gold); font-size:13px; font-weight:700; margin:0 0 8px;">اعترافك بينك وبين ربك</p>
+      <textarea id="tawbaInput" placeholder="اكتب اللي حاسس إنك عايز تعترف بيه وترجع فيه لله..." style="min-height:70px; background:rgba(255,255,255,.05); color:#fff; border-color:var(--gold);"></textarea>
+      <button class="btn-primary" style="margin-top:8px;" onclick="saveTawba()">سجّل واستغفر</button>
+      <p id="tawbaStatus" style="font-size:11px; color:#9FB3AE; margin-top:8px; text-align:center;"></p>
+    </div>
+  `;
+  showScreen('screen-tawba');
+}
+async function saveTawba(){
+  const input = document.getElementById('tawbaInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(checkSafety(text)){ showSafety(); return; }
+  const dateLabel = new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+  const ok = await firestoreWrite('journal', { uid:getUserId(), note:text, source:'tawba', date:new Date().toISOString() });
+  const localJournal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  localJournal.unshift({ type:'sticky', text: '🕊️ ' + text, date: dateLabel });
+  localStorage.setItem('eihyaha_journal', JSON.stringify(localJournal.slice(0,200)));
+  renderJournalHistory();
+  input.value = '';
+  document.getElementById('tawbaStatus').textContent = ok ? '✓ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس';
+}
+
+// ---------- 5) ذكر ودعاء اليوم ----------
+const DUA_BANK = [
+  { verse:"﴿وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ﴾", ref:"سورة الطلاق 3", reflection:"مهما كبر همّك، توكلك على الله كافيك — خد بالأسباب وسلّم النتيجة." },
+  { verse:"﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾", ref:"سورة الرعد 28", reflection:"لو قلبك مضطرب، ارجع لذكر الله — الطمأنينة مش صدفة، هي نتيجة." },
+  { verse:"﴿فَإِنَّ مَعَ الْعُسْرِ يُسْرًا﴾", ref:"سورة الشرح 5", reflection:"الضيق اللي إنت فيه دلوقتي مش نهاية الحكاية." },
+  { verse:"﴿رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي﴾", ref:"سورة طه 25-26", reflection:"دعاء موسى قبل أصعب مواجهة في حياته — قوله لما تحس إن قدامك حاجة أكبر منك." },
+  { verse:"﴿وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ﴾", ref:"سورة البقرة 216", reflection:"اللي بتكرهه دلوقتي ممكن يكون فيه خير إنت لسه مش شايفه." },
+  { verse:"﴿لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ﴾", ref:"سورة الزمر 53", reflection:"مهما كانت ذنوبك، باب رحمة الله ما اتقفلش." },
+  { verse:"﴿حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ﴾", ref:"سورة آل عمران 173", reflection:"قولها وأنت واثق، مش بس بتلفظها — الله كافيك مهما اجتمع عليك." },
+  { verse:"﴿وَبَشِّرِ الصَّابِرِينَ﴾", ref:"سورة البقرة 155", reflection:"صبرك النهاردة مش بيروح هدر، فيه بشارة مستنياك." },
+  { verse:"﴿ادْعُونِي أَسْتَجِبْ لَكُمْ﴾", ref:"سورة غافر 60", reflection:"ادعِ بصدق، الله وعد بالإجابة — مش دايمًا بالشكل اللي متخيله." },
+  { verse:"﴿إِنَّ اللَّهَ مَعَ الصَّابِرِينَ﴾", ref:"سورة البقرة 153", reflection:"إنت مش لوحدك في اللي بتمر بيه." },
+];
+function getDailyDua(){
+  const dayIndex = Math.floor(Date.now() / 86400000) % DUA_BANK.length;
+  return DUA_BANK[dayIndex];
+}
+function openDuaScreen(){
+  const d = getDailyDua();
+  const body = document.getElementById('duaBody');
+  body.innerHTML = `
+    <div class="layer-card l3" style="text-align:center; padding:24px 16px;">
+      <p style="font-size:17px; font-weight:700; color:var(--navy-dark); line-height:1.8; margin:0 0 10px;">${d.verse}</p>
+      <p style="font-size:11px; color:var(--muted); margin:0 0 16px;">${d.ref}</p>
+      <p class="layer-text">${d.reflection}</p>
+    </div>
+  `;
+  showScreen('screen-dua');
+}
+
 function openFlashScreen(){
   const search = document.getElementById('flashSearchInput');
   if(search) search.value = '';
