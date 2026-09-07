@@ -154,13 +154,25 @@
         <div style="font-size:16px; color:var(--gold);">‹</div>
       </div>
 
-      <div class="quick-help-card" onclick="openTasksScreen()" style="margin-bottom:20px;">
-        <div class="icon-circle" style="width:38px; height:38px; font-size:17px;">✅</div>
-        <div style="flex:1;">
-          <p style="font-size:13px; font-weight:700; margin:0;">مهامك اليوم</p>
-          <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">التقويم والمهام والتنبيهات</p>
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div class="icon-circle" style="width:34px; height:34px; font-size:15px;">✅</div>
+          <p style="font-size:13px; font-weight:700; margin:0; flex:1;">مهامك اليوم</p>
+          <div onclick="openTasksScreen()" style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;">التقويم كامل ‹</div>
         </div>
-        <div style="font-size:16px; color:var(--gold);">‹</div>
+        <div id="homeTasksPreview"></div>
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          <input type="text" id="homeQuickTaskTitle" placeholder="أضف مهمة سريعة..." style="flex:1;" onkeypress="if(event.key==='Enter') addHomeQuickTask()">
+          <button class="btn-primary" style="width:auto; margin:0; padding:9px 16px;" onclick="addHomeQuickTask()">+</button>
+        </div>
+      </div>
+
+      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:20px;">
+        <p class="card-title">📌 ملاحظة سريعة</p>
+        <textarea id="homeStickyInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:44px;"></textarea>
+        <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('homeStickyInput','homeStickyChooserWrap')">حفظ</button>
+        <div id="homeStickyChooserWrap"></div>
+        <div id="homeStickyNotesList" style="margin-top:8px;"></div>
       </div>
 
       <p class="section-title">كيف حالك اليوم؟</p>
@@ -257,7 +269,7 @@
       <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-top:20px;">
         <p class="card-title">📌 ملاحظة سريعة</p>
         <textarea id="stickyNoteInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:50px;"></textarea>
-        <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt()">حفظ</button>
+        <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('stickyNoteInput','stickyChooserWrap')">حفظ</button>
       </div>
       <div id="stickyChooserWrap"></div>
       <div id="stickyNotesList" style="margin-top:10px;"></div>
@@ -1065,6 +1077,8 @@ function showScreen(id){
 function goHome(){
   showScreen('screen-home');
   document.querySelector('.navitem[data-nav="home"]').classList.add('active');
+  renderHomeTasksPreview();
+  renderStickyNotes('homeStickyNotesList', 3);
 }
 
 function goToPillar(id){
@@ -1853,25 +1867,25 @@ function renderJournalHistory(){
 // ================= ملاحظات سريعة (Sticky Notes) =================
 function getStickyNotes(){ return JSON.parse(localStorage.getItem('eihyaha_sticky_notes') || '[]'); }
 
-function saveStickyPrompt(){
-  const input = document.getElementById('stickyNoteInput');
+function saveStickyPrompt(inputId, chooserId){
+  const input = document.getElementById(inputId);
   const text = input.value.trim();
   if(!text) return;
   if(checkSafety(text)){ showSafety(); return; }
 
-  const chooser = document.getElementById('stickyChooserWrap');
+  const chooser = document.getElementById(chooserId);
   chooser.innerHTML = `
-    <div class="card" style="background:var(--navy-dark); margin-top:0;">
+    <div class="card" style="background:var(--navy-dark); margin-top:10px;">
       <p style="color:var(--gold); font-size:12px; font-weight:700; margin:0 0 10px;">تحب تحفظها فين؟</p>
       <div style="display:flex; gap:8px;">
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky(true)">في مرآتي اليومية</div>
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky(false)">في الملاحظات بس</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky('${inputId}','${chooserId}', true)">في مرآتي اليومية</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky('${inputId}','${chooserId}', false)">في الملاحظات بس</div>
       </div>
     </div>`;
 }
 
-async function finalizeSticky(alsoJournal){
-  const input = document.getElementById('stickyNoteInput');
+async function finalizeSticky(inputId, chooserId, alsoJournal){
+  const input = document.getElementById(inputId);
   const text = input.value.trim();
   if(!text) return;
   const dateLabel = new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
@@ -1891,16 +1905,17 @@ async function finalizeSticky(alsoJournal){
   }
 
   input.value = '';
-  document.getElementById('stickyChooserWrap').innerHTML = '';
-  renderStickyNotes();
+  document.getElementById(chooserId).innerHTML = '';
+  renderStickyNotes('stickyNotesList', 10);
+  renderStickyNotes('homeStickyNotesList', 3);
 }
 
-function renderStickyNotes(){
+function renderStickyNotes(targetId, limit){
   const notes = getStickyNotes();
-  const wrap = document.getElementById('stickyNotesList');
+  const wrap = document.getElementById(targetId);
   if(!wrap) return;
   if(notes.length === 0){ wrap.innerHTML = ''; return; }
-  wrap.innerHTML = notes.slice(0,10).map(n => `
+  wrap.innerHTML = notes.slice(0, limit || 10).map(n => `
     <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; padding:10px 14px; margin-bottom:6px;">
       <p style="font-size:11px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
       <p style="font-size:12.5px; color:var(--text); margin:0;">${n.text}</p>
@@ -2011,6 +2026,38 @@ function addTask(){
   timeInput.value = '';
   renderTaskCalendar();
   renderTaskList();
+  renderHomeTasksPreview();
+}
+
+// إضافة مهمة سريعة لليوم مباشرة من الرئيسية
+function addHomeQuickTask(){
+  const titleInput = document.getElementById('homeQuickTaskTitle');
+  const title = titleInput.value.trim();
+  if(!title) return;
+  if(checkSafety(title)){ showSafety(); return; }
+  const tasks = getTasks();
+  tasks.push({ id:'task_' + Date.now(), date:formatDateKey(new Date()), title, time:'', done:false, notified:false });
+  saveTasksLocal(tasks);
+  titleInput.value = '';
+  renderHomeTasksPreview();
+}
+
+// معاينة مهام اليوم في الشاشة الرئيسية
+function renderHomeTasksPreview(){
+  const wrap = document.getElementById('homeTasksPreview');
+  if(!wrap) return;
+  const key = formatDateKey(new Date());
+  const tasks = getTasksForDate(key).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
+  if(tasks.length === 0){
+    wrap.innerHTML = `<p style="font-size:11.5px; color:var(--muted); text-align:center; padding:6px 0;">مفيش مهام مسجّلة النهاردة</p>`;
+    return;
+  }
+  wrap.innerHTML = tasks.map(t => `
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #F0EDE2;">
+      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:11px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <p style="font-size:12px; margin:0; flex:1; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
+      ${t.time ? `<span style="font-size:10px; color:var(--muted);">🕐 ${t.time}</span>` : ''}
+    </div>`).join('');
 }
 
 function toggleTaskDone(id){
@@ -2020,6 +2067,7 @@ function toggleTaskDone(id){
   task.done = !task.done;
   saveTasksLocal(tasks);
   renderTaskList();
+  renderHomeTasksPreview();
   if(task.done) showLocalNotification('تمت المهمة ✅', task.title);
 }
 
@@ -2027,6 +2075,7 @@ function deleteTask(id){
   saveTasksLocal(getTasks().filter(x => x.id !== id));
   renderTaskCalendar();
   renderTaskList();
+  renderHomeTasksPreview();
 }
 
 // ---------- إشعارات محلية (تعمل بس لو التطبيق مفتوح) ----------
@@ -2168,7 +2217,9 @@ async function loadFullHistory(){
 applyTheme(localStorage.getItem('eihyaha_theme') || 'classic');
 applyLanguage();
 renderJournalHistory();
-renderStickyNotes();
+renderStickyNotes('stickyNotesList', 10);
+renderStickyNotes('homeStickyNotesList', 3);
+renderHomeTasksPreview();
 
 // بوابة تسجيل دخول إجبارية — بتظهر في كل مرة يتفتح فيها التطبيق، بصرف النظر
 // عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
