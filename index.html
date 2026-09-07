@@ -222,14 +222,8 @@
         <p style="font-size:10.5px; color:var(--gold); margin:8px 0 0; font-weight:700;">شوف كل الومضات ‹</p>
       </div>
 
-      <div class="card" style="background:#7A5A1C; margin-bottom:20px; cursor:pointer;" onclick="openProphetOfDay()">
-        <div id="homeDailyProphet"></div>
-        <p style="font-size:10.5px; color:#F0EAD6; margin:8px 0 0; font-weight:700;">شوف كل قصص الأنبياء ‹</p>
-      </div>
-
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:20px; cursor:pointer;" onclick="openAsmaOfDayDetail()">
-        <div id="homeDailyAsma"></div>
-        <p style="font-size:10.5px; color:#8A6A1E; margin:8px 0 0; font-weight:700;">شوف كل أسماء الله الحسنى ‹</p>
+      <div class="card" style="background:#7A5A1C; margin-bottom:20px;">
+        <div id="homeSpiritualTouch"></div>
       </div>
     </div>
   </div>
@@ -372,6 +366,16 @@
       <div style="width:34px;"></div>
     </div>
     <div style="padding:0 16px;" id="tawbaBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SPIRITUAL REPORT (التقرير الروحاني الشامل) ===================== -->
+  <div class="screen" id="screen-spiritual-report">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>تقريرك الروحاني</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="spiritualReportBody"></div>
   </div>
 
   <!-- ===================== SCREEN: WORSHIP INSIGHTS (الانتظام والربط بالمزاج) ===================== -->
@@ -1304,8 +1308,7 @@ function goHome(){
   renderHomeTasksPreview();
   renderStickyNotes('homeStickyNotesList', 3);
   renderHomeDailyFlash();
-  renderHomeDailyProphet();
-  renderHomeDailyAsma();
+  renderHomeSpiritualTouch();
 }
 
 // ---------- لوحة ملخص سريعة للركن الروحاني (محلية وفورية، من غير انتظار Firestore) ----------
@@ -1356,8 +1359,9 @@ function renderSpiritualDashboard(){
     html += `<p style="font-size:11.5px; color:var(--muted); margin:0 0 8px;">آخر مرة سجّلت فيها توبتك لله: ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم فات'}</p>`;
   }
   if(quizState && stateMessages[quizState]){
-    html += `<p style="font-size:12px; color:var(--text); line-height:1.6; margin:0;">${stateMessages[quizState]}</p>`;
+    html += `<p style="font-size:12px; color:var(--text); line-height:1.6; margin:0 0 8px;">${stateMessages[quizState]}</p>`;
   }
+  html += `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSpiritualReport()">📊 شوف تقريرك الروحاني الكامل ←</p>`;
   html += `</div>`;
   return html;
 }
@@ -1537,7 +1541,7 @@ const ASMA_ALLAH_BANK = [
   { name:"الشكور", meaning:"اللي بيجازي على القليل من الطاعة بالكثير من الأجر، وبيقدّر أي مجهود ولو صغير.", psych:"بيشيل إحساس 'مجهودي مش كفاية' — ربنا بيقدّر التفاصيل الصغيرة اللي إنت نفسك بتقلل من قيمتها.", practice:"اعمل عبادة صغيرة حسيت إنها 'مش كبيرة كفاية' (ركعتين، صدقة بسيطة) وثق إن ربنا الشكور شايفها." },
   { name:"السلام", meaning:"السالم من كل نقص، والمانح للسلامة والطمأنينة لعباده.", psych:"مصدر السلام النفسي الحقيقي مش في ظروف حياتك، هو في اسم من أسماء ربنا.", practice:"لما تحس بقلق، قول 'يا سلام سلّمني' بدل ما تدور على السلام في حاجة برّه." },
   { name:"الولي", meaning:"الناصر والمتولي أمور من آمن به، القريب منه بالحفظ والرعاية.", psych:"بيقلل إحساس 'أنا لوحدي في المعركة دي' — عندك وليّ حقيقي مش مجازي.", practice:"في موقف حاسس فيه إنك لوحدك، قول 'يا ولي توليني' واطلب نصرته." },
-  { name:"القريب", meaning:"القريب من عباده بعلمه وإجابته لدعائهم، من غير حاجة لوسيط.", psych:"بيكسر إحساس 'ربنا بعيد ومش سامعني' — القرب ده حقيقي مش مجازي، بلا حاجز.", practice:"ادعِ دلوقتي بصوت هادي وانت متيقن إنه قريب مش بعيد، مهما حسّيت العكس." },
+  { name:"القريب", note:"صفة قرآنية أصيلة، لكنها مش من قائمة الـ٩٩ الرسمية في رواية الترمذي — مُضافة هنا كبونص.", meaning:"القريب من عباده بعلمه وإجابته لدعائهم، من غير حاجة لوسيط.", psych:"بيكسر إحساس 'ربنا بعيد ومش سامعني' — القرب ده حقيقي مش مجازي، بلا حاجز.", practice:"ادعِ دلوقتي بصوت هادي وانت متيقن إنه قريب مش بعيد، مهما حسّيت العكس." },
   { name:"الحق", meaning:"الثابت الذي لا يتغير، الموجود حقًا، الذي كل ما سواه باطل أو زائل.", psych:"وسط دنيا بتتغيّر وناس بتخيب ظنك، ربنا هو الثابت الوحيد اللي مايتزعزعش.", practice:"لما تتعلق بحاجة دنيوية وتخاف تفقدها، افتكر إن الحق سبحانه هو الباقي، والباقي زائل." },
   { name:"الله", meaning:`الاسم الجامع لكل صفات الكمال، لا يُسمّى به غيره سبحانه.`, psych:`استحضار الاسم ده بيذكّرك إن كل الأسماء التانية بترجع له، فهو مش صفة واحدة، هو الكل.`, practice:`قبل أي دعاء النهاردة، ابدأ بـ'يا الله' بصدق وانت مستحضر إنك بتنادي الجامع لكل كمال.` },
   { name:"الملك", meaning:`المالك الحقيقي لكل شيء، وكل ملك غيره عارض وزائل.`, psych:`بيريحك من الخوف على 'ملكيتك' الدنيوية — كل حاجة إنت ماسكها أصلًا ملك لله.`, practice:`بصّ لحاجة بتخاف تفقدها، وذكّر نفسك إنها أمانة من الملك الحقيقي مش ملكك المطلق.` },
@@ -1593,6 +1597,7 @@ const ASMA_ALLAH_BANK = [
   { name:"الواجد", meaning:`الغني الذي لا يفتقر لشيء، واجد كل ما يريد.`, psych:`بيطمّنك إنه مش محتاج حاجة منك، عبادتك ليك إنت مش له.`, practice:`اعبد الواجد محبةً لا لأنه محتاج عبادتك.` },
   { name:"الماجد", meaning:`صاحب المجد الواسع والكرم العظيم.`, psych:`كرمه أوسع من أي تصور — لا تقلل من سعة عطائه.`, practice:`اطلب من الماجد بتوقعات أكبر من اللي في بالك.` },
   { name:"الواحد", meaning:`المتفرد الذي لا شريك له ولا شبيه.`, psych:`بيريحك من تشتيت قلبك بين آلهة كتير (مال، ناس، مناصب) — وجّهه لواحد.`, practice:`لمّ قلبك المشتت بين حاجات كتير، ووجّهه للواحد بس.` },
+  { name:"الأحد", meaning:"المتفرد في ذاته وصفاته، الذي لا يتجزأ ولا يتعدد بأي شكل.", psych:"بيديك ثبات فكري: مرجعيتك في الحياة واحدة مش متعددة ومتضاربة.", practice:"لو حاسس إنك بتجري ورا مرجعيات متضاربة (رأي الناس، السوشيال ميديا، أهلك)، ارجع للأحد كمرجعية واحدة ثابتة." },
   { name:"الصمد", meaning:`الذي يُقصد في الحوائج، الغني عن كل شيء.`, psych:`هو المقصود الحقيقي وقت الحاجة، مش وسيلة من الوسائل.`, practice:`في حاجتك دلوقتي، اقصد الصمد مباشرة قبل أي وسيلة.` },
   { name:"المقتدر", meaning:`كامل القدرة، الذي لا يعجزه شيء أبدًا.`, psych:`بيشيل كلمة 'مستحيل' من قاموسك في الدعاء.`, practice:`ادعِ بحاجة حاسس إنها 'مستحيلة' وانت مستحضر اسم المقتدر.` },
   { name:"المقدم", meaning:`الذي يقدّم من يشاء بفضله وحكمته.`, psych:`لو حد فاتك في فرصة، ثق إن التقديم والتأخير بيد المقدم لا الناس.`, practice:`لو حسيت إن حد اتقدم عليك ظلمًا، سلّم الأمر للمقدم.` },
@@ -1801,6 +1806,13 @@ function markAsmaRead(name){
   if(!read.includes(name)){ read.push(name); localStorage.setItem('eihyaha_asma_read', JSON.stringify(read)); }
 }
 
+function openAsmaByName(name){
+  const i = ASMA_ALLAH_BANK.findIndex(a => a.name === name);
+  if(i === -1) return;
+  showAsmaDetail(i);
+  showScreen('screen-asma');
+}
+
 function openAsmaScreen(){
   const body = document.getElementById('asmaBody');
   const readList = getReadAsma();
@@ -1841,6 +1853,7 @@ function showAsmaDetail(i){
   body.innerHTML = `
     <div class="layer-card l3" style="text-align:center; padding:20px 16px;">
       <p style="font-size:20px; font-weight:700; color:var(--navy-dark); margin:0;">${a.name}</p>
+      ${a.note ? `<p style="font-size:10.5px; color:var(--muted); margin-top:6px;">${a.note}</p>` : ''}
     </div>
     <div class="layer-card l1">
       <p class="layer-title" style="color:var(--navy-dark);">📖 المعنى</p>
@@ -1862,21 +1875,6 @@ function getAsmaOfDay(){
   const dayIndex = Math.floor(Date.now() / 86400000) % ASMA_ALLAH_BANK.length;
   return ASMA_ALLAH_BANK[dayIndex];
 }
-function renderHomeDailyAsma(){
-  const wrap = document.getElementById('homeDailyAsma');
-  if(!wrap) return;
-  const a = getAsmaOfDay();
-  wrap.innerHTML = `
-    <p style="font-size:11px; color:#8A6A1E; font-weight:700; margin:0 0 6px;">📿 اسم الله اليوم — ${a.name}</p>
-    <p style="font-size:12.5px; color:var(--text); line-height:1.7; margin:0;">${a.practice}</p>
-  `;
-}
-function openAsmaOfDayDetail(){
-  const idx = ASMA_ALLAH_BANK.findIndex(a => a.name === getAsmaOfDay().name);
-  showAsmaDetail(idx);
-  showScreen('screen-asma');
-}
-
 function openRabbekScreen(){
   const body = document.getElementById('rabbekBody');
   body.innerHTML = `
@@ -1907,10 +1905,11 @@ function openRabbekScreen(){
 
     <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px; margin-bottom:20px;">من كتاب «بوصلة التسليم»</p>
 
-    <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
+    <div style="display:flex; align-items:center; gap:8px; margin:10px 0 4px;">
       <span style="font-size:14px;">✍️</span>
       <p style="font-size:14px; font-weight:700; margin:0;">أو اكتب حاسس بإيه بالظبط دلوقتي</p>
     </div>
+    <p style="font-size:10.5px; color:var(--muted); margin:0 0 8px;">🔒 كلامك هنا خاص بينك وبين ربك، محفوظ في حسابك بس.</p>
     <textarea id="rabbekFreeText" placeholder="اكتب مشاعرك تجاه علاقتك بربك..." style="min-height:60px;"></textarea>
     <button class="btn-primary" style="margin-top:8px; margin-bottom:16px;" onclick="analyzeRabbekText()">حلّلها لي</button>
     <div id="rabbekAnalysisResult"></div>
@@ -1976,7 +1975,8 @@ async function analyzeRabbekText(){
         <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
         <p class="layer-text" style="color:#fff; margin-top:8px;">${c.action}</p>
       </div>
-      ${c.prophetId ? `<div class="choice-btn" style="text-align:center;" onclick="showProphetDetail('${c.prophetId}'); showScreen('screen-prophets');">اقرأ قصة ${MERAT_PATTERNS.find(x=>x.id===c.prophetId).prophetTitle.split(' —')[0]} 📖</div>` : ''}`;
+      ${c.prophetId ? `<div class="choice-btn" style="text-align:center;" onclick="showProphetDetail('${c.prophetId}'); showScreen('screen-prophets');">اقرأ قصة ${MERAT_PATTERNS.find(x=>x.id===c.prophetId).prophetTitle.split(' —')[0]} 📖</div>` : ''}
+      ${c.asmaName ? `<div class="choice-btn" style="text-align:center;" onclick="openAsmaByName('${c.asmaName}')">تعرّف على اسم الله «${c.asmaName}» المناسب لحالتك 📿</div>` : ''}`;
   } else {
     result.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية، لكن مش لاقي نمط مطابق بالظبط — جرب تختار من القائمة تحت أقرب حاجة لإحساسك.</p>`;
   }
@@ -1985,16 +1985,16 @@ async function analyzeRabbekText(){
 
 // بنك تحليل نفسي-روحاني: ليه حاسس إنك بعيد أو قريب من ربنا، وأسباب كل حالة
 const CLOSENESS_BANK = [
-  { emoji:"🌪️", label:"مشغول جدًا بالدنيا", keywords:["مشغول","شغل","وقت","مفيش وقت","زحمة","التزامات","تعبان من الدنيا","مرهق","مضغوط","مش لاقي وقت أصلي","تايه في المشاغل"], psych:"لما جدولك مليان شغل والتزامات، العبادة بتبقى أول حاجة تتأجل — مش لأنك رفضت الله، لكن لأن عقلك بيدي الأولوية للحاجة اللي ليها ديدلاين واضح، والعلاقة بالله محدش بيحاسبك عليها فورًا فبتتأخر باستمرار.", quran:"﴿أَلْهَاكُمُ التَّكَاثُرُ﴾ (سورة التكاثر ١) — الانشغال بجمع الدنيا بيلهي القلب عن أهم حاجة فيه.", action:"اختار وقت ثابت صغير (٥ دقايق) قبل أي التزام يومي، وسمّيه بالاسم في جدولك زي أي اجتماع تاني — لما يبقى له وقت محجوز، مش هيتأجل." },
-  { emoji:"😔", label:"حاسس بذنب وخجلان أرجع", prophetId:"guilt_return", keywords:["ذنب","خجلان","مستحيش","مش مستاهل","غلطان","ندمان","حزين على نفسي","مكتئب من نفسي","تعبان نفسيًا من ذنوبي","حاسس إني وسخ","مقهور من نفسي"], psych:"كل ما تفكر ترجع، بيجيلك صوت جوّاك يقولك 'إنت مش مستاهل بعد كل اللي عملته' — والإحساس ده بالذات هو اللي بيبعدك أكتر، لأنك بتتجنب اللي المفروض يقربك.", quran:"﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ﴾ (سورة الزمر ٥٣) — الآية موجّهة بالذات لمن أسرف على نفسه، مش لمن هو بريء أصلًا.", action:"متستناش تحس إنك 'مستاهل' عشان ترجع — الرجوع نفسه هو اللي بيخليك مستاهل. جرّب سجدة واحدة النهاردة، من غير شروط." },
-  { emoji:"🥱", label:"العبادة بقت روتين فاضي", keywords:["روتين","فاضي","مش حاسس","عادة","مافيش خشوع","خشوع","ملل","زهقان من الصلاة","بارد تجاه العبادة","مش مستمتع"], psych:"بتصلي وبتصوم، لكن حاسس إن قلبك مش موجود — الجسد بيأدي والعقل شارد. ده مش نفاق، ده فتور طبيعي بيحصل لما العبادة بتتكرر من غير تجديد في الفهم أو الإحساس.", quran:"﴿وَلَا تَكُونُوا كَالَّذِينَ نَسُوا اللَّهَ فَأَنسَاهُمْ أَنفُسَهُمْ﴾ (سورة الحشر ١٩) — نسيان الله بيؤدي لغربة عن النفس نفسها، مش بس عن العبادة.", action:"غيّر حاجة صغيرة في شكل العبادة: اقرأ ترجمة معنى الآيات اللي بتقولها في الصلاة، أو صلّي في مكان مختلف — التجديد بيكسر الروتين." },
-  { emoji:"❓", label:"عندي شك وأسئلة مقلقاني", keywords:["شك","أسئلة","مش فاهم","وسواس فكري","مقتنعش","حائر","مرتبك في إيماني","تايه فكريًا","قلقان من إيماني"], psych:"بتيجيلك أفكار وأسئلة عن الدين نفسك مقتنع إنها 'ممنوع' تفكر فيها، فبتكبتها بدل ما تواجهها — والكبت ده بالذات بيولّد قلق وبُعد، لأنك بتحس إن فيه حاجز بينك وبين ربنا اسمه 'الشك المُخجِل'.", quran:"﴿فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ﴾ (سورة النحل ٤٣) — السؤال مطلوب، مش عيب، والقرآن نفسه بيوجهك تسأل.", action:"اكتب السؤال اللي قلقك بالظبط بدل ما تسيبه غيمة مبهمة في دماغك، واسأل شيخ أو حد تثق في علمه — السؤال المحدد بيتحل، الغيمة المبهمة بتفضل قلقانك للأبد." },
-  { emoji:"😡", label:"زعلان من قدر حصلّي", prophetId:"grief", keywords:["زعلان من ربنا","ليه ربنا","مش عادل","ظلم","زعلان من القدر","غضبان","متنرفز من اللي حصل","مقهور من القدر","حاقد على الموقف","محبط من ربنا"], psych:"حصلك ظلم أو فقد أو ألم كبير، وجوّاك سؤال ما بتجرأش تقوله بصوت عالي: 'ليه ربنا سمح بده؟' — الغضب ده مش كفر، لكن لو اتكتم بيتحول لمسافة بينك وبين الله بدل ما يتحول لحوار صريح معاه.", quran:"يعقوب عليه السلام قال ﴿إِنَّمَا أَشْكُو بَثِّي وَحُزْنِي إِلَى اللَّهِ﴾ (سورة يوسف ٨٦) — هو اشتكى، ولحد ربنا مباشرة، ومكنش ده نقص إيمان.", action:"جرّب تدعو بصراحة كاملة تقول فيها اللي حاسس بيه، حتى لو غضب أو 'ليه'، بدل ما تسكت وتبعد." },
-  { emoji:"🕋", label:"حاسس بسكينة وقرب حقيقي", keywords:["سكينة","قريب من ربنا","مرتاح","طمأنينة","حمد لله","الحمد لله","حامد ربنا","شاكر","شكر لله","ممتن","مبسوط بنعمة","حاسس بنعمة","بحب ربنا","حب لله","قلبي مرتبط بربنا","مطمئن قلبي","راضي","رضا","فرحان بربنا","محظوظ من ربنا","ربنا كرمني"], psych:"في الفترة دي حاسس إن قلبك مرتاح وقت العبادة، ومحتاج تفهم ده مش صدفة — غالبًا بيحصل لما يكون فيه توافق بين اللي بتعمله واللي بتؤمن بيه، أو بعد أزمة خليتك تحتاج الله فعليًا، أو نعمة حسّيت بيها فعليًا وحمدت ربنا عليها.", quran:"﴿الَّذِينَ آمَنُوا وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ اللَّهِ ۗ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾ (سورة الرعد ٢٨) — و﴿لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ﴾ (سورة إبراهيم ٧).", action:"سجّل الإحساس ده دلوقتي وإيه اللي وصلك له، عشان ترجعله وقت الفتور — اعرف طريقك للقرب بينفعك تكرره. وقول 'الحمد لله' بصوت عالي، الشكر بيثبّت النعمة." },
-  { emoji:"🌗", label:"قريب وقت الضيق بس، وبعيد وقت الفرح", keywords:["وقت الضيق بس","وقت الفرح بنسى","بنسى ربنا لما الدنيا حلوة","بفتكر ربنا وقت الأزمة بس"], psych:"ده نمط شائع جدًا: قلبك بيرجع لله تلقائي وقت الأزمة، لكن وقت الاستقرار بينسى — وده مش نفاق، لكنه علامة إن علاقتك بالله لسه مبنية على 'الحاجة' مش على 'الحب المستمر'.", quran:"﴿وَإِذَا مَسَّ الْإِنسَانَ الضُّرُّ دَعَانَا ... فَلَمَّا كَشَفْنَا عَنْهُ ضُرَّهُ مَرَّ كَأَن لَّمْ يَدْعُنَا﴾ (سورة يونس ١٢) — القرآن نفسه بيوصف النمط ده، يعني إنت مش غريب حالة.", action:"في أول لحظة فرح جاية، قول 'الحمد لله' بصوت عالي قبل أي حد تاني يعرف — تدريب بسيط يربط الفرح بالله مش بس الضيق." },
-  { emoji:"🔁", label:"خايف أرجع أقع في نفس الغلطة", prophetId:"anger", keywords:["هرجع تاني","مش هعرف أستمر","خايف أفشل تاني","بأرجع للذنب","قلقان من نفسي","خايف من نفسي","مش واثق إني هثبت"], psych:"جرّبت ترجع قبل كده وفشلت، فبقيت خايف تحاول تاني عشان متتألمش من فشل جديد — الخوف ده بيخليك تأجل المحاولة بدل ما تقبل إن الرجوع لله مش لحظة واحدة، هو مسار بيتكرر فيه السقوط والقيام كتير.", quran:"﴿كُلُّ ابْنِ آدَمَ خَطَّاءٌ وَخَيْرُ الْخَطَّائِينَ التَّوَّابُونَ﴾ — الحديث بيوضّح إن التكرار نفسه مش عيب، العيب إنك تسيب المحاولة.", action:"بدل ما تخطط 'أتغيّر للأبد من بكرة'، خطط ليوم واحد بس. لو وقعت تاني، ارجع تاني — العدّاد بيتصفر كل مرة، مش بيتراكم ضدك." },
-  { emoji:"📉", label:"بقارن نفسي بناس متدينين أكتر", keywords:["مقارنة","ناس أحسن مني","متدينين أكتر","حاسس إني مقصر","محبط من نفسي قدامهم","حاسد التزامهم","غيران من التزامهم"], psych:"شايف حد ملتزم أكتر منك وبتحس إنك 'مش كفاية'، والمقارنة دي بتخليك تحس بيأس بدل ما تحفزك، لأنك بتقيس نفسك بنقطة نهاية حد تاني مش ببدايتك إنت.", quran:"﴿وَلَا تَتَمَنَّوْا مَا فَضَّلَ اللَّهُ بِهِ بَعْضَكُمْ عَلَىٰ بَعْضٍ﴾ (سورة النساء ٣٢) — كل واحد له مساره وابتلاءه الخاص بيه.", action:"قارن نفسك بنفسك بس: انت النهاردة أحسن ولا أوحش من انت الأسبوع اللي فات؟ ده المقياس الوحيد اللي له معنى." },
-  { emoji:"🧊", label:"مش حاسس بأي حاجة وقت العبادة (برود قلب)", keywords:["برود","مش حاسس بحاجة","قلبي قاسي","مفيش إحساس","خدر","فاقد الإحساس","محايد تمامًا","مبسوطش ولا زعلان"], psych:"بتأدي العبادة صح من الناحية الشكلية، لكن حاسس إن قلبك 'ساكت' تمامًا، مش حزين ولا فرحان ولا خايف — والإحساس ده بالذات بيقلق أكتر من الفتور العادي لأنه بيحس وكأنه انقطاع كامل.", quran:"﴿ثُمَّ قَسَتْ قُلُوبُكُم مِّن بَعْدِ ذَٰلِكَ﴾ (سورة البقرة ٧٤) — القسوة درجات ومؤقتة، مش حالة نهائية، والقرآن نفسه بيقدّم علاجها: الذكر والتذكر.", action:"جرّب تقرأ سورة قصيرة بصوت عالي وانت واخد بالك من معنى كل كلمة بدل ما تقرأها بسرعة — أحيانًا القسوة سببها إننا بنعدّي على الكلام من غير ما نستوعبه." },
+  { emoji:"🌪️", label:"مشغول جدًا بالدنيا", asmaName:"الوكيل", keywords:["مشغول","شغل","وقت","مفيش وقت","زحمة","التزامات","تعبان من الدنيا","مرهق","مضغوط","مش لاقي وقت أصلي","تايه في المشاغل"], psych:"لما جدولك مليان شغل والتزامات، العبادة بتبقى أول حاجة تتأجل — مش لأنك رفضت الله، لكن لأن عقلك بيدي الأولوية للحاجة اللي ليها ديدلاين واضح، والعلاقة بالله محدش بيحاسبك عليها فورًا فبتتأخر باستمرار.", quran:"﴿أَلْهَاكُمُ التَّكَاثُرُ﴾ (سورة التكاثر ١) — الانشغال بجمع الدنيا بيلهي القلب عن أهم حاجة فيه.", action:"اختار وقت ثابت صغير (٥ دقايق) قبل أي التزام يومي، وسمّيه بالاسم في جدولك زي أي اجتماع تاني — لما يبقى له وقت محجوز، مش هيتأجل." },
+  { emoji:"😔", label:"حاسس بذنب وخجلان أرجع", asmaName:"التواب", prophetId:"guilt_return", keywords:["ذنب","خجلان","مستحيش","مش مستاهل","غلطان","ندمان","حزين على نفسي","مكتئب من نفسي","تعبان نفسيًا من ذنوبي","حاسس إني وسخ","مقهور من نفسي"], psych:"كل ما تفكر ترجع، بيجيلك صوت جوّاك يقولك 'إنت مش مستاهل بعد كل اللي عملته' — والإحساس ده بالذات هو اللي بيبعدك أكتر، لأنك بتتجنب اللي المفروض يقربك.", quran:"﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ﴾ (سورة الزمر ٥٣) — الآية موجّهة بالذات لمن أسرف على نفسه، مش لمن هو بريء أصلًا.", action:"متستناش تحس إنك 'مستاهل' عشان ترجع — الرجوع نفسه هو اللي بيخليك مستاهل. جرّب سجدة واحدة النهاردة، من غير شروط." },
+  { emoji:"🥱", label:"العبادة بقت روتين فاضي", asmaName:"الودود", keywords:["روتين","فاضي","مش حاسس","عادة","مافيش خشوع","خشوع","ملل","زهقان من الصلاة","بارد تجاه العبادة","مش مستمتع"], psych:"بتصلي وبتصوم، لكن حاسس إن قلبك مش موجود — الجسد بيأدي والعقل شارد. ده مش نفاق، ده فتور طبيعي بيحصل لما العبادة بتتكرر من غير تجديد في الفهم أو الإحساس.", quran:"﴿وَلَا تَكُونُوا كَالَّذِينَ نَسُوا اللَّهَ فَأَنسَاهُمْ أَنفُسَهُمْ﴾ (سورة الحشر ١٩) — نسيان الله بيؤدي لغربة عن النفس نفسها، مش بس عن العبادة.", action:"غيّر حاجة صغيرة في شكل العبادة: اقرأ ترجمة معنى الآيات اللي بتقولها في الصلاة، أو صلّي في مكان مختلف — التجديد بيكسر الروتين." },
+  { emoji:"❓", label:"عندي شك وأسئلة مقلقاني", asmaName:"الهادي", keywords:["شك","أسئلة","مش فاهم","وسواس فكري","مقتنعش","حائر","مرتبك في إيماني","تايه فكريًا","قلقان من إيماني"], psych:"بتيجيلك أفكار وأسئلة عن الدين نفسك مقتنع إنها 'ممنوع' تفكر فيها، فبتكبتها بدل ما تواجهها — والكبت ده بالذات بيولّد قلق وبُعد، لأنك بتحس إن فيه حاجز بينك وبين ربنا اسمه 'الشك المُخجِل'.", quran:"﴿فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ﴾ (سورة النحل ٤٣) — السؤال مطلوب، مش عيب، والقرآن نفسه بيوجهك تسأل.", action:"اكتب السؤال اللي قلقك بالظبط بدل ما تسيبه غيمة مبهمة في دماغك، واسأل شيخ أو حد تثق في علمه — السؤال المحدد بيتحل، الغيمة المبهمة بتفضل قلقانك للأبد." },
+  { emoji:"😡", label:"زعلان من قدر حصلّي", asmaName:"الحكيم", prophetId:"grief", keywords:["زعلان من ربنا","ليه ربنا","مش عادل","ظلم","زعلان من القدر","غضبان","متنرفز من اللي حصل","مقهور من القدر","حاقد على الموقف","محبط من ربنا"], psych:"حصلك ظلم أو فقد أو ألم كبير، وجوّاك سؤال ما بتجرأش تقوله بصوت عالي: 'ليه ربنا سمح بده؟' — الغضب ده مش كفر، لكن لو اتكتم بيتحول لمسافة بينك وبين الله بدل ما يتحول لحوار صريح معاه.", quran:"يعقوب عليه السلام قال ﴿إِنَّمَا أَشْكُو بَثِّي وَحُزْنِي إِلَى اللَّهِ﴾ (سورة يوسف ٨٦) — هو اشتكى، ولحد ربنا مباشرة، ومكنش ده نقص إيمان.", action:"جرّب تدعو بصراحة كاملة تقول فيها اللي حاسس بيه، حتى لو غضب أو 'ليه'، بدل ما تسكت وتبعد." },
+  { emoji:"🕋", label:"حاسس بسكينة وقرب حقيقي", asmaName:"القريب", keywords:["سكينة","قريب من ربنا","مرتاح","طمأنينة","حمد لله","الحمد لله","حامد ربنا","شاكر","شكر لله","ممتن","مبسوط بنعمة","حاسس بنعمة","بحب ربنا","حب لله","قلبي مرتبط بربنا","مطمئن قلبي","راضي","رضا","فرحان بربنا","محظوظ من ربنا","ربنا كرمني"], psych:"في الفترة دي حاسس إن قلبك مرتاح وقت العبادة، ومحتاج تفهم ده مش صدفة — غالبًا بيحصل لما يكون فيه توافق بين اللي بتعمله واللي بتؤمن بيه، أو بعد أزمة خليتك تحتاج الله فعليًا، أو نعمة حسّيت بيها فعليًا وحمدت ربنا عليها.", quran:"﴿الَّذِينَ آمَنُوا وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ اللَّهِ ۗ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾ (سورة الرعد ٢٨) — و﴿لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ﴾ (سورة إبراهيم ٧).", action:"سجّل الإحساس ده دلوقتي وإيه اللي وصلك له، عشان ترجعله وقت الفتور — اعرف طريقك للقرب بينفعك تكرره. وقول 'الحمد لله' بصوت عالي، الشكر بيثبّت النعمة." },
+  { emoji:"🌗", label:"قريب وقت الضيق بس، وبعيد وقت الفرح", asmaName:"الشكور", keywords:["وقت الضيق بس","وقت الفرح بنسى","بنسى ربنا لما الدنيا حلوة","بفتكر ربنا وقت الأزمة بس"], psych:"ده نمط شائع جدًا: قلبك بيرجع لله تلقائي وقت الأزمة، لكن وقت الاستقرار بينسى — وده مش نفاق، لكنه علامة إن علاقتك بالله لسه مبنية على 'الحاجة' مش على 'الحب المستمر'.", quran:"﴿وَإِذَا مَسَّ الْإِنسَانَ الضُّرُّ دَعَانَا ... فَلَمَّا كَشَفْنَا عَنْهُ ضُرَّهُ مَرَّ كَأَن لَّمْ يَدْعُنَا﴾ (سورة يونس ١٢) — القرآن نفسه بيوصف النمط ده، يعني إنت مش غريب حالة.", action:"في أول لحظة فرح جاية، قول 'الحمد لله' بصوت عالي قبل أي حد تاني يعرف — تدريب بسيط يربط الفرح بالله مش بس الضيق." },
+  { emoji:"🔁", label:"خايف أرجع أقع في نفس الغلطة", asmaName:"الحليم", prophetId:"anger", keywords:["هرجع تاني","مش هعرف أستمر","خايف أفشل تاني","بأرجع للذنب","قلقان من نفسي","خايف من نفسي","مش واثق إني هثبت"], psych:"جرّبت ترجع قبل كده وفشلت، فبقيت خايف تحاول تاني عشان متتألمش من فشل جديد — الخوف ده بيخليك تأجل المحاولة بدل ما تقبل إن الرجوع لله مش لحظة واحدة، هو مسار بيتكرر فيه السقوط والقيام كتير.", quran:"﴿كُلُّ ابْنِ آدَمَ خَطَّاءٌ وَخَيْرُ الْخَطَّائِينَ التَّوَّابُونَ﴾ — الحديث بيوضّح إن التكرار نفسه مش عيب، العيب إنك تسيب المحاولة.", action:"بدل ما تخطط 'أتغيّر للأبد من بكرة'، خطط ليوم واحد بس. لو وقعت تاني، ارجع تاني — العدّاد بيتصفر كل مرة، مش بيتراكم ضدك." },
+  { emoji:"📉", label:"بقارن نفسي بناس متدينين أكتر", asmaName:"اللطيف", keywords:["مقارنة","ناس أحسن مني","متدينين أكتر","حاسس إني مقصر","محبط من نفسي قدامهم","حاسد التزامهم","غيران من التزامهم"], psych:"شايف حد ملتزم أكتر منك وبتحس إنك 'مش كفاية'، والمقارنة دي بتخليك تحس بيأس بدل ما تحفزك، لأنك بتقيس نفسك بنقطة نهاية حد تاني مش ببدايتك إنت.", quran:"﴿وَلَا تَتَمَنَّوْا مَا فَضَّلَ اللَّهُ بِهِ بَعْضَكُمْ عَلَىٰ بَعْضٍ﴾ (سورة النساء ٣٢) — كل واحد له مساره وابتلاءه الخاص بيه.", action:"قارن نفسك بنفسك بس: انت النهاردة أحسن ولا أوحش من انت الأسبوع اللي فات؟ ده المقياس الوحيد اللي له معنى." },
+  { emoji:"🧊", label:"مش حاسس بأي حاجة وقت العبادة (برود قلب)", asmaName:"المحيي", keywords:["برود","مش حاسس بحاجة","قلبي قاسي","مفيش إحساس","خدر","فاقد الإحساس","محايد تمامًا","مبسوطش ولا زعلان"], psych:"بتأدي العبادة صح من الناحية الشكلية، لكن حاسس إن قلبك 'ساكت' تمامًا، مش حزين ولا فرحان ولا خايف — والإحساس ده بالذات بيقلق أكتر من الفتور العادي لأنه بيحس وكأنه انقطاع كامل.", quran:"﴿ثُمَّ قَسَتْ قُلُوبُكُم مِّن بَعْدِ ذَٰلِكَ﴾ (سورة البقرة ٧٤) — القسوة درجات ومؤقتة، مش حالة نهائية، والقرآن نفسه بيقدّم علاجها: الذكر والتذكر.", action:"جرّب تقرأ سورة قصيرة بصوت عالي وانت واخد بالك من معنى كل كلمة بدل ما تقرأها بسرعة — أحيانًا القسوة سببها إننا بنعدّي على الكلام من غير ما نستوعبه." },
 ];
 
 
@@ -2015,6 +2015,7 @@ function showClosenessDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${c.action}</p>
     </div>
     ${c.prophetId ? `<div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="showProphetDetail('${c.prophetId}'); showScreen('screen-prophets');">اقرأ قصة ${MERAT_PATTERNS.find(x=>x.id===c.prophetId).prophetTitle.split(' —')[0]} 📖</div>` : ''}
+    ${c.asmaName ? `<div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="openAsmaByName('${c.asmaName}')">تعرّف على اسم الله «${c.asmaName}» المناسب لحالتك 📿</div>` : ''}
     <button class="btn-ghost" onclick="openRabbekScreen()">رجوع للقائمة</button>
   `;
 }
@@ -2146,6 +2147,73 @@ function prayerScoreForDay(doc){
   return score; // من 0 إلى 5
 }
 
+// ================= التقرير الروحاني الشامل — يجمع كل مصادر بيانات الركن في مكان واحد =================
+async function openSpiritualReport(){
+  const body = document.getElementById('spiritualReportBody');
+  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">جاري تجميع تقريرك...</p>`;
+  showScreen('screen-spiritual-report');
+
+  const uid = getUserId();
+  const worshipDocs = await firestoreListAll('worship');
+  const worship = worshipDocs.map(parseFirestoreDoc).filter(d => d.uid === uid && d.date);
+  const now = new Date();
+  const last30 = worship.filter(w => (now - new Date(w.date)) / 86400000 <= 30);
+  const avgScore = last30.length ? last30.reduce((s,w) => s + prayerScoreForDay(w), 0) / last30.length : 0;
+  const consistency30 = last30.length ? Math.round((avgScore / 5) * 100) : null;
+
+  const tawbaLog = getTawbaLog();
+  const readProphets = getReadProphets().length;
+  const readAsma = getReadAsma().length;
+  const quizState = localStorage.getItem('eihyaha_who_is_allah_state');
+
+  const stateLabels = { clear:"واضحة", vague:"في طور التوضيح", lost:"تايهة حاليًا", fear:"فيها خوف أو ذنب أكتر من طمأنينة" };
+
+  // ملخص نصي عام مبني على البيانات الفعلية
+  let summary = "";
+  if(consistency30 === null && tawbaLog.length === 0 && !quizState){
+    summary = "لسه معندناش بيانات كفاية نبني بيها تقرير حقيقي — استخدم أدوات الركن كذا يوم وارجع تاني.";
+  } else {
+    const parts = [];
+    if(consistency30 !== null) parts.push(consistency30 >= 70 ? "انتظامك في العبادة كويس" : consistency30 >= 40 ? "انتظامك في العبادة متوسط ومحتاج شوية دفعة" : "انتظامك في العبادة ضعيف الفترة دي");
+    if(tawbaLog.length > 0) parts.push(`باب التوبة مفتوح عندك وبتستخدمه (${tawbaLog.length} مرة)`);
+    if(quizState) parts.push(`معرفتك بربك ${stateLabels[quizState]}`);
+    summary = parts.join(" — ") + ".";
+  }
+
+  body.innerHTML = `
+    <div class="card" style="background:var(--sand);">
+      <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0;">${summary}</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${consistency30 !== null ? consistency30 + '٪' : '—'}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">انتظام العبادة (٣٠ يوم)</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${tawbaLog.length}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرات التوبة والعودة</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${readProphets}/22</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">قصص أنبياء قريتها</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/98</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">أسماء الله قريتها</p>
+      </div>
+    </div>
+
+    ${quizState ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:6px;">معرفتك بربك</p>
+        <p style="font-size:12.5px; color:var(--text); margin:0;">${stateLabels[quizState]}</p>
+      </div>` : ''}
+
+    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الروحاني بس حاليًا — تقرير شامل لكل الأركان السبعة هييجي في مرحلة لاحقة.</p>
+  `;
+}
+
 async function openWorshipInsights(){
   const body = document.getElementById('worshipInsightsBody');
   body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">جاري تحليل بياناتك...</p>`;
@@ -2224,13 +2292,35 @@ function getProphetOfDay(){
   const dayIndex = Math.floor(Date.now() / 86400000) % MERAT_PATTERNS.length;
   return MERAT_PATTERNS[dayIndex];
 }
-function renderHomeDailyProphet(){
-  const wrap = document.getElementById('homeDailyProphet');
+// ربط كل نبي باسم من أسماء الله الحسنى الأنسب لموقفه
+const PROPHET_ASMA_MAP = {
+  anger:"الحليم", grief:"الصبور", isolation:"القريب", chronic_illness:"الرحيم",
+  anxiety:"السلام", envy_betrayal:"اللطيف", fear_confrontation:"القوي", guilt_return:"التواب",
+  unseen_effort:"الشكور", facing_arrogance:"العزيز", standing_firm_mockery:"الحق", sacrifice:"الكريم",
+  corrupt_environment:"القدوس", letting_go_grudge:"العفو", biased_rejection:"العدل", unjust_blame:"الحكم",
+  keeping_promise:"الحفيظ", power_fairness:"المقسط", gratitude_success:"الغني", standing_alone_deviation:"الصمد",
+  long_wait_hope:"المجيب", false_accusation:"الشهيد",
+};
+
+function getProphetOfDay(){
+  const dayIndex = Math.floor(Date.now() / 86400000) % MERAT_PATTERNS.length;
+  return MERAT_PATTERNS[dayIndex];
+}
+
+// كارت موحّد في الرئيسية: قصة النبي + اسم الله المرتبط بيه، بدل كارتين منفصلين
+function renderHomeSpiritualTouch(){
+  const wrap = document.getElementById('homeSpiritualTouch');
   if(!wrap) return;
   const p = getProphetOfDay();
+  const asmaName = PROPHET_ASMA_MAP[p.id];
   wrap.innerHTML = `
     <p style="font-size:11px; color:#F0EAD6; font-weight:700; margin:0 0 6px;">📖 قصة نبي اليوم — ${p.prophetTitle}</p>
-    <p style="font-size:12.5px; color:#FBF6D9; line-height:1.7; margin:0;">${p.prophet.slice(0, 140)}...</p>
+    <p style="font-size:12.5px; color:#FBF6D9; line-height:1.7; margin:0 0 10px; cursor:pointer;" onclick="openProphetOfDay()">${p.prophet.slice(0, 120)}... <span style="color:#D4AF6A;">اقرا كامل ‹</span></p>
+    ${asmaName ? `
+      <div style="border-top:1px solid rgba(255,255,255,.2); padding-top:10px; cursor:pointer;" onclick="openAsmaByName('${asmaName}')">
+        <p style="font-size:11px; color:#D4AF6A; font-weight:700; margin:0 0 4px;">📿 الاسم المرتبط: ${asmaName}</p>
+        <p style="font-size:11.5px; color:#F0EAD6; margin:0;">شوف معناه وأثره وتطبيقه العملي ‹</p>
+      </div>` : ''}
   `;
 }
 function openProphetOfDay(){
@@ -3651,8 +3741,7 @@ renderStickyNotes('stickyNotesList', 10);
 renderStickyNotes('homeStickyNotesList', 3);
 renderHomeTasksPreview();
 renderHomeDailyFlash();
-renderHomeDailyProphet();
-renderHomeDailyAsma();
+renderHomeSpiritualTouch();
 
 // بوابة تسجيل دخول إجبارية — بتظهر في كل مرة يتفتح فيها التطبيق، بصرف النظر
 // عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
