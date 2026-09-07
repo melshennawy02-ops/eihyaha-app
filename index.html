@@ -12,11 +12,12 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; height:100%; background:var(--sand); font-family:'Segoe UI', Tahoma, Arial, sans-serif; color:var(--text); overflow-x:hidden;}
-  #app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; position:relative;
+  #appBgFixed{position:fixed; inset:0; z-index:0;
     background:
       linear-gradient(var(--app-bg-overlay), var(--app-bg-overlay)),
-      url('https://images.unsplash.com/photo-1759434190960-87511b2a5e5c?fm=jpg&q=70&w=900&auto=format&fit=crop') center/cover fixed no-repeat;
+      url('https://images.unsplash.com/photo-1759434190960-87511b2a5e5c?fm=jpg&q=70&w=900&auto=format&fit=crop') center/cover no-repeat;
   }
+  #app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; position:relative; z-index:1; background:transparent;}
   .screen{display:none; flex:1; padding:16px 16px 90px; animation:fadein .18s ease;}
   .screen.active{display:block;}
   @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
@@ -120,6 +121,7 @@
 </style>
 </head>
 <body>
+<div id="appBgFixed"></div>
 <div id="app">
 
   <!-- ===================== SCREEN: GATE (تسجيل دخول إجباري) ===================== -->
@@ -1423,9 +1425,53 @@ function openRabbekScreen(){
       <p class="layer-text" style="margin-top:6px;"><b>لله:</b> أحب الناس والأشياء، لكن خلّي حبك الأكبر لله — كده محدش وقراره بيبقى قادر يهزّك من جذورك.</p>
     </div>
 
-    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">من كتاب «بوصلة التسليم»</p>
+    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px; margin-bottom:20px;">من كتاب «بوصلة التسليم»</p>
+
+    <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
+      <span style="font-size:14px;">🔍</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">ليه حاسس إنك بعيد أو قريب من ربنا دلوقتي؟</p>
+    </div>
+    <div id="closenessList">
+      ${CLOSENESS_BANK.map((c,i) => `
+        <div class="tool-row" onclick="showClosenessDetail(${i})">
+          <div class="icon-circle" style="font-size:15px;">${c.emoji}</div>
+          <div><div class="card-title" style="font-size:13px;">${c.label}</div></div>
+          <div class="arrow">‹</div>
+        </div>
+      `).join('')}
+    </div>
   `;
   showScreen('screen-rabbek');
+}
+
+// بنك تحليل نفسي-روحاني: ليه حاسس إنك بعيد أو قريب من ربنا، وأسباب كل حالة
+const CLOSENESS_BANK = [
+  { emoji:"🌪️", label:"مشغول جدًا بالدنيا", psych:"لما جدولك مليان شغل والتزامات، العبادة بتبقى أول حاجة تتأجل — مش لأنك رفضت الله، لكن لأن عقلك بيدي الأولوية للحاجة اللي ليها ديدلاين واضح، والعلاقة بالله محدش بيحاسبك عليها فورًا فبتتأخر باستمرار.", quran:"﴿أَلْهَاكُمُ التَّكَاثُرُ﴾ (سورة التكاثر ١) — الانشغال بجمع الدنيا بيلهي القلب عن أهم حاجة فيه.", action:"اختار وقت ثابت صغير (٥ دقايق) قبل أي التزام يومي، وسمّيه بالاسم في جدولك زي أي اجتماع تاني — لما يبقى له وقت محجوز، مش هيتأجل." },
+  { emoji:"😔", label:"حاسس بذنب وخجلان أرجع", psych:"كل ما تفكر ترجع، بيجيلك صوت جوّاك يقولك 'إنت مش مستاهل بعد كل اللي عملته' — والإحساس ده بالذات هو اللي بيبعدك أكتر، لأنك بتتجنب اللي المفروض يقربك.", quran:"﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ﴾ (سورة الزمر ٥٣) — الآية موجّهة بالذات لمن أسرف على نفسه، مش لمن هو بريء أصلًا.", action:"متستناش تحس إنك 'مستاهل' عشان ترجع — الرجوع نفسه هو اللي بيخليك مستاهل. جرّب سجدة واحدة النهاردة، من غير شروط." },
+  { emoji:"🥱", label:"العبادة بقت روتين فاضي", psych:"بتصلي وبتصوم، لكن حاسس إن قلبك مش موجود — الجسد بيأدي والعقل شارد. ده مش نفاق، ده فتور طبيعي بيحصل لما العبادة بتتكرر من غير تجديد في الفهم أو الإحساس.", quran:"﴿وَلَا تَكُونُوا كَالَّذِينَ نَسُوا اللَّهَ فَأَنسَاهُمْ أَنفُسَهُمْ﴾ (سورة الحشر ١٩) — نسيان الله بيؤدي لغربة عن النفس نفسها، مش بس عن العبادة.", action:"غيّر حاجة صغيرة في شكل العبادة: اقرأ ترجمة معنى الآيات اللي بتقولها في الصلاة، أو صلّي في مكان مختلف — التجديد بيكسر الروتين." },
+  { emoji:"❓", label:"عندي شك وأسئلة مقلقاني", psych:"بتيجيلك أفكار وأسئلة عن الدين نفسك مقتنع إنها 'ممنوع' تفكر فيها، فبتكبتها بدل ما تواجهها — والكبت ده بالذات بيولّد قلق وبُعد، لأنك بتحس إن فيه حاجز بينك وبين ربنا اسمه 'الشك المُخجِل'.", quran:"﴿فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ﴾ (سورة النحل ٤٣) — السؤال مطلوب، مش عيب، والقرآن نفسه بيوجهك تسأل.", action:"اكتب السؤال اللي قلقك بالظبط بدل ما تسيبه غيمة مبهمة في دماغك، واسأل شيخ أو حد تثق في علمه — السؤال المحدد بيتحل، الغيمة المبهمة بتفضل قلقانك للأبد." },
+  { emoji:"😡", label:"زعلان من قدر حصلّي", psych:"حصلك ظلم أو فقد أو ألم كبير، وجوّاك سؤال ما بتجرأش تقوله بصوت عالي: 'ليه ربنا سمح بده؟' — الغضب ده مش كفر، لكن لو اتكتم بيتحول لمسافة بينك وبين الله بدل ما يتحول لحوار صريح معاه.", quran:"يعقوب عليه السلام قال ﴿إِنَّمَا أَشْكُو بَثِّي وَحُزْنِي إِلَى اللَّهِ﴾ (سورة يوسف ٨٦) — هو اشتكى، ولحد ربنا مباشرة، ومكنش ده نقص إيمان.", action:"جرّب تدعو بصراحة كاملة تقول فيها اللي حاسس بيه، حتى لو غضب أو 'ليه'، بدل ما تسكت وتبعد." },
+  { emoji:"🕋", label:"حاسس بسكينة وقرب حقيقي", psych:"في الفترة دي حاسس إن قلبك مرتاح وقت العبادة، ومحتاج تفهم ده مش صدفة — غالبًا بيحصل لما يكون فيه توافق بين اللي بتعمله واللي بتؤمن بيه، أو بعد أزمة خليتك تحتاج الله فعليًا.", quran:"﴿الَّذِينَ آمَنُوا وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ اللَّهِ ۗ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾ (سورة الرعد ٢٨).", action:"سجّل الإحساس ده دلوقتي وإيه اللي وصلك له، عشان ترجعله وقت الفتور — اعرف طريقك للقرب بينفعك تكرره." },
+];
+
+function showClosenessDetail(i){
+  const c = CLOSENESS_BANK[i];
+  const body = document.getElementById('rabbekBody');
+  body.innerHTML = `
+    <div class="layer-card l1">
+      <p class="layer-title" style="color:var(--navy-dark);">${c.emoji} ${c.label}</p>
+      <p class="layer-text" style="margin-top:8px;">${c.psych}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p>
+      <p class="layer-text" style="margin-top:8px;">${c.quran}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${c.action}</p>
+    </div>
+    <button class="btn-ghost" onclick="openRabbekScreen()">رجوع للقائمة</button>
+  `;
 }
 
 // ---------- 2) متابعة عباداتك: تتبع يومي للصلاة والقرآن والأذكار ----------
