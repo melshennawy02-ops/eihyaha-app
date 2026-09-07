@@ -60,7 +60,7 @@
   .pillar-card.wide{grid-column:1 / span 2;}
 
   /* ===== Bottom nav ===== */
-  .bottomnav{position:absolute; bottom:0; left:0; right:0; background:var(--white); border-top:1px solid #EDE8D8; display:flex; justify-content:space-around; padding:10px 0 14px; max-width:480px; margin:0 auto;}
+  .bottomnav{position:fixed; bottom:0; left:0; right:0; background:var(--white); border-top:1px solid #EDE8D8; display:flex; justify-content:space-around; padding:10px 0 14px; max-width:480px; margin:0 auto; z-index:50;}
   .navitem{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:var(--muted); cursor:pointer;}
   .navitem.active{color:var(--navy-dark); font-weight:700;}
   .navitem .navicon{font-size:19px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
@@ -130,7 +130,10 @@
   <!-- ===================== SCREEN: HOME ===================== -->
   <div class="screen" id="screen-home">
     <div class="topbar-new">
-      <div class="icon-badge-sm" onclick="showSafety()">🔔</div>
+      <div class="icon-badge-sm" onclick="openNotificationsPanel()" style="position:relative;">
+        🔔
+        <div id="notifDot" style="display:none; position:absolute; top:-2px; left:-2px; width:10px; height:10px; border-radius:50%; background:#D9483C; border:1.5px solid var(--white);"></div>
+      </div>
       <div style="text-align:center; flex:1;">
         <p style="font-size:10px; color:var(--gold); margin:0;">🌿</p>
         <h1 id="h1-brand" style="font-size:18px; margin:2px 0 0;">إحياها باستمتاع</h1>
@@ -141,7 +144,7 @@
 
     <div style="padding:0 16px;">
       <div class="hero-banner">
-        <p style="font-size:15px; font-weight:700; line-height:1.6; margin:0 0 8px; position:relative;">لست فقط ما مررت به..<br>بل ما تختار أن تكونه غدًا</p>
+        <p style="font-size:15px; font-weight:700; line-height:1.6; margin:0 0 8px; position:relative;">السلام الداخلي النفسي<br>هو بوابتك للجنة</p>
         <div style="width:34px; height:2px; background:var(--gold); position:relative;"></div>
       </div>
 
@@ -152,27 +155,6 @@
           <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">تحدث مع مختص الآن</p>
         </div>
         <div style="font-size:16px; color:var(--gold);">‹</div>
-      </div>
-
-      <div class="card" style="margin-bottom:20px;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-          <div class="icon-circle" style="width:34px; height:34px; font-size:15px;">✅</div>
-          <p style="font-size:13px; font-weight:700; margin:0; flex:1;">مهامك اليوم</p>
-          <div onclick="openTasksScreen()" style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;">التقويم كامل ‹</div>
-        </div>
-        <div id="homeTasksPreview"></div>
-        <div style="display:flex; gap:6px; margin-top:8px;">
-          <input type="text" id="homeQuickTaskTitle" placeholder="أضف مهمة سريعة..." style="flex:1;" onkeypress="if(event.key==='Enter') addHomeQuickTask()">
-          <button class="btn-primary" style="width:auto; margin:0; padding:9px 16px;" onclick="addHomeQuickTask()">+</button>
-        </div>
-      </div>
-
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:20px;">
-        <p class="card-title">📌 ملاحظة سريعة</p>
-        <textarea id="homeStickyInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:44px;"></textarea>
-        <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('homeStickyInput','homeStickyChooserWrap')">حفظ</button>
-        <div id="homeStickyChooserWrap"></div>
-        <div id="homeStickyNotesList" style="margin-top:8px;"></div>
       </div>
 
       <p class="section-title">كيف حالك اليوم؟</p>
@@ -193,6 +175,27 @@
         <p class="pillars-title" style="margin:0; white-space:nowrap;">الأركان السبعة لحياتك</p>
       </div>
       <div class="pillars-grid" id="pillarsGrid"></div>
+
+      <div class="card" style="margin-bottom:20px; margin-top:8px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div class="icon-circle" style="width:34px; height:34px; font-size:15px;">✅</div>
+          <p style="font-size:13px; font-weight:700; margin:0; flex:1;">مهامك اليوم</p>
+          <div onclick="openTasksScreen()" style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;">التقويم كامل ‹</div>
+        </div>
+        <div id="homeTasksPreview"></div>
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          <input type="text" id="homeQuickTaskTitle" placeholder="أضف مهمة سريعة..." style="flex:1;" onkeypress="if(event.key==='Enter') addHomeQuickTask()">
+          <button class="btn-primary" style="width:auto; margin:0; padding:9px 16px;" onclick="addHomeQuickTask()">+</button>
+        </div>
+      </div>
+
+      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:20px;">
+        <p class="card-title">📌 ملاحظة سريعة</p>
+        <textarea id="homeStickyInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:44px;"></textarea>
+        <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('homeStickyInput','homeStickyChooserWrap')">حفظ</button>
+        <div id="homeStickyChooserWrap"></div>
+        <div id="homeStickyNotesList" style="margin-top:8px;"></div>
+      </div>
     </div>
   </div>
 
@@ -325,6 +328,16 @@
   </div>
 
   <!-- ===================== BOTTOM NAV ===================== -->
+  <!-- ===================== SCREEN: NOTIFICATIONS ===================== -->
+  <div class="screen" id="screen-notifications">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1>الإشعارات</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="notificationsBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: STATS (إحصائياتي) ===================== -->
   <div class="screen" id="screen-stats">
     <div class="topbar">
@@ -533,39 +546,87 @@ function openAdminScreen(){
 
 async function renderAdminScreen(){
   const body = document.getElementById('adminBody');
-  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">جاري تحميل طلبات المتخصصين...</p>`;
+  body.innerHTML = `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:4px;">🏠 ترتيب الصفحة الرئيسية</p>
+      <p class="card-sub" style="margin-bottom:10px;">الترتيب ده هيتطبّق على كل المستخدمين في التطبيق — مش على جهازك بس.</p>
+      <div id="adminPillarOrderList"></div>
+    </div>
+    <p style="font-size:12px; color:var(--muted); text-align:center; margin:18px 0 10px;">جاري تحميل طلبات المتخصصين...</p>
+  `;
+  renderAdminPillarOrder();
+
   const docs = await firestoreListAll('specialists');
   const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  const specialistsWrap = document.createElement('div');
 
   if(specialists.length === 0){
-    body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
-    return;
-  }
-
-  const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗' };
-  const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34' };
-
-  body.innerHTML = specialists.map(s => `
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-        <div>
-          <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
-          <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
+    specialistsWrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
+  } else {
+    const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗' };
+    const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34' };
+    specialistsWrap.innerHTML = specialists.map(s => `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div>
+            <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
+            <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
+          </div>
+          <span style="font-size:10px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
         </div>
-        <span style="font-size:10px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
+        ${s.bio ? `<p style="font-size:12px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
+        ${s.license ? `<p style="font-size:11px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
+        <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
+        ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
+        ${s.status === 'pending' ? `
+          <div style="display:flex; gap:8px;">
+            <button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">✓ قبول</button>
+            <button class="btn-ghost" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="reviewSpecialist('${s.id}','rejected')">✗ رفض</button>
+          </div>
+        ` : ''}
       </div>
-      ${s.bio ? `<p style="font-size:12px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
-      ${s.license ? `<p style="font-size:11px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
-      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
-      ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
-      ${s.status === 'pending' ? `
-        <div style="display:flex; gap:8px;">
-          <button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">✓ قبول</button>
-          <button class="btn-ghost" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="reviewSpecialist('${s.id}','rejected')">✗ رفض</button>
-        </div>
-      ` : ''}
+    `).join('');
+  }
+  body.querySelector('p:last-child').replaceWith(specialistsWrap);
+}
+
+// ---------- ترتيب الأركان في الصفحة الرئيسية (إعداد عام لكل المستخدمين، أدمن فقط) ----------
+function renderAdminPillarOrder(){
+  if(!checkAdminAccess()) return; // طبقة حماية إضافية حتى لو اتنادى الدالة دي غلط
+  const wrap = document.getElementById('adminPillarOrderList');
+  wrap.innerHTML = PILLARS.map((p, i) => `
+    <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EDE8D8;">
+      <span style="font-size:13px; flex:1;">${p.icon} ${p.title}</span>
+      <div onclick="movePillar(${i}, -1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▲</div>
+      <div onclick="movePillar(${i}, 1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▼</div>
     </div>
   `).join('');
+}
+
+async function movePillar(index, direction){
+  if(!checkAdminAccess()) return; // مينفعش أي مستخدم غير الأدمن يغيّر الترتيب العام
+  const newIndex = index + direction;
+  if(newIndex < 0 || newIndex >= PILLARS.length) return;
+  [PILLARS[index], PILLARS[newIndex]] = [PILLARS[newIndex], PILLARS[index]];
+  renderAdminPillarOrder();
+  renderHome();
+  await firestoreSetDoc('app_config', 'home_layout', { pillarOrder: PILLARS.map(p => p.id).join(',') });
+}
+
+// كل المستخدمين (مش بس الأدمن) بيقروا الترتيب المحفوظ ده لما التطبيق يفتح
+async function loadPillarOrder(){
+  try{
+    const config = await firestoreGetDoc('app_config', 'home_layout');
+    if(config && config.pillarOrder){
+      const orderIds = String(config.pillarOrder).split(',').map(Number);
+      const reordered = orderIds.map(id => PILLARS.find(p => p.id === id)).filter(Boolean);
+      PILLARS.forEach(p => { if(!reordered.includes(p)) reordered.push(p); });
+      PILLARS.length = 0;
+      PILLARS.push(...reordered);
+    }
+  }catch(err){
+    console.warn('تعذّر تحميل ترتيب الصفحة الرئيسية، هيتستخدم الترتيب الافتراضي:', err);
+  }
 }
 
 async function reviewSpecialist(uid, decision){
@@ -592,8 +653,10 @@ function showAuthError(msg){
 }
 
 // ---------- الدخول للتطبيق بعد نجاح تسجيل الدخول/الحساب ----------
-function enterApp(){
+async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
+  await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
+  renderHome();
   goHome();
 }
 
@@ -958,10 +1021,10 @@ const PILLARS = [
   {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, tag:"اكتشف نفسك .. وكن أفضل نسخة منها", grad:"linear-gradient(135deg, #0B3D3A, #145048)"},
   {id:1, title:"الركن الروحاني", icon:"🕌", ready:false, tag:"قربك من الله .. راحة لقلبك", grad:"linear-gradient(135deg, #7A5A1C, #C9A24B)", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:3, title:"الركن العائلي", icon:"👪", ready:false, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)"},
+  {id:3, title:"الركن العائلي", icon:"👪", ready:false, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:6, title:"الركن المادي", icon:"💰", ready:false, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:5, title:"الركن المهني", icon:"💼", ready:false, tag:"طموح أكبر .. إنجازات أعمق", grad:"linear-gradient(135deg, #4A2E6B, #6B4696)"},
-  {id:7, title:"الركن الصحي", icon:"🩺", ready:false, tag:"جسدك أمانة .. فاعتنِ به", grad:"linear-gradient(135deg, #0F3D2E, #1D6B52)"},
+  {id:5, title:"الركن المهني", icon:"💼", ready:false, tag:"طموح أكبر .. إنجازات أعمق", grad:"linear-gradient(135deg, #4A2E6B, #6B4696)", img:"https://images.unsplash.com/photo-1752223638233-4c9545333f89?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:7, title:"الركن الصحي", icon:"🩺", ready:false, tag:"جسدك أمانة .. فاعتنِ به", grad:"linear-gradient(135deg, #0F3D2E, #1D6B52)", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=900&auto=format&fit=crop"},
 ];
 
 // ================= نظام الألوان المتعددة (Premium Themes) =================
@@ -1925,7 +1988,45 @@ function renderStickyNotes(targetId, limit){
 // ================= قراءة السجل الكامل من Firestore (كل الأجهزة) مقسّم بالتاريخ =================
 const ARABIC_MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
-// ================= المهام + التقويم + إشعارات محلية =================
+// ================= الإشعارات — تنبيهات المهام ذات الوقت المحدد =================
+function openNotificationsPanel(){
+  renderNotificationsPanel();
+  showScreen('screen-notifications');
+}
+
+function renderNotificationsPanel(){
+  const body = document.getElementById('notificationsBody');
+  const key = formatDateKey(new Date());
+  const tasks = getTasksForDate(key).filter(t => t.time).sort((a,b) => a.time.localeCompare(b.time));
+
+  if(tasks.length === 0){
+    body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:24px 0;">مفيش تنبيهات مهام النهاردة</p>`;
+    return;
+  }
+  const now = new Date();
+  const nowHHMM = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  body.innerHTML = tasks.map(t => {
+    const isPast = t.time <= nowHHMM;
+    return `
+      <div class="card" style="display:flex; align-items:center; gap:10px;">
+        <div class="icon-circle" style="width:34px; height:34px; font-size:15px;">${t.done ? '✅' : (isPast ? '⏰' : '🕐')}</div>
+        <div style="flex:1;">
+          <p style="font-size:13px; font-weight:700; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
+          <p style="font-size:11px; color:var(--muted); margin:2px 0 0;">الساعة ${t.time}${isPast && !t.done ? ' — فات ميعادها' : ''}</p>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// نقطة حمراء فوق الجرس لو فيه مهمة النهاردة ليها وقت محدد ولسه مخلصتهاش
+function updateNotifDot(){
+  const dot = document.getElementById('notifDot');
+  if(!dot) return;
+  const key = formatDateKey(new Date());
+  const hasPending = getTasksForDate(key).some(t => t.time && !t.done);
+  dot.style.display = hasPending ? 'block' : 'none';
+}
 // ملاحظة صادقة: دي إشعارات محلية بتشتغل بس لو التطبيق مفتوح في المتصفح/الخلفية.
 // إشعارات حقيقية توصل والتطبيق مقفول محتاجة Firebase Cloud Messaging + سيرفر،
 // وده هيتضاف في مرحلة لاحقة بعد استقرار الميزات الأساسية.
@@ -2045,6 +2146,7 @@ function addHomeQuickTask(){
 // معاينة مهام اليوم في الشاشة الرئيسية
 function renderHomeTasksPreview(){
   const wrap = document.getElementById('homeTasksPreview');
+  updateNotifDot();
   if(!wrap) return;
   const key = formatDateKey(new Date());
   const tasks = getTasksForDate(key).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
@@ -2090,6 +2192,7 @@ function showLocalNotification(title, body){
 }
 
 function checkDueTasks(){
+  updateNotifDot();
   if(localStorage.getItem('eihyaha_task_notifications') === 'off') return;
   const now = new Date();
   const key = formatDateKey(now);
