@@ -124,6 +124,19 @@
 <div id="appBgFixed"></div>
 <div id="app">
 
+  <!-- ===================== SCREEN: ONBOARDING (ترحيب مرة واحدة) ===================== -->
+  <div class="screen" id="screen-onboarding">
+    <div style="padding:50px 16px 0; text-align:center;">
+      <p style="font-size:11px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها باستمتاع ✦</p>
+      <h1 style="font-size:20px; font-weight:700; margin:0 0 16px;">أهلًا بيك في رحلتك</h1>
+      <p style="font-size:13px; color:var(--muted); line-height:1.8; margin:0 0 24px; padding:0 8px;">إحياها باستمتاع مش تطبيق دعم نفسي عادي — هدفنا نساعدك توازن حياتك كاملة في <b style="color:var(--text);">٧ أركان</b>، مش ركن واحد بس.</p>
+    </div>
+    <div style="padding:0 16px;">
+      <div id="onboardingPillarsList" style="margin-bottom:20px;"></div>
+      <button class="btn-primary" onclick="finishOnboarding()">يلا نبدأ رحلتي 🌿</button>
+    </div>
+  </div>
+
   <!-- ===================== SCREEN: GATE (تسجيل دخول إجباري) ===================== -->
   <div class="screen active" id="screen-gate">
     <div style="padding:50px 16px 0; text-align:center;">
@@ -144,7 +157,7 @@
       <div style="text-align:center; flex:1;">
         <p style="font-size:10px; color:var(--gold); margin:0;">🌿</p>
         <h1 id="h1-brand" style="font-size:18px; margin:2px 0 0;">إحياها باستمتاع</h1>
-        <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">رحلتك لحياة نفسية أفضل</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">توازن حياتك الكامل .. في ٧ أركان</p>
       </div>
       <div class="icon-badge-sm" onclick="openAccountScreen()">👤</div>
     </div>
@@ -155,7 +168,15 @@
         <div style="width:34px; height:2px; background:var(--gold); position:relative;"></div>
       </div>
 
-      <div class="quick-help-card" onclick="startEhkily()">
+      <div style="display:flex; align-items:center; gap:8px; margin:6px 0 14px;">
+        <span style="font-size:14px;">🌿</span>
+        <p style="font-size:10.5px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
+        <div style="flex:1; height:1px; background:var(--gold); opacity:.4;"></div>
+        <p class="pillars-title" style="margin:0; white-space:nowrap;">الأركان السبعة لحياتك</p>
+      </div>
+      <div class="pillars-grid" id="pillarsGrid"></div>
+
+      <div class="quick-help-card" onclick="startEhkily()" style="margin-top:8px;">
         <div class="icon-circle" style="width:38px; height:38px; font-size:17px;">🧠</div>
         <div style="flex:1;">
           <p style="font-size:13px; font-weight:700; margin:0;">مساعدة فورية</p>
@@ -174,14 +195,6 @@
         <div class="mood-card" style="background:#FBF6D9;"><div class="mood-emoji" data-mood="5">😌</div><p class="mood-label">ممتاز</p></div>
       </div>
       <div id="moodFeedback" style="display:none; margin:-6px 0 16px;"></div>
-
-      <div style="display:flex; align-items:center; gap:8px; margin:22px 0 14px;">
-        <span style="font-size:14px;">🌿</span>
-        <p style="font-size:10.5px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
-        <div style="flex:1; height:1px; background:var(--gold); opacity:.4;"></div>
-        <p class="pillars-title" style="margin:0; white-space:nowrap;">الأركان السبعة لحياتك</p>
-      </div>
-      <div class="pillars-grid" id="pillarsGrid"></div>
 
       <div class="card" style="margin-bottom:20px; margin-top:8px;">
         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
@@ -748,6 +761,28 @@ async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
   await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
   renderHome();
+  if(!localStorage.getItem('eihyaha_onboarding_seen')){
+    showOnboarding();
+  } else {
+    goHome();
+  }
+}
+
+function showOnboarding(){
+  const wrap = document.getElementById('onboardingPillarsList');
+  wrap.innerHTML = PILLARS.map(p => `
+    <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #EDE8D8;">
+      <div style="width:34px; height:34px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:16px;">${p.icon}</div>
+      <p style="font-size:13px; font-weight:600; margin:0;">${p.title}</p>
+    </div>
+  `).join('');
+  document.getElementById('bottomNav').style.display = 'none';
+  showScreen('screen-onboarding');
+}
+
+function finishOnboarding(){
+  localStorage.setItem('eihyaha_onboarding_seen', '1');
+  document.getElementById('bottomNav').style.display = 'flex';
   goHome();
 }
 
