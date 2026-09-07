@@ -959,10 +959,6 @@ function renderGateScreen(){
   const isFirstTime = !localStorage.getItem('eihyaha_ever_used_auth');
   const biometricReady = webAuthnSupported && localStorage.getItem('eihyaha_biometric_enabled') === '1';
   body.innerHTML = `
-    ${biometricReady ? `
-      <button class="btn-primary" style="margin-bottom:10px;" onclick="loginWithBiometric()">👆 ادخل ببصمة الإصبع</button>
-      <p style="font-size:11px; color:var(--muted); text-align:center; margin:0 0 16px;">أو سجّل دخولك بالطريقة العادية تحت</p>
-    ` : ''}
     <div style="display:flex; gap:8px; margin-bottom:16px;">
       <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignin" onclick="setAuthMode('signin')">تسجيل الدخول</div>
       <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">حساب جديد</div>
@@ -973,6 +969,12 @@ function renderGateScreen(){
     <div id="authFieldsWrap"></div>
     <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
     <button class="btn-primary" id="authSubmitBtn">دخول</button>
+    ${biometricReady ? `
+      <div style="display:flex; flex-direction:column; align-items:center; margin-top:18px;">
+        <div onclick="loginWithBiometric()" style="width:56px; height:56px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.5), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 6px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.4);">👆</div>
+        <p style="font-size:11px; color:var(--muted); margin:8px 0 0;">أو ادخل ببصمة الإصبع</p>
+      </div>
+    ` : ''}
     <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق</p>
   `;
   setAuthMode(isFirstTime ? 'signup' : 'signin');
