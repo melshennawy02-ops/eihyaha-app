@@ -1039,6 +1039,10 @@ function renderStatsScreen(){
         <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${stickyCount}</p>
         <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">ملاحظات سريعة</p>
       </div>
+      <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${getTawbaCount()}</p>
+        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">مرات رجوعك في "التوبة والعودة" — كل مرة خطوة، مش رقم بيتحاسب عليه</p>
+      </div>
     </div>
     ${Object.keys(counts).length > 0 ? `
       <div class="card">
@@ -1990,10 +1994,27 @@ function showProphetDetail(id){
 }
 
 // ---------- 4) التوبة والعودة ----------
+// ---------- سجل توبة مخصص (منفصل عن دفتر اليوميات العام لدقة الرصد والإحصائيات) ----------
+function getTawbaLog(){ return JSON.parse(localStorage.getItem('eihyaha_tawba_log') || '[]'); }
+function saveTawbaLogEntry(text, matchedIndex){
+  const log = getTawbaLog();
+  log.unshift({ text, matchedIndex, date: new Date().toISOString() });
+  localStorage.setItem('eihyaha_tawba_log', JSON.stringify(log.slice(0, 100)));
+}
+function getTawbaCount(){
+  return getTawbaLog().length;
+}
+
 function openTawbaScreen(){
   const adam = MERAT_PATTERNS.find(x => x.id === 'guilt_return');
+  const count = getTawbaCount();
   const body = document.getElementById('tawbaBody');
   body.innerHTML = `
+    ${count > 0 ? `
+      <div class="card" style="background:var(--sand); text-align:center;">
+        <p style="font-size:12.5px; color:var(--text); margin:0; line-height:1.7;">${count === 1 ? 'دي أول مرة بتسجّل فيها رجوعك — بداية حقيقية.' : `ده تسجيلك رقم ${count} — والاستمرار في المحاولة نفسه، حتى لو رجعت أكتر من مرة، هو قوة مش ضعف.`}</p>
+      </div>
+    ` : ''}
     <div class="layer-card l2">
       <p class="layer-title" style="color:#8A6A1E;">📖 ${adam.prophetTitle}</p>
       <p class="layer-text" style="margin-top:8px;">${adam.prophet}</p>
@@ -2004,9 +2025,11 @@ function openTawbaScreen(){
       <button class="btn-primary" style="margin-top:8px;" onclick="saveTawba()">سجّل واستغفر</button>
       <p id="tawbaStatus" style="font-size:11px; color:#9FB3AE; margin-top:8px; text-align:center;"></p>
     </div>
+    <div id="tawbaResultWrap"></div>
   `;
   showScreen('screen-tawba');
 }
+
 async function saveTawba(){
   const input = document.getElementById('tawbaInput');
   const text = input.value.trim();
@@ -2018,8 +2041,63 @@ async function saveTawba(){
   localJournal.unshift({ type:'sticky', text: '🕊️ ' + text, date: dateLabel });
   localStorage.setItem('eihyaha_journal', JSON.stringify(localJournal.slice(0,200)));
   renderJournalHistory();
-  input.value = '';
   document.getElementById('tawbaStatus').textContent = ok ? '✓ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس';
+
+  // تحليل مخصص لكلامه (بنفس منطق علاقتك بربك)
+  const matchedIndex = matchClosenessText(text);
+  saveTawbaLogEntry(text, matchedIndex);
+
+  // ---------- رصد التكرار: هل نفس النمط تكرر مؤخرًا؟ ----------
+  const recentLog = getTawbaLog().slice(0, 6); // آخر 6 تسجيلات (بما فيهم الحالي)
+  let repeatCount = 0;
+  if(matchedIndex !== null){
+    repeatCount = recentLog.filter(e => e.matchedIndex === matchedIndex).length;
+  }
+
+  const resultWrap = document.getElementById('tawbaResultWrap');
+  let matchedHtml = '';
+  let prophetHtml = '';
+
+  if(matchedIndex !== null){
+    const c = CLOSENESS_BANK[matchedIndex];
+    matchedHtml = `
+      <div class="layer-card l1" style="margin-top:14px;">
+        <p class="layer-title" style="color:var(--navy-dark);">${c.emoji} أقرب حاجة لكلامك: ${c.label}</p>
+        <p class="layer-text" style="margin-top:8px;">${c.action}</p>
+      </div>`;
+
+    // ---------- تنويع القصة النبوية حسب نوع الاعتراف بدل آدم دايمًا ----------
+    if(c.prophetId){
+      const p = MERAT_PATTERNS.find(x => x.id === c.prophetId);
+      prophetHtml = `
+        <div class="layer-card l2" style="margin-top:14px;">
+          <p class="layer-title" style="color:#8A6A1E;">📖 قصة أقرب لموقفك: ${p.prophetTitle}</p>
+          <p class="layer-text" style="margin-top:8px;">${p.prophet}</p>
+        </div>`;
+    }
+
+    // ---------- تنبيه لطيف لو نفس النمط تكرر 3 مرات أو أكتر ----------
+    if(repeatCount >= 3){
+      matchedHtml += `
+        <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-top:14px;">
+          <p style="font-size:12px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن "${c.label}" رجع معاك كذا مرة قريّب من بعض. ده مش انتقاد، لكن أحيانًا النمط المتكرر محتاج مساحة أعمق نتكلم فيها — تحب تحكي عن اللي بيحصل بالتفصيل؟</p>
+          <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startEhkily()">احكيلي عن اللي بيحصل ←</div>
+        </div>`;
+    }
+  }
+
+  resultWrap.innerHTML = `
+    ${matchedHtml}
+    ${prophetHtml}
+    <div class="layer-card l3" style="text-align:center; padding:20px 16px; margin-top:14px;">
+      <p style="font-size:11px; color:var(--muted); margin:0 0 8px;">استغفارك دلوقتي</p>
+      <p style="font-size:15px; font-weight:700; color:var(--navy-dark); line-height:1.9; margin:0;">أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ</p>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:14px;">
+      <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openWorshipScreen()">سجّل استغفار/قيام في عباداتك ←</div>
+    </div>
+  `;
+  input.value = '';
 }
 
 // ---------- 5) ذكر ودعاء اليوم ----------
