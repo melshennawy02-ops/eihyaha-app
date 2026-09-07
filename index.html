@@ -1437,9 +1437,76 @@ const EHKILY_TREE = {
 // ================= الركن الروحاني — الأدوات الخمس =================
 
 // ---------- 1) علاقتك بربك: الخوف والرجاء والحب لله مقابل لغير الله ----------
+// بنك أنواع التوحيد الثلاثة — تعريف + أثر نفسي + آية + سؤال تأملي يساعد المستخدم يحدد وضعه
+const TAWHEED_BANK = [
+  {
+    icon:"🌍", title:"توحيد الربوبية",
+    def:"الإيمان بأن الله وحده هو الخالق، الرازق، مالك الملك، المدبّر لكل حركة في الكون — مفيش شريك له في الخلق أو التدبير أو التصرف في مصائر الخلق.",
+    psych:"لو استقر في قلبك إن مفيش حد (شخص، ظرف، حظ، نظام) بيقدر يضرك أو ينفعك إلا بإذن الله، ده بيحرّرك من قلق اجتماعي كبير: الخوف الزايد من الناس، والشعور بالعجز قدام 'الظروف'. لكن لو ضعف الإيمان بالربوبية، بتلاقي نفسك بتحمّل 'الحظ' أو 'الدنيا' مسؤولية كل حاجة، وده بيولّد إحساس دائم بفقدان السيطرة.",
+    quran:"﴿قُلْ مَن يَرْزُقُكُم مِّنَ السَّمَاءِ وَالْأَرْضِ أَمَّن يَمْلِكُ السَّمْعَ وَالْأَبْصَارَ ... فَسَيَقُولُونَ اللَّهُ﴾ (سورة يونس ٣١)",
+    question:"لما بيحصلك حاجة وحشة، صوتك الداخلي بيقول 'ليه أنا بس' أو 'الدنيا بتحاربني'، ولا بيقول 'ده مقدّر من الله لحكمة'؟ الإجابة الأولى علامة ضعف في استحضار الربوبية، مش نقص إيمان كامل — بس محتاج انتباه.",
+  },
+  {
+    icon:"🤲", title:"توحيد الألوهية",
+    def:"إفراد الله وحده بالعبادة — الدعاء، الخوف، الرجاء، الحب، التوكل — كل ده يوجّه لله وحده، مش لأي مخلوق مهما كان قريب أو مهم.",
+    psych:"ده بالظبط اللي بيحدد 'التعلق المرضي': لو قلبك عبّد نفسه لشخص أو مال أو منصب (يعني علّق أمانه وقيمته وسعادته كلها بيه)، فده مش مجرد مشكلة نفسية منفصلة، هو خلل في توحيد الألوهية نفسه — لأن القلب بطبيعته لازم يتعلق بحاجة، ولو معلّقش بالله هيتعلق بمخلوق هيخيب ظنه حتمًا.",
+    quran:"﴿وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ﴾ (سورة الذاريات ٥٦)",
+    question:"لو فقدت الشخص أو الحاجة دي فجأة، هل حاسس إن حياتك هتنتهي، ولا هتتوجع لكن تقدر تكمل؟ الإجابة الأولى بتقول إن التعلق ده تجاوز حده الطبيعي.",
+  },
+  {
+    icon:"✨", title:"توحيد الأسماء والصفات",
+    def:"الإيمان بأسماء الله الحسنى وصفاته العليا زي ما وردت في القرآن والسنة، بلا تحريف في معناها ولا تشبيهها بخلقه — يعني تعرف ربنا بصفاته الحقيقية: الرحمن، الرحيم، الغفور، العدل، الحكيم، الودود.",
+    psych:"ده أهم نوع نفسيًا، لأن **صورة ربنا في دماغك بتحدد إحساسك بيه بالكامل**. لو معرفتك بأسماء الله ناقصة أو مشوّهة (زي إنك متعامل معاه بس كـ'منتقم' أو 'بعيد' أو 'قاسي في الحكم')، هيتولد عندك خوف مرضي أو يأس دائم. لكن لو عرفته بأسمائه كلها متوازنة (رحمن ورحيم وعدل وحكيم مع بعض)، بيتولد رجاء متزن مع خشية صحية — مش خوف مرعوب ولا أمن زايد.",
+    quran:"﴿وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا﴾ (سورة الأعراف ١٨٠)",
+    question:"لما تفكر في ربنا، أول صفة بتيجي في بالك إيه؟ لو كانت 'المنتقم' أو 'اللي هيعاقبني' بس، فهمك لأسماء الله ناقص جزء مهم — ربنا رحمته سبقت غضبه.",
+  },
+];
+
+function showTawheedDetail(i){
+  const t = TAWHEED_BANK[i];
+  const wrap = document.getElementById('tawheedDetailWrap');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:10px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${t.icon} ${t.title}</p>
+      <p class="layer-text" style="margin-top:6px;"><b>التعريف:</b> ${t.def}</p>
+      <p class="layer-text" style="margin-top:6px;"><b>الأثر النفسي:</b> ${t.psych}</p>
+      <p style="font-size:11.5px; color:var(--muted); margin-top:6px;">${t.quran}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">🔍 سؤال لنفسك</p>
+      <p class="layer-text" style="color:#fff; margin-top:6px;">${t.question}</p>
+    </div>
+  `;
+}
+
 function openRabbekScreen(){
   const body = document.getElementById('rabbekBody');
   body.innerHTML = `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="font-size:14px;">🕋</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">اعرف ربنا الأول — قبل ما تحدد إحساسك</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.7;">مشاعرك تجاه ربنا (خوف، رجاء، حب) بتتبني على حاجة أعمق: هل معرفتك بربنا نفسها صح؟ العلماء قسّموا التوحيد لتلات أنواع — كل نوع منهم له أثر نفسي مباشر لو فهمته صح أو فهمته غلط.</p>
+
+    <div class="tool-row" onclick="showTawheedDetail(0)">
+      <div class="icon-circle" style="font-size:15px;">🌍</div>
+      <div><div class="card-title" style="font-size:13px;">توحيد الربوبية</div><div class="card-sub">مين اللي بيتحكم في مصيرك فعليًا؟</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div class="tool-row" onclick="showTawheedDetail(1)">
+      <div class="icon-circle" style="font-size:15px;">🤲</div>
+      <div><div class="card-title" style="font-size:13px;">توحيد الألوهية</div><div class="card-sub">قلبك بيتعلق ويخضع لمين فعليًا؟</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div class="tool-row" onclick="showTawheedDetail(2)">
+      <div class="icon-circle" style="font-size:15px;">✨</div>
+      <div><div class="card-title" style="font-size:13px;">توحيد الأسماء والصفات</div><div class="card-sub">صورة ربنا في دماغك... صح ولا مشوّهة؟</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div id="tawheedDetailWrap"></div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+
     <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px; line-height:1.7;">قلبك دايمًا بيخاف من حاجة، بيرجو حاجة، وبيحب حاجة — والسؤال مش "هل تخاف/ترجو/تحب؟" لكن "لمين موجّه ده؟"</p>
 
     <div class="layer-card l1">
