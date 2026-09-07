@@ -1462,6 +1462,117 @@ const TAWHEED_BANK = [
   },
 ];
 
+// ================= مين هو الله — أسئلة تشخيصية نفسية ثم آية النور وأنواع التوحيد =================
+const WHO_IS_ALLAH_QUESTIONS = [
+  {
+    q: "لو حد سألك دلوقتي بصراحة: مين هو الله بالنسبة لك؟",
+    options: [
+      { label:"عندي تصور واضح وقلبي مرتاح بيه", tag:"clear" },
+      { label:"عندي فكرة عامة بس مش واضحة أوي", tag:"vague" },
+      { label:"هلاقي نفسي تايه، مش عارف أجاوب بصراحة", tag:"lost" },
+    ],
+  },
+  {
+    q: "لما تفتكر ربنا فجأة في نص يومك، أول حاجة بتحسها إيه؟",
+    options: [
+      { label:"طمأنينة وقرب", tag:"clear" },
+      { label:"خوف أو حس بذنب", tag:"fear" },
+      { label:"مفيش إحساس واضح، أو حيرة", tag:"lost" },
+    ],
+  },
+  {
+    q: "حد قريب منك فسّرلك يومًا مين هو ربنا بطريقة قرّبتك ليه فعلًا؟",
+    options: [
+      { label:"آه، من زمان وده أثّر فيّا لحد دلوقتي", tag:"clear" },
+      { label:"سمعت كلام كتير بس ما لخبطنيش أو ما وصلنيش", tag:"vague" },
+      { label:"لأ، حاسس إني بكتشف الموضوع ده لوحدي دلوقتي", tag:"lost" },
+    ],
+  },
+];
+
+let whoIsAllahAnswers = [];
+
+function renderWhoIsAllahQuiz(){
+  whoIsAllahAnswers = [];
+  const wrap = document.getElementById('whoIsAllahQuiz');
+  document.getElementById('whoIsAllahContent').style.display = 'none';
+  document.getElementById('whoIsAllahContent').innerHTML = '';
+  renderWhoIsAllahQuestion(0);
+}
+
+function renderWhoIsAllahQuestion(index){
+  const wrap = document.getElementById('whoIsAllahQuiz');
+  if(index >= WHO_IS_ALLAH_QUESTIONS.length){
+    revealWhoIsAllah();
+    return;
+  }
+  const q = WHO_IS_ALLAH_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${WHO_IS_ALLAH_QUESTIONS.length} — محتاجين نفهم مساحتك النفسية والروحانية دلوقتي</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWhoIsAllah(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+
+function answerWhoIsAllah(qIndex, oIndex){
+  whoIsAllahAnswers.push(WHO_IS_ALLAH_QUESTIONS[qIndex].options[oIndex].tag);
+  renderWhoIsAllahQuestion(qIndex + 1);
+}
+
+function revealWhoIsAllah(){
+  const counts = { clear:0, vague:0, lost:0, fear:0 };
+  whoIsAllahAnswers.forEach(t => counts[t] = (counts[t]||0) + 1);
+  let dominant = 'vague';
+  let max = -1;
+  for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
+
+  const introMsgs = {
+    clear: "واضح إن عندك أساس حقيقي في معرفتك بربنا، وده حاجة نبني عليها. خلينا نعمّق الصورة دي أكتر بدل ما نبدأ من الصفر.",
+    vague: "إحساسك بربنا موجود بس لسه محتاج يتوضّح أكتر — ده طبيعي جدًا ومحدش بيولد بمعرفة كاملة، المعرفة بتتبني بالوقت. خلينا نبني الصورة مع بعض خطوة خطوة.",
+    lost: "لو حاسس إنك تايه في السؤال ده، إنت مش لوحدك خالص — ده سؤال كتير من الناس بتتجنبه لأنه محرج يعترفوا إنهم مش متأكدين منه. الشجاعة إنك تسأل دلوقتي هي أول خطوة حقيقية.",
+    fear: "حاسس إن علاقتك بربنا فيها خوف أو ذنب أكتر من طمأنينة — ده مؤشر مهم إن الصورة اللي في دماغك عن ربنا محتاجة تتصحح، مش تتحذف. خلينا نشوف مع بعض.",
+  };
+
+  document.getElementById('whoIsAllahQuiz').innerHTML = '';
+  const content = document.getElementById('whoIsAllahContent');
+  content.style.display = 'block';
+  content.innerHTML = `
+    <p style="font-size:13px; color:var(--text); line-height:1.8; margin-bottom:18px; background:var(--sand); padding:12px 14px; border-radius:12px;">${introMsgs[dominant]}</p>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="font-size:14px;">✨</span>
+      <p style="font-size:15px; font-weight:700; margin:0;">مين هو الله</p>
+    </div>
+
+    <div class="layer-card l3" style="text-align:center; padding:22px 16px;">
+      <p style="font-size:15px; font-weight:700; color:var(--navy-dark); line-height:2; margin:0;">﴿اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ ۚ مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ ۖ الْمِصْبَاحُ فِي زُجَاجَةٍ ۖ الزُّجَاجَةُ كَأَنَّهَا كَوْكَبٌ دُرِّيٌّ يُوقَدُ مِن شَجَرَةٍ مُّبَارَكَةٍ زَيْتُونَةٍ لَّا شَرْقِيَّةٍ وَلَا غَرْبِيَّةٍ يَكَادُ زَيْتُهَا يُضِيءُ وَلَوْ لَمْ تَمْسَسْهُ نَارٌ ۚ نُّورٌ عَلَىٰ نُورٍ ۗ يَهْدِي اللَّهُ لِنُورِهِ مَن يَشَاءُ﴾</p>
+      <p style="font-size:11px; color:var(--muted); margin-top:10px;">سورة النور ٣٥</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin:10px 0 20px; line-height:1.7;">ربنا وصف نفسه بالنور — مش ظلمة ولا رعب ولا بُعد. النور بيهدي ومريح ومرشد للطريق، مش بيعاقب أو يخوّف. لو صورتك عن ربنا مليانة ظلمة أو خوف بس، الآية دي نقطة بداية تصحيح.</p>
+
+    <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.7;">مشاعرك تجاه ربنا بتتبني على حاجة أعمق: هل معرفتك بربنا نفسها صح؟ العلماء قسّموا التوحيد لتلات أنواع — كل نوع منهم له أثر نفسي مباشر لو فهمته صح أو فهمته غلط.</p>
+
+    <div class="tool-row" onclick="showTawheedDetail(0)">
+      <div class="icon-circle" style="font-size:15px;">🌍</div>
+      <div><div class="card-title" style="font-size:13px;">توحيد الربوبية</div><div class="card-sub">مين اللي بيتحكم في مصيرك فعليًا؟</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div class="tool-row" onclick="showTawheedDetail(1)">
+      <div class="icon-circle" style="font-size:15px;">🤲</div>
+      <div><div class="card-title" style="font-size:13px;">توحيد الألوهية</div><div class="card-sub">قلبك بيتعلق ويخضع لمين فعليًا؟</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div class="tool-row" onclick="showTawheedDetail(2)">
+      <div class="icon-circle" style="font-size:15px;">✨</div>
+      <div><div class="card-title" style="font-size:13px;">توحيد الأسماء والصفات</div><div class="card-sub">صورة ربنا في دماغك... صح ولا مشوّهة؟</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div id="tawheedDetailWrap"></div>
+  `;
+}
+
 function showTawheedDetail(i){
   const t = TAWHEED_BANK[i];
   const wrap = document.getElementById('tawheedDetailWrap');
@@ -1482,28 +1593,8 @@ function showTawheedDetail(i){
 function openRabbekScreen(){
   const body = document.getElementById('rabbekBody');
   body.innerHTML = `
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-      <span style="font-size:14px;">🕋</span>
-      <p style="font-size:14px; font-weight:700; margin:0;">اعرف ربنا الأول — قبل ما تحدد إحساسك</p>
-    </div>
-    <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.7;">مشاعرك تجاه ربنا (خوف، رجاء، حب) بتتبني على حاجة أعمق: هل معرفتك بربنا نفسها صح؟ العلماء قسّموا التوحيد لتلات أنواع — كل نوع منهم له أثر نفسي مباشر لو فهمته صح أو فهمته غلط.</p>
-
-    <div class="tool-row" onclick="showTawheedDetail(0)">
-      <div class="icon-circle" style="font-size:15px;">🌍</div>
-      <div><div class="card-title" style="font-size:13px;">توحيد الربوبية</div><div class="card-sub">مين اللي بيتحكم في مصيرك فعليًا؟</div></div>
-      <div class="arrow">‹</div>
-    </div>
-    <div class="tool-row" onclick="showTawheedDetail(1)">
-      <div class="icon-circle" style="font-size:15px;">🤲</div>
-      <div><div class="card-title" style="font-size:13px;">توحيد الألوهية</div><div class="card-sub">قلبك بيتعلق ويخضع لمين فعليًا؟</div></div>
-      <div class="arrow">‹</div>
-    </div>
-    <div class="tool-row" onclick="showTawheedDetail(2)">
-      <div class="icon-circle" style="font-size:15px;">✨</div>
-      <div><div class="card-title" style="font-size:13px;">توحيد الأسماء والصفات</div><div class="card-sub">صورة ربنا في دماغك... صح ولا مشوّهة؟</div></div>
-      <div class="arrow">‹</div>
-    </div>
-    <div id="tawheedDetailWrap"></div>
+    <div id="whoIsAllahQuiz"></div>
+    <div id="whoIsAllahContent" style="display:none;"></div>
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
 
@@ -1551,6 +1642,7 @@ function openRabbekScreen(){
       `).join('')}
     </div>
   `;
+  renderWhoIsAllahQuiz();
   showScreen('screen-rabbek');
 }
 
