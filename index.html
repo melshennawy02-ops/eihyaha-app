@@ -8,10 +8,15 @@
   :root{
     --navy:#0B3D3A; --navy-dark:#072B28; --sand:#F2EEE3; --gold:#C9A24B;
     --white:#FFFFFF; --text:#1C2B29; --muted:#5B6C69; --danger:#B23A34; --danger-bg:#F7E4E2;
+    --app-bg-overlay: rgba(242,238,227,.88);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; height:100%; background:var(--sand); font-family:'Segoe UI', Tahoma, Arial, sans-serif; color:var(--text); overflow-x:hidden;}
-  #app{max-width:480px; margin:0 auto; min-height:100vh; background:var(--sand); display:flex; flex-direction:column; position:relative;}
+  #app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; position:relative;
+    background:
+      linear-gradient(var(--app-bg-overlay), var(--app-bg-overlay)),
+      url('https://images.unsplash.com/photo-1759434190960-87511b2a5e5c?fm=jpg&q=70&w=900&auto=format&fit=crop') center/cover fixed no-repeat;
+  }
   .screen{display:none; flex:1; padding:16px 16px 90px; animation:fadein .18s ease;}
   .screen.active{display:block;}
   @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
@@ -1069,6 +1074,15 @@ const THEMES = {
   charcoal: { label:"الفحمي الفضي",  navy:"#3A3A3A", navyDark:"#2B2B2B", sand:"#EDEDED", gold:"#B8B8B8", white:"#FFFFFF", text:"#232323", muted:"#6B6B6B" },
 };
 
+function hexToRgba(hex, alpha){
+  hex = hex.replace('#', '');
+  if(hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const r = parseInt(hex.substring(0,2), 16);
+  const g = parseInt(hex.substring(2,4), 16);
+  const b = parseInt(hex.substring(4,6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function applyTheme(name){
   const th = THEMES[name] || THEMES.classic;
   const root = document.documentElement.style;
@@ -1079,7 +1093,7 @@ function applyTheme(name){
   root.setProperty('--white', th.white);
   root.setProperty('--text', th.text);
   root.setProperty('--muted', th.muted);
-  document.body.style.background = th.sand;
+  root.setProperty('--app-bg-overlay', hexToRgba(th.sand, .88));
 }
 
 function setTheme(name){
