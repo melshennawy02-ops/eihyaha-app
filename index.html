@@ -1290,6 +1290,59 @@ function goHome(){
   renderHomeDailyProphet();
 }
 
+// ---------- لوحة ملخص سريعة للركن الروحاني (محلية وفورية، من غير انتظار Firestore) ----------
+function computeLocalWorshipConsistency(days){
+  const all = JSON.parse(localStorage.getItem('eihyaha_worship') || '{}');
+  const now = new Date();
+  let total = 0, count = 0;
+  for(let i = 0; i < days; i++){
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = formatDateKey(d);
+    if(all[key]){ total += prayerScoreForDay(all[key]); count++; }
+  }
+  if(count === 0) return null;
+  return Math.round((total / (count * 5)) * 100);
+}
+
+function renderSpiritualDashboard(){
+  const consistency = computeLocalWorshipConsistency(7);
+  const tawbaLog = getTawbaLog();
+  const quizState = localStorage.getItem('eihyaha_who_is_allah_state');
+
+  const stateMessages = {
+    lost: "آخر مرة قيّمت علاقتك بربك حسّيت إنك تايه — تحب ترجع تكمل «علاقتك بربك»؟",
+    fear: "آخر تقييم ليك كان فيه خوف أو ذنب أكتر من طمأنينة — «علاقتك بربك» هتساعدك تشتغل على ده.",
+    vague: "علاقتك بربك لسه بتتوضح — استمر في الأدوات دي بانتظام.",
+    clear: "عندك أساس واضح في معرفتك بربك — استمر تعمّقها.",
+  };
+
+  let hasAnyData = consistency !== null || tawbaLog.length > 0 || quizState;
+  if(!hasAnyData){
+    return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
+      <p style="font-size:12px; color:var(--muted); margin:0;">لسه معندناش بيانات كفاية عنك هنا — ابدأ بأي أداة تحت وهنبني صورتك هنا تدريجيًا.</p>
+    </div>`;
+  }
+
+  let html = `<div class="card" style="background:var(--sand); margin-bottom:14px;">`;
+  if(consistency !== null){
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <p style="font-size:12px; color:var(--muted); margin:0;">انتظام عباداتك آخر ٧ أيام</p>
+        <p style="font-size:16px; font-weight:700; color:var(--navy-dark); margin:0;">${consistency}٪</p>
+      </div>`;
+  }
+  if(tawbaLog.length > 0){
+    const daysSince = Math.floor((Date.now() - new Date(tawbaLog[0].date)) / 86400000);
+    html += `<p style="font-size:11.5px; color:var(--muted); margin:0 0 8px;">آخر مرة سجّلت فيها رجوعك: ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم فات'}</p>`;
+  }
+  if(quizState && stateMessages[quizState]){
+    html += `<p style="font-size:12px; color:var(--text); line-height:1.6; margin:0;">${stateMessages[quizState]}</p>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
 function goToPillar(id){
   const p = PILLARS.find(x => x.id === id);
   document.getElementById('pillarTitle').textContent = p.title;
@@ -1303,8 +1356,9 @@ function goToPillar(id){
         <p>${p.tag}<br>الأدوات الخاصة بهذا الركن قيد الإعداد حاليًا، وستُضاف في مرحلة تالية.</p>
       </div>`;
   } else if(id === 1){
-    // الركن الروحاني — الأدوات المتاحة
+    // الركن الروحاني — لوحة ملخص سريعة + الأدوات المتاحة
     body.innerHTML = `
+      ${renderSpiritualDashboard()}
       <div class="tool-row" onclick="openRabbekScreen()">
         <div class="icon-circle">🤲</div>
         <div><div class="card-title">علاقتك بربك</div><div class="card-sub">الخوف والرجاء والحب .. لمين موجّهين؟</div></div>
@@ -1532,6 +1586,7 @@ function revealWhoIsAllah(){
   let dominant = 'vague';
   let max = -1;
   for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
+  localStorage.setItem('eihyaha_who_is_allah_state', dominant);
 
   const introMsgs = {
     clear: "واضح إن عندك أساس حقيقي في معرفتك بربنا، وده حاجة نبني عليها. خلينا نعمّق الصورة دي أكتر بدل ما نبدأ من الصفر.",
@@ -1952,14 +2007,29 @@ function openProphetOfDay(){
 
 function openProphetsScreen(){
   const body = document.getElementById('prophetsBody');
-  body.innerHTML = MERAT_PATTERNS.map(p => `
+  body.innerHTML = `
+    <input type="text" id="prophetsSearchInput" placeholder="دوّر باسم النبي أو الموضوع (مثلاً: صبر، خوف، حزن...)" oninput="renderProphetsList()" style="margin-bottom:12px;">
+    <div id="prophetsListWrap"></div>
+  `;
+  renderProphetsList();
+  showScreen('screen-prophets');
+}
+function renderProphetsList(){
+  const wrap = document.getElementById('prophetsListWrap');
+  const input = document.getElementById('prophetsSearchInput');
+  const q = input ? input.value.trim() : '';
+  const filtered = q ? MERAT_PATTERNS.filter(p => p.prophetTitle.includes(q) || p.title.includes(q)) : MERAT_PATTERNS;
+  if(filtered.length === 0){
+    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
+    return;
+  }
+  wrap.innerHTML = filtered.map(p => `
     <div class="tool-row" onclick="showProphetDetail('${p.id}')">
       <div class="icon-circle" style="font-size:15px;">📖</div>
       <div><div class="card-title" style="font-size:13px;">${p.prophetTitle}</div></div>
       <div class="arrow">‹</div>
     </div>
   `).join('');
-  showScreen('screen-prophets');
 }
 function showProphetDetail(id){
   const p = MERAT_PATTERNS.find(x => x.id === id);
