@@ -32,12 +32,27 @@
   /* ===== Home ===== */
   .greeting{font-size:20px; font-weight:700; margin:4px 0 2px;}
   .greeting-sub{font-size:13px; color:var(--muted); margin:0 0 16px;}
-  .mood-row{display:flex; justify-content:space-between; margin-bottom:18px;}
-  .mood-emoji{font-size:26px; cursor:pointer; padding:8px; border-radius:50%; transition:all .15s; position:relative; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(0,0,0,.04) 75%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.14), inset 0 2px 3px rgba(255,255,255,.45); filter:drop-shadow(0 2px 2px rgba(0,0,0,.28));}
-  .mood-emoji.selected{background:radial-gradient(circle at 32% 28%, #ffffff, var(--gold) 78%); box-shadow:inset 0 -3px 6px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.6), 0 2px 6px rgba(0,0,0,.22); transform:scale(1.08);}
+  .mood-row{display:flex; justify-content:space-between; gap:6px; margin-bottom:6px;}
+  .mood-card{flex:1; border-radius:14px; padding:10px 2px 8px; text-align:center;}
+  .mood-label{font-size:9.5px; font-weight:700; color:var(--text); margin:6px 0 0;}
+  .mood-emoji{font-size:24px; cursor:pointer; padding:6px; border-radius:50%; transition:all .15s; position:relative; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(0,0,0,.04) 75%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.14), inset 0 2px 3px rgba(255,255,255,.45); filter:drop-shadow(0 2px 2px rgba(0,0,0,.28)); display:inline-block;}
+  .mood-emoji.selected{background:radial-gradient(circle at 32% 28%, #ffffff, var(--gold) 78%); box-shadow:inset 0 -3px 6px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.6), 0 2px 6px rgba(0,0,0,.22); transform:scale(1.1);}
 
   .pillars-title{font-size:15px; font-weight:600; margin:8px 0 10px;}
-  .pillars-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  /* ===== New premium home design ===== */
+  .topbar-new{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 10px;}
+  .icon-badge-sm{width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); border:1px solid var(--gold); box-shadow:inset 0 -3px 5px rgba(0,0,0,.15), inset 0 2px 3px rgba(255,255,255,.5); filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+  .hero-banner{background:var(--navy-dark); border-radius:16px; padding:18px 16px; margin-bottom:14px; color:#fff; position:relative; overflow:hidden;}
+  .hero-banner::before{content:""; position:absolute; top:-30px; left:-30px; width:100px; height:100px; border-radius:50%; background:rgba(201,162,75,.12);}
+  .quick-help-card{display:flex; align-items:center; gap:10px; background:var(--white); border:1px solid var(--gold); border-radius:14px; padding:10px 12px; margin-bottom:20px; cursor:pointer;}
+  .section-title{font-size:15px; font-weight:700; margin:0 0 2px;}
+  .section-sub{font-size:11px; color:var(--muted); margin:0 0 12px;}
+  .pillar-card-photo{position:relative; border-radius:16px; padding:16px; margin-bottom:12px; min-height:92px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; overflow:hidden; color:#fff;}
+  .pillar-card-photo .ptitle-lg{font-size:15px; font-weight:700; margin:0 0 3px;}
+  .pillar-card-photo .ptag{font-size:10.5px; opacity:.85; margin:0;}
+  .pillar-arrow{width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0;}
+  .pillars-grid{display:flex; flex-direction:column;}
   .pillar-card{background:var(--navy-dark); color:var(--white); border-radius:14px; padding:14px 12px; cursor:pointer; min-height:96px; display:flex; flex-direction:column; justify-content:space-between;}
   .pillar-card .pnum{font-size:11px; color:var(--gold); font-weight:700;}
   .pillar-card .ptitle{font-size:13px; font-weight:600; line-height:1.35;}
@@ -114,23 +129,57 @@
 
   <!-- ===================== SCREEN: HOME ===================== -->
   <div class="screen" id="screen-home">
-    <div class="topbar">
-      <h1 id="h1-brand">إحياها باستمتاع</h1>
-      <div class="sos" onclick="showSafety()">محتاج مختص</div>
+    <div class="topbar-new">
+      <div class="icon-badge-sm" onclick="showSafety()">🔔</div>
+      <div style="text-align:center; flex:1;">
+        <p style="font-size:10px; color:var(--gold); margin:0;">🌿</p>
+        <h1 id="h1-brand" style="font-size:18px; margin:2px 0 0;">إحياها باستمتاع</h1>
+        <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">رحلتك لحياة نفسية أفضل</p>
+      </div>
+      <div class="icon-badge-sm" onclick="openAccountScreen()">👤</div>
     </div>
+
     <div style="padding:0 16px;">
-      <p class="greeting">أهلًا بيك 👋</p>
-      <p class="greeting-sub">إزيك النهاردة؟ اختار اللي حاسس بيه</p>
+      <div class="hero-banner">
+        <p style="font-size:15px; font-weight:700; line-height:1.6; margin:0 0 8px; position:relative;">لست فقط ما مررت به..<br>بل ما تختار أن تكونه غدًا</p>
+        <div style="width:34px; height:2px; background:var(--gold); position:relative;"></div>
+      </div>
+
+      <div class="quick-help-card" onclick="startEhkily()">
+        <div class="icon-circle" style="width:38px; height:38px; font-size:17px;">🧠</div>
+        <div style="flex:1;">
+          <p style="font-size:13px; font-weight:700; margin:0;">مساعدة فورية</p>
+          <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">تحدث مع مختص الآن</p>
+        </div>
+        <div style="font-size:16px; color:var(--gold);">‹</div>
+      </div>
+
+      <div class="quick-help-card" onclick="openTasksScreen()" style="margin-bottom:20px;">
+        <div class="icon-circle" style="width:38px; height:38px; font-size:17px;">✅</div>
+        <div style="flex:1;">
+          <p style="font-size:13px; font-weight:700; margin:0;">مهامك اليوم</p>
+          <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">التقويم والمهام والتنبيهات</p>
+        </div>
+        <div style="font-size:16px; color:var(--gold);">‹</div>
+      </div>
+
+      <p class="section-title">كيف حالك اليوم؟</p>
+      <p class="section-sub">اختر حالتك المزاجية لنمنحك تجربة مناسبة لك</p>
       <div class="mood-row" id="moodRow">
-        <div class="mood-emoji" data-mood="5">😌</div>
-        <div class="mood-emoji" data-mood="4">🙂</div>
-        <div class="mood-emoji" data-mood="3">😐</div>
-        <div class="mood-emoji" data-mood="2">😔</div>
-        <div class="mood-emoji" data-mood="1">😣</div>
+        <div class="mood-card" style="background:#FBF0EC;"><div class="mood-emoji" data-mood="1">😣</div><p class="mood-label">متضايق</p></div>
+        <div class="mood-card" style="background:#EAF1F7;"><div class="mood-emoji" data-mood="2">😔</div><p class="mood-label">حزين</p></div>
+        <div class="mood-card" style="background:#F2EEE1;"><div class="mood-emoji" data-mood="3">😐</div><p class="mood-label">عادي</p></div>
+        <div class="mood-card" style="background:#FBF0DE;"><div class="mood-emoji" data-mood="4">🙂</div><p class="mood-label">جيد</p></div>
+        <div class="mood-card" style="background:#FBF6D9;"><div class="mood-emoji" data-mood="5">😌</div><p class="mood-label">ممتاز</p></div>
       </div>
       <div id="moodFeedback" style="display:none; margin:-6px 0 16px;"></div>
 
-      <p class="pillars-title">الأركان السبعة لحياتك</p>
+      <div style="display:flex; align-items:center; gap:8px; margin:22px 0 14px;">
+        <span style="font-size:14px;">🌿</span>
+        <p style="font-size:10.5px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
+        <div style="flex:1; height:1px; background:var(--gold); opacity:.4;"></div>
+        <p class="pillars-title" style="margin:0; white-space:nowrap;">الأركان السبعة لحياتك</p>
+      </div>
       <div class="pillars-grid" id="pillarsGrid"></div>
     </div>
   </div>
@@ -264,12 +313,33 @@
   </div>
 
   <!-- ===================== BOTTOM NAV ===================== -->
+  <!-- ===================== SCREEN: STATS (إحصائياتي) ===================== -->
+  <div class="screen" id="screen-stats">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1 id="h1-stats">إحصائياتي</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="statsBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SETTINGS (الإعدادات) ===================== -->
+  <div class="screen" id="screen-settings">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1 id="h1-settings">الإعدادات</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="settingsBody"></div>
+  </div>
+
   <div class="bottomnav" id="bottomNav" style="display:none;">
+    <div class="navitem" data-nav="settings" onclick="openAccountScreen()"><span class="navicon">👤</span><span id="navlabel-account">حسابي</span></div>
+    <div class="navitem" data-nav="daftar" onclick="showScreen('screen-daftar')"><span class="navicon">🌿</span><span id="navlabel-daftar">رحلتي</span></div>
     <div class="navitem active" data-nav="home" onclick="goHome()"><span class="navicon">🏠</span><span id="navlabel-home">الرئيسية</span></div>
-    <div class="navitem" data-nav="tasks" onclick="openTasksScreen()"><span class="navicon">✅</span><span id="navlabel-tasks">المهام</span></div>
-    <div class="navitem" data-nav="daftar" onclick="showScreen('screen-daftar')"><span class="navicon">📓</span><span id="navlabel-daftar">دفتري</span></div>
+    <div class="navitem" data-nav="stats" onclick="openStatsScreen()"><span class="navicon">📊</span><span id="navlabel-stats">إحصائياتي</span></div>
+    <div class="navitem" data-nav="settingspage" onclick="openSettingsScreen()"><span class="navicon">⚙️</span><span id="navlabel-settings">الإعدادات</span></div>
     <div class="navitem" id="navitem-admin" style="display:none;" onclick="openAdminScreen()"><span class="navicon">🛡️</span><span>الأدمن</span></div>
-    <div class="navitem" data-nav="settings" onclick="openAccountScreen()"><span class="navicon">⚙️</span><span id="navlabel-account">حسابي</span></div>
   </div>
 
   <!-- ===================== SAFETY OVERLAY ===================== -->
@@ -713,6 +783,64 @@ function openAccountScreen(){
   showScreen('screen-account');
 }
 
+function openSettingsScreen(){
+  document.getElementById('settingsBody').innerHTML = renderSettingsSection();
+  showScreen('screen-settings');
+}
+
+function openStatsScreen(){
+  renderStatsScreen();
+  showScreen('screen-stats');
+}
+
+function renderStatsScreen(){
+  const body = document.getElementById('statsBody');
+  const journal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  const tasks = getTasks();
+  const moodEntries = journal.filter(e => e.type === 'mood');
+  const stickyCount = getStickyNotes().length;
+  const doneTasks = tasks.filter(t => t.done).length;
+
+  const counts = {};
+  moodEntries.forEach(e => { counts[e.moodLabel] = (counts[e.moodLabel] || 0) + 1; });
+  const maxCount = Math.max(1, ...Object.values(counts));
+
+  body.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${moodEntries.length}</p>
+        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">تسجيلات مزاج</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${doneTasks}/${tasks.length}</p>
+        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">مهام منجزة</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${journal.length}</p>
+        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">تسجيلات في رحلتي</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${stickyCount}</p>
+        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">ملاحظات سريعة</p>
+      </div>
+    </div>
+    ${Object.keys(counts).length > 0 ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:12px;">توزيع مشاعرك المسجّلة</p>
+        ${Object.entries(counts).map(([label, count]) => `
+          <div style="margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:4px;">
+              <span>${label}</span><span style="color:var(--muted);">${count}</span>
+            </div>
+            <div style="height:6px; background:var(--sand); border-radius:3px;">
+              <div style="width:${(count/maxCount)*100}%; height:100%; background:var(--gold); border-radius:3px;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>` : `<p style="font-size:12px; color:var(--muted); text-align:center;">لسه مفيش بيانات كفاية لعرض إحصائيات — سجّل مزاجك كل يوم عشان تشوف تطورك هنا.</p>`}
+  `;
+}
+
 function renderSettingsSection(){
   const currentTheme = localStorage.getItem('eihyaha_theme') || 'classic';
   const currentLang = localStorage.getItem('eihyaha_lang') || 'ar';
@@ -754,14 +882,13 @@ function renderSettingsSection(){
 function renderAccountScreen(){
   const body = document.getElementById('accountBody');
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
-  const authHtml = auth ? `
+  body.innerHTML = auth ? `
       <div class="card" style="text-align:center; padding:24px 16px;">
         <div class="icon-circle" style="width:60px; height:60px; font-size:26px; margin:0 auto 12px; color:var(--gold);">👤</div>
         <p class="card-sub" style="margin:0;">${t('logged_in_as')}</p>
         <p style="font-size:17px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
         <button class="btn-ghost" onclick="authSignOut()">${t('logout')}</button>
       </div>` : '';
-  body.innerHTML = authHtml + renderSettingsSection();
 }
 
 // ============================================================
@@ -816,13 +943,13 @@ function hideSafety(){ document.getElementById('safetyOverlay').classList.remove
 
 // ---------- تعريف الأركان السبعة ----------
 const PILLARS = [
-  {id:1, title:"الركن الروحاني", icon:"🕌", ready:false, desc:"علاقتك بربك — تطبيق عملي من القرآن"},
-  {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, desc:"مشاعرك، أفكارك، وذاتك"},
-  {id:3, title:"الركن العائلي", icon:"👪", ready:false, desc:"الوالدين، الزوج/الزوجة، الأبناء"},
-  {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, desc:"الأصدقاء والزملاء والجيران"},
-  {id:5, title:"الركن المهني", icon:"💼", ready:false, desc:"وظيفتك وبزنسك — قريبًا"},
-  {id:6, title:"الركن المادي", icon:"💰", ready:false, desc:"وضعك المالي"},
-  {id:7, title:"الركن الصحي", icon:"🩺", ready:false, desc:"صحتك الجسدية والنفسية"},
+  {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, tag:"اكتشف نفسك .. وكن أفضل نسخة منها", grad:"linear-gradient(135deg, #0B3D3A, #145048)"},
+  {id:1, title:"الركن الروحاني", icon:"🕌", ready:false, tag:"قربك من الله .. راحة لقلبك", grad:"linear-gradient(135deg, #7A5A1C, #C9A24B)", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:3, title:"الركن العائلي", icon:"👪", ready:false, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)"},
+  {id:6, title:"الركن المادي", icon:"💰", ready:false, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:5, title:"الركن المهني", icon:"💼", ready:false, tag:"طموح أكبر .. إنجازات أعمق", grad:"linear-gradient(135deg, #4A2E6B, #6B4696)"},
+  {id:7, title:"الركن الصحي", icon:"🩺", ready:false, tag:"جسدك أمانة .. فاعتنِ به", grad:"linear-gradient(135deg, #0F3D2E, #1D6B52)"},
 ];
 
 // ================= نظام الألوان المتعددة (Premium Themes) =================
@@ -857,8 +984,8 @@ function setTheme(name){
 // حاليًا، لأن ترجمته محتاج دقة خاصة (خصوصًا الآيات القرآنية) — دي مرحلة تانية.
 const TRANSLATIONS = {
   ar: {
-    brand:"إحياها باستمتاع", nav_home:"الرئيسية", nav_journal:"دفتري", nav_account:"حسابي", nav_tasks:"المهام",
-    ehkily:"احكيلي", merat:"مرآة العقل", tabiei:"هل أنا طبيعي؟", daftar:"مرآتي اليومية", tasks:"المهام",
+    brand:"إحياها باستمتاع", nav_home:"الرئيسية", nav_journal:"رحلتي", nav_account:"حسابي", nav_tasks:"المهام", nav_stats:"إحصائياتي", nav_settings:"الإعدادات",
+    ehkily:"احكيلي", merat:"مرآة العقل", tabiei:"هل أنا طبيعي؟", daftar:"مرآتي اليومية", tasks:"المهام", stats:"إحصائياتي", settings:"الإعدادات",
     report:"جهزني للدكتور", account:"حسابي", available:"متاح الآن", soon:"قريبًا",
     theme_title:"لون الواجهة", lang_title:"اللغة", lang_note:"المحتوى النفسي والديني العميق لسه بالعربي فقط حاليًا",
     logged_in_as:"مسجل دخول باسم", logout:"تسجيل الخروج", signin:"تسجيل الدخول", signup:"حساب جديد",
@@ -866,8 +993,8 @@ const TRANSLATIONS = {
     social_login_note:"تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق",
   },
   en: {
-    brand:"Eihyaha Bestemtaa", nav_home:"Home", nav_journal:"My journal", nav_account:"Account", nav_tasks:"Tasks",
-    ehkily:"Talk to me", merat:"Mirror of the mind", tabiei:"Am I normal?", daftar:"My daily mirror", tasks:"Tasks",
+    brand:"Eihyaha Bestemtaa", nav_home:"Home", nav_journal:"My journey", nav_account:"Account", nav_tasks:"Tasks", nav_stats:"My stats", nav_settings:"Settings",
+    ehkily:"Talk to me", merat:"Mirror of the mind", tabiei:"Am I normal?", daftar:"My daily mirror", tasks:"Tasks", stats:"My stats", settings:"Settings",
     report:"Prep for the doctor", account:"Account", available:"Available now", soon:"Coming soon",
     theme_title:"App color", lang_title:"Language", lang_note:"Deep psychological and religious content is still Arabic-only for now",
     logged_in_as:"Logged in as", logout:"Log out", signin:"Log in", signup:"New account",
@@ -894,6 +1021,7 @@ function applyLanguage(){
   const map = {
     'h1-brand':'brand', 'h1-ehkily':'ehkily', 'h1-merat':'merat', 'h1-tabiei':'tabiei',
     'h1-daftar':'daftar', 'h1-report':'report', 'h1-account':'account', 'h1-tasks':'tasks',
+    'h1-stats':'stats', 'h1-settings':'settings',
   };
   for(const id in map){
     const el = document.getElementById(id);
@@ -902,21 +1030,30 @@ function applyLanguage(){
   document.getElementById('navlabel-home').textContent = t('nav_home');
   document.getElementById('navlabel-daftar').textContent = t('nav_journal');
   document.getElementById('navlabel-account').textContent = t('nav_account');
-  document.getElementById('navlabel-tasks').textContent = t('nav_tasks');
+  document.getElementById('navlabel-stats').textContent = t('nav_stats');
+  document.getElementById('navlabel-settings').textContent = t('nav_settings');
   renderHome();
 }
 
 function renderHome(){
   const grid = document.getElementById('pillarsGrid');
-  grid.innerHTML = PILLARS.map(p => `
-    <div class="pillar-card ${p.ready ? '' : 'soon'}" onclick="goToPillar(${p.id})">
-      <div>
-        <div style="width:38px; height:38px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:8px; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.5), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.3), inset 0 2px 3px rgba(255,255,255,.3); filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));">${p.icon}</div>
-        <div class="ptitle">${p.title}</div>
+  grid.innerHTML = PILLARS.map(p => {
+    const bg = p.img
+      ? `linear-gradient(135deg, rgba(10,20,18,.75), rgba(10,20,18,.35)), url('${p.img}') center/cover no-repeat`
+      : p.grad;
+    return `
+    <div class="pillar-card-photo" style="background:${bg};" onclick="goToPillar(${p.id})">
+      <div style="position:relative; z-index:1;">
+        <p class="ptitle-lg">${p.title}</p>
+        <p class="ptag">${p.tag}</p>
+        <p style="font-size:9px; color:var(--gold); margin:6px 0 0; font-weight:700;">${p.ready ? t('available') : t('soon')}</p>
       </div>
-      <div class="pnum">${p.ready ? t('available') : t('soon')}</div>
-    </div>
-  `).join('');
+      <div style="display:flex; flex-direction:column; align-items:center; gap:8px; position:relative; z-index:1;">
+        <div style="width:44px; height:44px; border-radius:50%; border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.35), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.3), inset 0 2px 3px rgba(255,255,255,.35);">${p.icon}</div>
+        <div class="pillar-arrow">‹</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ---------- التنقل بين الشاشات ----------
