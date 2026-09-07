@@ -608,17 +608,33 @@ async function renderAdminScreen(){
   body.querySelector('p:last-child').replaceWith(specialistsWrap);
 }
 
+// الترتيب الافتراضي الثابت المطلوب: روحاني، شخصي، عائلي، اجتماعي، مهني، مادي، صحي
+const DEFAULT_PILLAR_ORDER = [1,2,3,4,5,6,7];
+
 // ---------- ترتيب الأركان في الصفحة الرئيسية (إعداد عام لكل المستخدمين، أدمن فقط) ----------
 function renderAdminPillarOrder(){
   if(!checkAdminAccess()) return; // طبقة حماية إضافية حتى لو اتنادى الدالة دي غلط
   const wrap = document.getElementById('adminPillarOrderList');
-  wrap.innerHTML = PILLARS.map((p, i) => `
-    <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EDE8D8;">
-      <span style="font-size:13px; flex:1;">${p.icon} ${p.title}</span>
-      <div onclick="movePillar(${i}, -1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▲</div>
-      <div onclick="movePillar(${i}, 1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▼</div>
-    </div>
-  `).join('');
+  wrap.innerHTML = `
+    <div class="choice-btn" style="text-align:center; margin:0 0 10px; color:var(--danger); border-color:var(--danger);" onclick="resetPillarOrder()">↺ استعادة الترتيب الافتراضي</div>
+    ${PILLARS.map((p, i) => `
+      <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EDE8D8;">
+        <span style="font-size:13px; flex:1;">${p.icon} ${p.title}</span>
+        <div onclick="movePillar(${i}, -1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▲</div>
+        <div onclick="movePillar(${i}, 1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▼</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+async function resetPillarOrder(){
+  if(!checkAdminAccess()) return;
+  const reordered = DEFAULT_PILLAR_ORDER.map(id => PILLARS.find(p => p.id === id)).filter(Boolean);
+  PILLARS.length = 0;
+  PILLARS.push(...reordered);
+  renderAdminPillarOrder();
+  renderHome();
+  await firestoreSetDoc('app_config', 'home_layout', { pillarOrder: DEFAULT_PILLAR_ORDER.join(',') });
 }
 
 async function movePillar(index, direction){
@@ -1036,12 +1052,12 @@ function hideSafety(){ document.getElementById('safetyOverlay').classList.remove
 
 // ---------- تعريف الأركان السبعة ----------
 const PILLARS = [
-  {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, tag:"اكتشف نفسك .. وكن أفضل نسخة منها", grad:"linear-gradient(135deg, #0B3D3A, #145048)", img:"https://images.unsplash.com/photo-1617791160536-598cf32026fb?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:1, title:"الركن الروحاني", icon:"🕌", ready:false, tag:"قربك من الله .. راحة لقلبك", grad:"linear-gradient(135deg, #7A5A1C, #C9A24B)", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, tag:"اكتشف نفسك .. وكن أفضل نسخة منها", grad:"linear-gradient(135deg, #0B3D3A, #145048)", img:"https://images.unsplash.com/photo-1617791160536-598cf32026fb?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:3, title:"الركن العائلي", icon:"👪", ready:false, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:6, title:"الركن المادي", icon:"💰", ready:false, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:5, title:"الركن المهني", icon:"💼", ready:false, tag:"طموح أكبر .. إنجازات أعمق", grad:"linear-gradient(135deg, #4A2E6B, #6B4696)", img:"https://images.unsplash.com/photo-1752223638233-4c9545333f89?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:6, title:"الركن المادي", icon:"💰", ready:false, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:7, title:"الركن الصحي", icon:"🩺", ready:false, tag:"جسدك أمانة .. فاعتنِ به", grad:"linear-gradient(135deg, #0F3D2E, #1D6B52)", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=900&auto=format&fit=crop"},
 ];
 
@@ -1173,7 +1189,7 @@ function goToPillar(id){
       <div class="soon-box">
         <div class="icon-circle">${p.icon}</div>
         <h2>${p.title}</h2>
-        <p>${p.desc}<br>الأدوات الخاصة بهذا الركن قيد الإعداد حاليًا، وستُضاف في مرحلة تالية.</p>
+        <p>${p.tag}<br>الأدوات الخاصة بهذا الركن قيد الإعداد حاليًا، وستُضاف في مرحلة تالية.</p>
       </div>`;
   } else {
     // الركن الشخصي — الأدوات المتاحة
