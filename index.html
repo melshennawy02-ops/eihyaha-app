@@ -422,6 +422,56 @@
     <div style="padding:0 16px;" id="relCheckBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: SOCIAL CIRCLE ASSESSMENT (دايرتك الاجتماعية) ===================== -->
+  <div class="screen" id="screen-circle">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(4)">→</div>
+      <h1>دايرتك الاجتماعية</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="circleBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SILAT AL-RAHM (صلة الرحم) ===================== -->
+  <div class="screen" id="screen-rahm">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(4)">→</div>
+      <h1>صلة الرحم</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="rahmBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: NEIGHBOR & COMMUNITY RIGHTS (حقوق الجار والمجتمع) ===================== -->
+  <div class="screen" id="screen-neighbor">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(4)">→</div>
+      <h1>حقوق الجار والمجتمع</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="neighborBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SOCIAL SKILLS (مهارات التواصل والحدود) ===================== -->
+  <div class="screen" id="screen-social-skills">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(4)">→</div>
+      <h1>مهارات التواصل والحدود</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="socialSkillsBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SOCIAL REPORT (التقرير الاجتماعي) ===================== -->
+  <div class="screen" id="screen-social-report">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(4)">→</div>
+      <h1>تقريرك الاجتماعي</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="socialReportBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -891,6 +941,8 @@ async function doSignUp(){
   const username = document.getElementById('authUsername').value.trim();
   const age = document.getElementById('authAge').value.trim();
   const gender = document.getElementById('authGender').value;
+  const maritalStatus = document.getElementById('authMaritalStatus').value;
+  const livingWith = document.getElementById('authLivingWith').value;
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   if(!fullName || !username || !email || !password){ showAuthError('لازم تملأ الاسم واسم المستخدم والإيميل وكلمة المرور'); return; }
@@ -903,7 +955,9 @@ async function doSignUp(){
     else showAuthError('حصل خطأ: ' + error);
     return;
   }
-  await firestoreSetDoc('users', data.localId, { username, email, fullName, age: age || '', gender: gender || '', role:'user' });
+  const profileFields = { username, email, fullName, age: age || '', gender: gender || '', maritalStatus: maritalStatus || '', livingWith: livingWith || '', role:'user' };
+  await firestoreSetDoc('users', data.localId, profileFields);
+  localStorage.setItem('eihyaha_profile', JSON.stringify(profileFields));
   saveAuthSession(data.localId, username, email);
   offerBiometricSetup(data.refreshToken);
   enterApp();
@@ -922,6 +976,7 @@ async function doSignIn(){
   }
   const profile = await firestoreGetDoc('users', data.localId);
   const username = (profile && profile.username) || email.split('@')[0];
+  if(profile) localStorage.setItem('eihyaha_profile', JSON.stringify(profile));
   saveAuthSession(data.localId, username, email);
   offerBiometricSetup(data.refreshToken);
   enterApp();
@@ -994,6 +1049,25 @@ function renderAuthFields(mode){
         <option value="">تفضّل عدم التحديد</option>
         <option value="male">ذكر</option>
         <option value="female">أنثى</option>
+      </select>
+      <label class="flabel">الحالة الاجتماعية (اختياري)</label>
+      <select id="authMaritalStatus">
+        <option value="">تفضّل عدم التحديد</option>
+        <option value="single">أعزب / عزباء</option>
+        <option value="engaged">مخطوب / مخطوبة</option>
+        <option value="married">متزوج / متزوجة</option>
+        <option value="divorced">مطلّق / مطلّقة</option>
+        <option value="widowed">أرمل / أرملة</option>
+      </select>
+      <label class="flabel">بتعيش مع مين؟ (اختياري)</label>
+      <select id="authLivingWith">
+        <option value="">تفضّل عدم التحديد</option>
+        <option value="alone">لوحدي</option>
+        <option value="family">مع أهلي (والدين/إخوة)</option>
+        <option value="spouse_kids">مع زوجي/زوجتي وأولادي</option>
+        <option value="spouse_only">مع زوجي/زوجتي بس</option>
+        <option value="friends">مع أصدقاء</option>
+        <option value="other">وضع مختلف</option>
       </select>
       <label class="flabel">الإيميل</label>
       <input type="email" id="authEmail" placeholder="name@example.com">
@@ -1188,13 +1262,74 @@ function renderSettingsSection(){
 function renderAccountScreen(){
   const body = document.getElementById('accountBody');
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
-  body.innerHTML = auth ? `
+  if(!auth){ body.innerHTML = ''; return; }
+
+  body.innerHTML = `
       <div class="card" style="text-align:center; padding:24px 16px;">
         <div class="icon-circle" style="width:60px; height:60px; font-size:31px; margin:0 auto 12px; color:var(--gold);">👤</div>
         <p class="card-sub" style="margin:0;">${t('logged_in_as')}</p>
         <p style="font-size:20px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
         <button class="btn-ghost" onclick="authSignOut()">${t('logout')}</button>
-      </div>` : '';
+      </div>
+      <div class="card" id="profileEditCard">
+        <p style="font-size:13px; color:var(--muted); text-align:center; padding:10px 0;">جاري تحميل بياناتك...</p>
+      </div>`;
+
+  loadProfileEditForm();
+}
+
+async function loadProfileEditForm(){
+  let profile = getLocalProfile();
+  try {
+    const fresh = await firestoreGetDoc('users', getUserId());
+    if(fresh){ profile = fresh; localStorage.setItem('eihyaha_profile', JSON.stringify(fresh)); }
+  } catch(e){ /* نكتفي بالكاش المحلي لو فشل الاتصال */ }
+
+  const card = document.getElementById('profileEditCard');
+  if(!card) return;
+  card.innerHTML = `
+    <p class="card-title" style="margin-bottom:12px;">بياناتك الشخصية</p>
+    <label class="flabel">العمر</label>
+    <input type="number" id="editAge" value="${profile.age || ''}" placeholder="العمر">
+    <label class="flabel">النوع</label>
+    <select id="editGender">
+      <option value="" ${!profile.gender ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      <option value="male" ${profile.gender === 'male' ? 'selected' : ''}>ذكر</option>
+      <option value="female" ${profile.gender === 'female' ? 'selected' : ''}>أنثى</option>
+    </select>
+    <label class="flabel">الحالة الاجتماعية</label>
+    <select id="editMaritalStatus">
+      <option value="" ${!profile.maritalStatus ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      ${Object.entries(MARITAL_STATUS_LABELS).map(([k,l]) => `<option value="${k}" ${profile.maritalStatus === k ? 'selected' : ''}>${l}</option>`).join('')}
+    </select>
+    <label class="flabel">بتعيش مع مين؟</label>
+    <select id="editLivingWith">
+      <option value="" ${!profile.livingWith ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      ${Object.entries(LIVING_WITH_LABELS).map(([k,l]) => `<option value="${k}" ${profile.livingWith === k ? 'selected' : ''}>${l}</option>`).join('')}
+    </select>
+    <button class="btn-primary" style="margin-top:10px;" onclick="saveProfileEdit()">حفظ بياناتي</button>
+    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:8px;">البيانات دي بتساعدنا نديك تحليل أدق في الركن العائلي، وهي خاصة بيك بس.</p>
+    <div id="profileSaveStatus"></div>
+  `;
+}
+
+async function saveProfileEdit(){
+  const updated = {
+    age: document.getElementById('editAge').value.trim(),
+    gender: document.getElementById('editGender').value,
+    maritalStatus: document.getElementById('editMaritalStatus').value,
+    livingWith: document.getElementById('editLivingWith').value,
+  };
+  const status = document.getElementById('profileSaveStatus');
+  status.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:8px;">جاري الحفظ...</p>`;
+
+  // نبعت المستند بالكامل (مش الحقول المعدّلة بس) عشان firestoreSetDoc بيستبدل
+  // المستند كله، ومكناش عايزين نمسح username/email/fullName/role الأصليين.
+  const current = getLocalProfile();
+  const merged = { ...current, ...updated };
+  const ok = await firestoreSetDoc('users', getUserId(), merged).catch(() => false);
+  localStorage.setItem('eihyaha_profile', JSON.stringify(merged));
+  status.innerHTML = `<p style="font-size:12px; color:${ok !== false ? 'var(--muted)' : '#B33'}; text-align:center; margin-top:8px;">${ok !== false ? '✅ اتحفظ بياناتك' : '⚠️ اتحفظ محليًا بس (مشكلة في الاتصال)'}</p>`;
 }
 
 // ============================================================
@@ -1512,6 +1647,354 @@ function renderSpiritualDashboard(){
   return html;
 }
 
+// ============================================================
+// الركن الاجتماعي — البنية الكاملة
+// ============================================================
+
+// ---------- ١) تقييم "دايرتك الاجتماعية" (نقطة الدخول) ----------
+const CIRCLE_QUESTIONS = [
+  { circle:'rahm', q:"امتى آخر مرة تواصلت فيها مع قريب (عم/خال/جد) بعيد عن بيت أهلك؟", options:[
+    { label:"الأسبوع ده", score:0 },
+    { label:"من شهر لأكتر", score:1 },
+    { label:"مش فاكر أصلًا / في قطيعة", score:2 },
+  ]},
+  { circle:'rahm', q:"لو حصل خلاف مع حد من عيلتك الكبيرة، بتميل لـ:", options:[
+    { label:"أحاول أصلح الموضوع بنفسي", score:0 },
+    { label:"أسيب الموضوع يهدى لوحده", score:1 },
+    { label:"بقطع علاقتي بيه خالص", score:2 },
+  ]},
+  { circle:'neighbors', q:"علاقتك بجيرانك دلوقتي:", options:[
+    { label:"بنسلم ونتبادل زيارات أحيانًا", score:0 },
+    { label:"بس السلام العادي", score:1 },
+    { label:"مش عارف جيراني أصلًا", score:2 },
+  ]},
+  { circle:'friends', q:"لما تحتاج مساعدة أو حد يسمعك، بتلاقي صحاب حواليك؟", options:[
+    { label:"آه، عندي صحاب أثق فيهم", score:0 },
+    { label:"عندي بس مش قريبين أوي", score:1 },
+    { label:"لأ، حاسس إني لوحدي في الموضوع ده", score:2 },
+  ]},
+  { circle:'community', q:"علاقتك بزمايلك في الشغل/الدراسة أو الناس حواليك بشكل عام:", options:[
+    { label:"علاقات صحية ومريحة", score:0 },
+    { label:"شكلية بس، من غير عمق", score:1 },
+    { label:"متوترة أو بتتجنبها قد الإمكان", score:2 },
+  ]},
+];
+const CIRCLE_LABELS = { rahm:"صلة الرحم (الأقارب)", neighbors:"الجيران", friends:"الأصحاب", community:"المجتمع (شغل/دراسة)" };
+
+let circleAnswers = [];
+function startCircleAssessment(){
+  markToolOpened('circle');
+  circleAnswers = [];
+  renderCircleQuestion(0);
+  showScreen('screen-circle');
+}
+function renderCircleQuestion(index){
+  const wrap = document.getElementById('circleBody');
+  if(index >= CIRCLE_QUESTIONS.length){ revealCircleResult(); return; }
+  const q = CIRCLE_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${CIRCLE_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCircle(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerCircle(qIndex, oIndex){
+  const q = CIRCLE_QUESTIONS[qIndex];
+  circleAnswers.push({ circle:q.circle, score:q.options[oIndex].score });
+  renderCircleQuestion(qIndex + 1);
+}
+function revealCircleResult(){
+  const scores = {};
+  circleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
+  const result = { scores, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_circle_assessment', JSON.stringify(result));
+  renderCircleResult(result);
+}
+function getCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_circle_assessment') || 'null'); }
+function renderCircleResult(result){
+  const wrap = document.getElementById('circleBody');
+  const scores = result.scores;
+  // الدايرة الأضعف = أعلى نقاط (نطبّع نقاط الرحم لأنها من سؤالين مش سؤال واحد)
+  const normalized = {
+    rahm: (scores.rahm || 0) / 4,
+    neighbors: (scores.neighbors || 0) / 2,
+    friends: (scores.friends || 0) / 2,
+    community: (scores.community || 0) / 2,
+  };
+  const weakest = Object.entries(normalized).sort((a,b) => b[1]-a[1])[0][0];
+  const toolMap = {
+    rahm: { fn:"openRahmScreen()", label:"صلة الرحم" },
+    neighbors: { fn:"openNeighborScreen()", label:"حقوق الجار والمجتمع" },
+    friends: { fn:"openRelationshipCheckScreen(4, 'صاحبك')", label:"قيّم صحبتك" },
+    community: { fn:"openSocialSkillsScreen()", label:"مهارات التواصل والحدود" },
+  };
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">🗺️ خريطة دايرتك الاجتماعية</p>
+      <p class="layer-text" style="margin-top:6px;">أضعف دايرة عندك دلوقتي: <b>${CIRCLE_LABELS[weakest]}</b> — مش عشان تحكم على نفسك، لكن عشان تعرف تركّز مجهودك فين.</p>
+    </div>
+    ${Object.entries(normalized).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+          <span>${CIRCLE_LABELS[circle]}</span><span style="color:var(--muted);">${Math.round(val*100)}٪ محتاج شغل</span>
+        </div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;">
+          <div style="width:${val*100}%; height:100%; background:${circle===weakest ? 'var(--gold)' : '#C9BFA0'}; border-radius:3px;"></div>
+        </div>
+      </div>
+    `).join('')}
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${toolMap[weakest].fn}">ابدأ بـ${toolMap[weakest].label} ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="startCircleAssessment()">🔄 أعد التقييم</div>
+  `;
+}
+function renderCircleEntryPoint(){
+  const result = getCircleAssessment();
+  if(!result) return { hasResult:false, html:'' };
+  const scores = result.scores;
+  const normalized = { rahm:(scores.rahm||0)/4, neighbors:(scores.neighbors||0)/2, friends:(scores.friends||0)/2, community:(scores.community||0)/2 };
+  const weakest = Object.entries(normalized).sort((a,b)=>b[1]-a[1])[0][0];
+  return { hasResult:true, weakest, label: CIRCLE_LABELS[weakest] };
+}
+
+// ---------- ٢) صلة الرحم ----------
+const RAHM_BANK = [
+  { emoji:"😔", label:"قاطعت قريب بسبب خناقة قديمة", keywords:["خناقة","اتخانقنا","مش بكلمه بسبب","زعلان منه من زمان"], psych:"الخلاف الأصلي غالبًا نسيته أنت وهو تفاصيله، لكن اللي فضل هو المسافة نفسها اللي بقت عادة. كل يوم بيعدي من غير تواصل بيخلي الرجوع يبان أصعب مما هو فعلًا.", quran:"﴿وَالَّذِينَ يَصِلُونَ مَا أَمَرَ اللَّهُ بِهِ أَن يُوصَلَ وَيَخْشَوْنَ رَبَّهُمْ وَيَخَافُونَ سُوءَ الْحِسَابِ﴾ (سورة الرعد ٢١)", hadith:"«ليس الواصل بالمكافئ، ولكن الواصل الذي إذا قُطعت رحمه وصلها» (متفق عليه)", action:"ابعتله رسالة بسيطة من غير ما تفتح موضوع الخلاف القديم — «فاكرك، عامل إيه؟» كفاية كبداية." },
+  { emoji:"🤷", label:"مش عارف أبدأ التواصل من الأول", keywords:["مش عارف اتواصل","مش عارف ابدأ","محرج اتصل","مش عارف اقول ايه"], psych:"الإحساس بالحرج في بداية أي تواصل بعد فترة انقطاع طبيعي جدًا — لكنه بيخلي كتير من الناس يأجلوا الخطوة للأبد لأنهم مستنيين اللحظة أو الكلام «المثالي».", quran:"﴿وَبِالْوَالِدَيْنِ إِحْسَانًا وَبِذِي الْقُرْبَىٰ﴾ (سورة البقرة ٨٣) — الإحسان لذي القربى مذكور بعد حق الوالدين مباشرة، يعني قريب من نفس الأولوية.", hadith:"«الرحم معلّقة بالعرش تقول: من وصلني وصله الله، ومن قطعني قطعه الله» (متفق عليه)", action:"مفيش «كلام مثالي» — أي رسالة صغيرة بداية كافية. جرّب النهاردة بس." },
+  { emoji:"😤", label:"هو اللي قاطعني، مش أنا", keywords:["هو اللي قاطعني","هي اللي قاطعتني","هو المفروض يبدأ","مش أنا اللي المفروض اتصل"], psych:"التمسك بـ«مين يبدأ الأول» بيحوّل صلة الرحم لمنافسة كرامة، والحديث النبوي بالذات بيكسر المنطق ده — الواصل الحقيقي هو اللي يوصل حتى لو هو المظلوم.", quran:"﴿وَلَا تَسْتَوِي الْحَسَنَةُ وَلَا السَّيِّئَةُ ۚ ادْفَعْ بِالَّتِي هِيَ أَحْسَنُ﴾ (سورة فصلت ٣٤)", hadith:"«ليس الواصل بالمكافئ، ولكن الواصل الذي إذا قُطعت رحمه وصلها» (متفق عليه)", action:"جرّب تبدأ إنت المرة دي، مش عشان هو يستاهل، لكن عشان الأجر عند الله مش عنده." },
+  { emoji:"😴", label:"مشغول جدًا ومفيش وقت", keywords:["مشغول","مفيش وقت","تعبان من الشغل","مالوش وقت اصلا"], psych:"الانشغال بيخلي التواصل الاجتماعي أول حاجة تتأجل، لأنه محدش بيحاسبك عليه فورًا زي الشغل أو الالتزامات التانية.", quran:"﴿فَإِذَا فَرَغْتَ فَانصَبْ﴾ (سورة الشرح ٧)", hadith:"«من كان يؤمن بالله واليوم الآخر فليصل رحمه» (متفق عليه)", action:"مكالمة صوتية دقيقتين وانت في الطريق كفاية — مش لازم زيارة كاملة." },
+  { emoji:"💭", label:"فيه ذكريات مؤلمة مع العيلة الكبيرة", keywords:["ذكريات مؤلمة","اتأذيت منهم","عاملوني بشكل وحش","مش مرتاح معاهم نفسيًا"], psych:"لو التاريخ مع العيلة الكبيرة فيه أذى حقيقي، صلة الرحم مش معناها تعرّض نفسك لنفس الأذى تاني — المطلوب حد أدنى من البر (سؤال، دعاء، سلام) من غير ما تلزم نفسك بعلاقة عميقة تضرّك.", quran:"﴿لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا﴾ (سورة البقرة ٢٨٦)", hadith:"صلة الرحم درجات — أدناها ألا تقطع، وأعلاها البر والإحسان (معنى متفق عليه فقهيًا)", action:"ابدأ بأقل درجة ممكنة: دعاء ليهم من غير ما تشوفهم، أو سؤال عابر عن صحتهم." },
+];
+function getRahmContactCount(){ return getSocialAppliedLog().filter(l => l.category === 'rahm_contact').length; }
+function openRahmScreen(){
+  markToolOpened('rahm');
+  const wrap = document.getElementById('rahmBody');
+  const contactCount = getRahmContactCount();
+  wrap.innerHTML = `
+    <div class="card" style="background:var(--navy-dark); text-align:center; margin:14px 0;">
+      <p style="font-size:26px; font-weight:700; color:var(--gold); margin:0;">${contactCount}</p>
+      <p style="font-size:12px; color:rgba(255,255,255,.85); margin:4px 0 10px;">مرة سجّلت فيها إنك تواصلت مع قريب</p>
+      <div class="choice-btn" style="margin:0; text-align:center; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('rahm_contact','تواصل مع قريب'); openRahmScreen();">✅ سجّلت تواصل مع قريب دلوقتي</div>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">اختار أقرب حاجة لحالتك:</p>
+    ${RAHM_BANK.map((r,i) => `
+      <div class="tool-row" onclick="showRahmDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${r.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${r.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-rahm');
+}
+function showRahmDetail(i){
+  const r = RAHM_BANK[i];
+  const wrap = document.getElementById('rahmBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${r.emoji} ${r.label}</p>
+      <p class="layer-text" style="margin-top:8px;">${r.psych}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p>
+      <p class="layer-text" style="margin-top:8px;">${r.quran}</p>
+      <p class="layer-text" style="margin-top:6px;">${r.hadith}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${r.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('rahm','${r.label}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openRahmScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٣) حقوق الجار والمجتمع ----------
+const NEIGHBOR_BANK = [
+  { emoji:"🚪", label:"مش عارف جيراني أصلًا", psych:"العزلة عن الجيران بقت طبيعية في حياة المدن، لكنها بتحرمك من أقرب شبكة أمان جغرافية ليك — الجار اللي جنبك أقرب ليك وقت الطوارئ من قريب بعيد.", quran:"﴿وَاعْبُدُوا اللَّهَ وَلَا تُشْرِكُوا بِهِ شَيْئًا ۖ وَبِالْوَالِدَيْنِ إِحْسَانًا ... وَالْجَارِ ذِي الْقُرْبَىٰ وَالْجَارِ الْجُنُبِ﴾ (سورة النساء ٣٦) — الجار مذكور في نفس آية حقوق الوالدين والأقارب.", hadith:"«ما زال جبريل يوصيني بالجار حتى ظننت أنه سيورّثه» (متفق عليه)", action:"في أول فرصة (مصعد، بوابة العمارة)، ابدأ بالسلام واسأل عن اسمه لو مش عارفه." },
+  { emoji:"🍲", label:"جاري محتاج مساعدة ومش واخد بالي", psych:"الانشغال بحياتنا بيخلينا مانلاحظش احتياج اللي جنبنا مباشرة، رغم إن القرب الجغرافي ده بالذات هو اللي بيخليه مسؤوليتنا الأولى.", quran:"﴿وَآتِ ذَا الْقُرْبَىٰ حَقَّهُ وَالْمِسْكِينَ وَابْنَ السَّبِيلِ﴾ (سورة الإسراء ٢٦)", hadith:"«ليس المؤمن الذي يشبع وجاره جائع إلى جنبه» (رواه البخاري في الأدب المفرد)", action:"اسأل جارك النهاردة بشكل مباشر: «محتاج حاجة؟» — السؤال المباشر بيكسر حاجز التردد من الطرفين." },
+  { emoji:"😠", label:"عندي مشكلة أو إزعاج من جاري", psych:"الخلافات مع الجيران بتتراكم لأن محدش بيحب يبدأ الكلام المباشر، فبتتحول لتوتر صامت بيفضل سنين.", quran:"﴿وَإِن تَعْفُوا وَتَصْفَحُوا وَتَغْفِرُوا فَإِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ﴾ (سورة التغابن ١٤)", hadith:"«لا يدخل الجنة من لا يأمن جاره بوائقه» (رواه مسلم)", action:"جرّب تتكلم بهدوء ومباشرة عن المشكلة، بدل ما تسيبها تتراكم أو تشتكي لناس تانيين." },
+  { emoji:"🏙️", label:"مبقتش حاسس بانتماء للمجتمع حواليا", psych:"الإحساس بالغربة وسط ناس كتير حاسة معروفة — بتشوف ناس كتير لكن محدش بيعرفك فعلًا، وده بيولّد وحدة رغم الزحمة.", quran:"﴿يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا﴾ (سورة الحجرات ١٣)", hadith:"«المسلم للمسلم كالبنيان يشد بعضه بعضًا» (متفق عليه)", action:"شارك في نشاط جماعي صغير (صلاة جماعة، مناسبة حي، مبادرة تطوع) بدل ما تنتظر الانتماء يجيلك لوحده." },
+];
+function openNeighborScreen(){
+  markToolOpened('neighbor');
+  const wrap = document.getElementById('neighborBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب حاجة لحالتك:</p>
+    ${NEIGHBOR_BANK.map((n,i) => `
+      <div class="tool-row" onclick="showNeighborDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${n.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${n.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-neighbor');
+}
+function showNeighborDetail(i){
+  const n = NEIGHBOR_BANK[i];
+  const wrap = document.getElementById('neighborBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${n.emoji} ${n.label}</p>
+      <p class="layer-text" style="margin-top:8px;">${n.psych}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p>
+      <p class="layer-text" style="margin-top:8px;">${n.quran}</p>
+      <p class="layer-text" style="margin-top:6px;">${n.hadith}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${n.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('neighbor','${n.label}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openNeighborScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٤) مهارات التواصل والحدود ----------
+const SOCIAL_SKILLS_BANK = [
+  { emoji:"🙅", label:"صعب عليّ أرفض طلب حد", psych:"الخوف من رفض الطلب غالبًا مصدره خوف قديم من فقدان الحب أو القبول لو قلت «لأ» — فبتوافق حتى لو على حساب راحتك، وده بيراكم إرهاق واستياء داخلي بمرور الوقت.", quran:"﴿لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا﴾ (سورة البقرة ٢٨٦) — حتى الله ما كلّفناش فوق طاقتنا، فمن باب أولى محدش تاني له الحق يكلفك كده.", action:"جرّب جملة بسيطة: «مقدرش النهاردة، بس أقدر أساعد بطريقة تانية لو حابب» — رفض بأدب من غير تبرير مطوّل." },
+  { emoji:"💥", label:"لما بيحصل خلاف، بنفجر أو بنصمت تمامًا", psych:"الانفجار والصمت العقابي وجهين لنفس العملة — استجابة دفاعية بدل حوار حقيقي، وده بيمنع أي حل فعلي للمشكلة ويراكم غضب مكتوم.", quran:"﴿وَإِذَا خَاطَبَهُمُ الْجَاهِلُونَ قَالُوا سَلَامًا﴾ (سورة الفرقان ٦٣) — الرد المتزن مش ضعف، هو قوة اختيار.", action:"لو حاسس إنك هتنفجر، اطلب دقيقتين قبل ما ترد: «محتاج أفكر وأرجعلك»." },
+  { emoji:"🎭", label:"بلبس قناع عشان الناس تقبلني", psych:"التصنّع المستمر عشان تتقبل بيستهلك طاقة نفسية ضخمة، وبيخليك حاسس إن أي قبول بتاخده مش موجّه لحقيقتك.", quran:"﴿وَاصْبِرْ نَفْسَكَ مَعَ الَّذِينَ يَدْعُونَ رَبَّهُم بِالْغَدَاةِ وَالْعَشِيِّ يُرِيدُونَ وَجْهَهُ﴾ (سورة الكهف ٢٨) — الصحبة الحقيقية هي اللي تقبلك على حقيقتك.", action:"جرّب في موقف صغير النهاردة تقول رأيك الحقيقي بدل ما توافق تلقائيًا." },
+  { emoji:"🧱", label:"محدش بيحترم حدودي", psych:"لو محتلطتش حدودك بوضوح من الأول، الناس هتستمر تتخطاها — مش لأنهم أشرار بالضرورة، لكن لأن محدش بيقرأ أفكارك.", quran:"﴿وَقُولُوا لِلنَّاسِ حُسْنًا﴾ (سورة البقرة ٨٣) — الوضوح بلطف مش تناقض، هو أرقى شكل من التواصل.", action:"اختار موقف واحد بس تحطه حد واضح فيه النهاردة، بجملة قصيرة ومباشرة من غير اعتذار زايد." },
+];
+function openSocialSkillsScreen(){
+  markToolOpened('social_skills');
+  const wrap = document.getElementById('socialSkillsBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب حاجة لحالتك:</p>
+    ${SOCIAL_SKILLS_BANK.map((s,i) => `
+      <div class="tool-row" onclick="showSocialSkillDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${s.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${s.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-social-skills');
+}
+function showSocialSkillDetail(i){
+  const s = SOCIAL_SKILLS_BANK[i];
+  const wrap = document.getElementById('socialSkillsBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p>
+      <p class="layer-text" style="margin-top:8px;">${s.psych}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p>
+      <p class="layer-text" style="margin-top:8px;">${s.quran}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${s.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('skill','${s.label}'); this.textContent='✓ تم — أحسنت';  this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openSocialSkillsScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- تتبع عام لكل خطوات الركن الاجتماعي المطبّقة ----------
+function getSocialAppliedLog(){ return JSON.parse(localStorage.getItem('eihyaha_social_applied') || '[]'); }
+function markSocialApplied(category, label){
+  const log = getSocialAppliedLog();
+  log.unshift({ category, label, date: new Date().toISOString() });
+  localStorage.setItem('eihyaha_social_applied', JSON.stringify(log.slice(0,300)));
+}
+function getSocialAppliedCount(){ return getSocialAppliedLog().length; }
+
+// ---------- ٦) التقرير الاجتماعي ----------
+function openSocialReport(){
+  markToolOpened('social_report');
+  const body = document.getElementById('socialReportBody');
+  const log = getSocialAppliedLog();
+  const rahmCount = getRahmContactCount();
+  const circleResult = getCircleAssessment();
+  const relcheckDone = isToolOpened('relcheck_4');
+
+  let summary = "";
+  if(log.length === 0 && !circleResult){
+    summary = "لسه معندناش بيانات كفاية نبني بيها تقرير حقيقي — استخدم أدوات الركن كذا يوم وارجع تاني.";
+  } else {
+    const parts = [];
+    if(rahmCount > 0) parts.push(`تواصلت مع الأرحام ${rahmCount} مرة`);
+    if(log.length > 0) parts.push(`طبّقت ${log.length} خطوة اجتماعية عملية`);
+    if(circleResult) parts.push(`عندك خريطة واضحة لدايرتك الاجتماعية`);
+    summary = parts.join(" — ") + ".";
+  }
+
+  body.innerHTML = `
+    <div class="card" style="background:var(--sand);">
+      <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0;">${summary}</p>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${rahmCount}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة تواصلت مع رحم</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckDone ? '✓' : '—'}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">قيّمت صحبتك</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${log.length}</p>
+        <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة اجتماعية طبّقتها فعليًا</p>
+      </div>
+    </div>
+    ${circleResult ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:6px;">خريطة دايرتك الاجتماعية</p>
+        <p style="font-size:12.5px; color:var(--text); margin:0; cursor:pointer;" onclick="renderCircleResult(getCircleAssessment()); showScreen('screen-circle');">شوف تفاصيلها تاني ←</p>
+      </div>` : ''}
+    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الاجتماعي بس حاليًا.</p>
+  `;
+  showScreen('screen-social-report');
+}
+
+
+function getLocalProfile(){
+  return JSON.parse(localStorage.getItem('eihyaha_profile') || '{}');
+}
+const MARITAL_STATUS_LABELS = { single:"أعزب / عزباء", engaged:"مخطوب / مخطوبة", married:"متزوج / متزوجة", divorced:"مطلّق / مطلّقة", widowed:"أرمل / أرملة" };
+const LIVING_WITH_LABELS = { alone:"لوحدي", family:"مع أهلي (والدين/إخوة)", spouse_kids:"مع زوجي/زوجتي وأولادي", spouse_only:"مع زوجي/زوجتي بس", friends:"مع أصدقاء", other:"وضع مختلف" };
+
+// تأمل نفسي-قرآني قصير لكل حالة اجتماعية ووضع معيشي — يُستخدم في بطاقة "بيئتك المحيطة" بالركن العائلي
+const MARITAL_ENV_INSIGHT = {
+  single: "إنت لسه في مرحلة الاختيار — استقرارك العاطفي دلوقتي مبني على علاقتك بنفسك وبأهلك، مش على وجود شريك. وده وقت مثالي تشتغل فيه على وعيك باختياراتك قبل ما تدخل علاقة جديدة.",
+  engaged: "الخطوبة مرحلة اختبار حقيقي لأنماط ارتباطك — لاحظ هل بتتصرف مع خطيبك/خطيبتك من مكان أمان، ولا من مكان قلق أو إثبات قديم.",
+  married: "الزواج مرآة يومية لجروح الطفولة القديمة — أي احتكاك متكرر مع شريك حياتك يستاهل تسأل نفسك: ده رد فعل على الموقف ده، ولا صدى قديم بيتكرر؟",
+  divorced: "مرحلة ما بعد الطلاق بتفتح مساحة مراجعة صادقة — إعادة الاختيار الواعي غالبًا بتبدأ من فهم اللي حصل، مش من تكرار نفس النمط في علاقة جديدة بسرعة.",
+  widowed: "الفقد بيغيّر شكل السكن اللي اتعودت عليه تمامًا — مساحة الحزن دي محتاجة وقتها، ومفيش جدول زمني صح أو غلط للتعافي منها.",
+};
+const LIVING_ENV_INSIGHT = {
+  alone: "عيشتك لوحدك بتديك استقلالية حقيقية، لكنها كمان بتفضح أي فراغ عاطفي مباشر، لأنك من غير حد قريب يمتصه يوميًا زي العيشة مع أهل أو شريك.",
+  family: "عيشتك مع أهلك بتحطك في احتكاك يومي مباشر مع نفس مصدر الجرح غالبًا (جرح الأم أو الأب) — كل موقف صغير ممكن يفتح باب قديم من غير ما تاخد بالك.",
+  spouse_kids: "بيتك دلوقتي بيئة بتشكّل جيل كامل — المناخ العاطفي بينك وبين شريك حياتك هو اللي بيتربى عليه أولادك من غير ما تحس.",
+  spouse_only: "المساحة بينك وبين شريك حياتك من غير أطراف تانية بتخليكم مرآة مباشرة لبعض — كل نمط عندك بيتكشف بسرعة قدامه.",
+  friends: "عيشتك مع أصدقاء بتخليك في احتكاك يومي مع نفس أنماط الصداقة اللي بنتكلم عنها في الركن الاجتماعي.",
+  other: "وضعك المعيشي الحالي له طبيعته الخاصة — يستاهل تلاحظ إزاي بيأثر على مزاجك واستقرارك يوم بيوم.",
+};
+function renderFamilyEnvironmentCard(){
+  const profile = getLocalProfile();
+  if(!profile.maritalStatus && !profile.livingWith){
+    return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
+      <p style="font-size:12px; color:var(--muted); margin:0 0 8px; line-height:1.7;">لو ضفت حالتك الاجتماعية ووضعك المعيشي في "حسابي"، هنقدر نديك تحليل أدق هنا لبيئتك المحيطة وتأثيرها على مشاعرك وسلوكك.</p>
+      <div class="choice-btn" style="text-align:center; margin:0;" onclick="openAccountScreen()">أضف بياناتك ←</div>
+    </div>`;
+  }
+  const parts = [];
+  if(profile.maritalStatus && MARITAL_ENV_INSIGHT[profile.maritalStatus]) parts.push(MARITAL_ENV_INSIGHT[profile.maritalStatus]);
+  if(profile.livingWith && LIVING_ENV_INSIGHT[profile.livingWith]) parts.push(LIVING_ENV_INSIGHT[profile.livingWith]);
+  return `<div class="card" style="background:linear-gradient(rgba(60,25,10,.85), rgba(60,25,10,.85)), url('https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:16px;">
+    <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 8px;">🏠 بيئتك المحيطة</p>
+    ${parts.map(p => `<p style="font-size:13px; color:#fff; line-height:1.7; margin:0 0 8px;">${p}</p>`).join('')}
+    <p style="font-size:11px; color:rgba(255,255,255,.7); margin:4px 0 0; cursor:pointer;" onclick="openAccountScreen()">تعديل بياناتك ←</p>
+  </div>`;
+}
+
 // ---------- تتبع عام: هل جرّب المستخدم أداة معيّنة قبل كده؟ (لعلامة "ابدأ من هنا") ----------
 function markToolOpened(key){
   const opened = JSON.parse(localStorage.getItem('eihyaha_tools_opened') || '{}');
@@ -1523,6 +2006,29 @@ function isToolOpened(key){
 }
 function firstUntriedIndex(tools){
   return tools.findIndex(t => !isToolOpened(t.key));
+}
+
+function renderSocialSummaryCard(){
+  const circleResult = getCircleAssessment();
+  const rahmCount = getRahmContactCount();
+  const appliedCount = getSocialAppliedCount();
+  if(!circleResult && appliedCount === 0){
+    return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
+      <p style="font-size:12px; color:var(--muted); margin:0;">ابدأ بـ"دايرتك الاجتماعية" عشان نبني صورتك هنا تدريجيًا.</p>
+    </div>`;
+  }
+  let html = `<div class="card" style="background:linear-gradient(rgba(10,35,50,.85), rgba(10,35,50,.85)), url('https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:16px;">`;
+  if(circleResult){
+    const scores = circleResult.scores;
+    const normalized = { rahm:(scores.rahm||0)/4, neighbors:(scores.neighbors||0)/2, friends:(scores.friends||0)/2, community:(scores.community||0)/2 };
+    const weakest = Object.entries(normalized).sort((a,b)=>b[1]-a[1])[0][0];
+    html += `<p style="font-size:13px; color:#fff; margin:0 0 8px; cursor:pointer;" onclick="renderCircleResult(getCircleAssessment()); showScreen('screen-circle');">🗺️ أضعف دايرة عندك دلوقتي: <b style="color:var(--gold);">${CIRCLE_LABELS[weakest]}</b> ←</p>`;
+  }
+  if(rahmCount > 0) html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 8px;">🤝 تواصلت مع الأرحام <b style="color:var(--gold);">${rahmCount}</b> مرة</p>`;
+  if(appliedCount > 0) html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 8px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة اجتماعية</p>`;
+  html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSocialReport()">📊 شوف تقريرك الاجتماعي الكامل ←</p>`;
+  html += `</div>`;
+  return html;
 }
 
 function goToPillar(id){
@@ -1565,7 +2071,7 @@ function goToPillar(id){
       { key:"relcheck_3", onclick:"openRelationshipCheckScreen(3, 'زوجك أو زوجتك')", icon:"🎭", title:"قيّم شريك حياتك", sub:"علامات المنافق والمثلث المظلم في الزواج", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(40,20,15,.72)" },
     ];
     const familyStartIdx = firstUntriedIndex(familyTools);
-    body.innerHTML = familyTools.map((t,idx) => `
+    body.innerHTML = renderFamilyEnvironmentCard() + familyTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===familyStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
         ${idx===familyStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
@@ -1574,19 +2080,24 @@ function goToPillar(id){
       </div>
     `).join('') + `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:6px;">أدوات تانية للركن العائلي (التربية، الإخوة) قيد الإعداد وهتتضاف قريبًا.</p>`;
   } else if(id === 4){
-    // الركن الاجتماعي — الأدوات المتاحة بخلفيات صور
+    // الركن الاجتماعي — لوحة ملخص + الأدوات المتاحة بخلفيات صور
     const socialTools = [
+      { key:"circle", onclick:"startCircleAssessment()", icon:"🗺️", title:"دايرتك الاجتماعية", sub:"تقييم يحدد أضعف دايرة محتاجة شغل", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
+      { key:"rahm", onclick:"openRahmScreen()", icon:"🤝", title:"صلة الرحم", sub:"الأقارب الممتدين .. من الوصل لا القطيعة", img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,50,40,.72)" },
       { key:"relcheck_4", onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم صحبتك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
+      { key:"neighbor", onclick:"openNeighborScreen()", icon:"🏘️", title:"حقوق الجار والمجتمع", sub:"وصايا نبوية في التعامل مع المحيط", img:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,35,10,.72)" },
+      { key:"social_skills", onclick:"openSocialSkillsScreen()", icon:"🧩", title:"مهارات التواصل والحدود", sub:"الرفض بأدب، الحدود، وحل الخلاف", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,20,45,.72)" },
+      { key:"social_report", onclick:"openSocialReport()", icon:"📊", title:"تقريرك الاجتماعي", sub:"كل خطواتك في الركن ده في مكان واحد", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,25,35,.75)" },
     ];
     const socialStartIdx = firstUntriedIndex(socialTools);
-    body.innerHTML = socialTools.map((t,idx) => `
+    body.innerHTML = renderSocialSummaryCard() + socialTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===socialStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
         ${idx===socialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
       </div>
-    `).join('') + `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:6px;">أدوات تانية للركن الاجتماعي (الجيران، زملاء الشغل) قيد الإعداد وهتتضاف قريبًا.</p>`;
+    `).join('') + `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:6px;">أدوات تانية للركن الاجتماعي (زملاء الشغل بالتفصيل) قيد الإعداد وهتتضاف قريبًا.</p>`;
   } else {
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
@@ -3649,6 +4160,10 @@ function computeJourneyStages(){
       note: totalApplied >= 5 ? `طبّقت ${totalApplied} خطوة عملية فعليًا — ده نضج حقيقي.` : `طبّقت ${totalApplied} خطوة بس، محتاج توصل لـ٥ على الأقل.` },
     { key:"التزم", label:"الالتزام — انتظام طويل المدى", done: worshipConsistency30 >= 60, tool:"openWorshipInsights()", toolLabel:"مؤشرات روحانيتك (الروحاني)",
       note: worshipConsistency30 >= 60 ? `انتظامك آخر ٣٠ يوم ${worshipConsistency30}٪ — التزام حقيقي.` : "الالتزام طويل المدى محتاج انتظام عبادة أعلى." },
+    { key:"ابنِ علاقاتك", label:"بناء علاقات صحية واعية", done: getSocialAppliedCount() >= 1 || getRahmContactCount() >= 1, tool:"goToPillar(4)", toolLabel:"الركن الاجتماعي",
+      note: (getSocialAppliedCount() >= 1 || getRahmContactCount() >= 1) ? "بدأت فعليًا تطبّق خطوة في علاقاتك المحيطة، مش بس أدوات الشخصي والعائلي." : "لسه محتاج تطبّق أول خطوة من الركن الاجتماعي (صلة الرحم، حقوق الجار، أو مهارات التواصل)." },
+    { key:"ابنِ مجتمعك", label:"استمرارية في صلة الرحم والمجتمع", done: getRahmContactCount() >= 3, tool:"openRahmScreen()", toolLabel:"صلة الرحم (الاجتماعي)",
+      note: getRahmContactCount() >= 3 ? `تواصلت مع الأرحام ${getRahmContactCount()} مرات — استمرارية حقيقية في صلة الرحم.` : `تواصلت مع الأرحام ${getRahmContactCount()} مرة بس، محتاج توصل لـ٣ على الأقل.` },
   ];
 }
 
