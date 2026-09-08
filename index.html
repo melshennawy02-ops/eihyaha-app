@@ -402,11 +402,11 @@
     </div>
   </div>
 
-  <!-- ===================== SCREEN: FAMILY WOUND (علاقتك بأبوك وأمك) ===================== -->
+  <!-- ===================== SCREEN: FAMILY WOUND (علاقتك بالأب والأم) ===================== -->
   <div class="screen" id="screen-family-wound">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(3)">→</div>
-      <h1>علاقتك بأبوك وأمك</h1>
+      <h1>علاقتك بالأب والأم</h1>
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="familyWoundBody"></div>
@@ -2360,7 +2360,7 @@ function goToPillar(id){
   } else if(id === 3){
     // الركن العائلي — الأدوات المتاحة بخلفيات صور
     const familyTools = [
-      { key:"family_wound", onclick:"openFamilyWoundScreen()", icon:"🗝️", title:"علاقتك بأبوك وأمك", sub:"تقييم لعلاقتك بيهم من الصغر", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(60,25,10,.72)" },
+      { key:"family_wound", onclick:"openFamilyWoundScreen()", icon:"🗝️", title:"علاقتك بالأب والأم", sub:"تقييم لعلاقتك بيهم من الصغر", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(60,25,10,.72)" },
       { key:"spouse", onclick:"openSpouseScreen()", icon:"💞", title:"علاقتك بشريك حياتك", sub:"السكن والمودة والرحمة .. مش مجرد كلمة", img:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,20,30,.72)" },
       { key:"relcheck_3", onclick:"openRelationshipCheckScreen(3, 'زوجك أو زوجتك')", icon:"🎭", title:"قيّم شريك حياتك", sub:"علامات المنافق والمثلث المظلم في الزواج", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(40,20,15,.72)" },
       { key:"children", onclick:"openChildrenScreen()", icon:"🧒", title:"الأولاد والتعامل معهم", sub:"هل بتكرر مع ولادك جرحك إنت؟", img:"https://images.unsplash.com/photo-1476234251651-f353703a034d?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,40,30,.72)" },
@@ -4008,9 +4008,9 @@ function openFamilyWoundScreen(){
     wrap.innerHTML = `
       <div style="display:flex; align-items:center; gap:8px; margin:14px 0 10px;">
         <span style="font-size:14px;">🗝️</span>
-        <p style="font-size:14px; font-weight:700; margin:0;">علاقتك بأبوك وأمك</p>
+        <p style="font-size:14px; font-weight:700; margin:0;">علاقتك بالأب والأم</p>
       </div>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">تقييم لعلاقتك بيهم من الصغر — ٦ أسئلة تكشفلك أثر علاقتك بأبوك وأمك على اختيارك لأصحابك وشريك حياتك.</p>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">تقييم لعلاقتك بيهم من الصغر — ٦ أسئلة تكشفلك أثر علاقتك بالأب والأم على اختيارك لأصحابك وشريك حياتك.</p>
       <div class="choice-btn" style="text-align:center;" onclick="startWoundQuiz()">ابدأ التقييم 🗝️</div>
     `;
   }
@@ -4649,7 +4649,7 @@ function matchWoundFreeText(text){
 function buildWoundSuggestionHtml(key){
   if(key === 'mom_wound' || key === 'dad_wound'){
     const label = key === 'mom_wound' ? 'جرح الأم' : 'جرح الأب';
-    return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openFamilyWoundScreen()">كلامك قريب من ${label} — شوف «علاقتك بأبوك وأمك» في الركن العائلي ←</div>`;
+    return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openFamilyWoundScreen()">كلامك قريب من ${label} — شوف «علاقتك بالأب والأم» في الركن العائلي ←</div>`;
   }
   if(key === 'relcheck_signs'){
     return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openRelationshipCheckScreen(2, 'الشخص ده')">كلامك فيه علامات تستاهل تقييم علاقة — جرب أداة «قيّم علاقتك» ←</div>`;
