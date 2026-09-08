@@ -1445,39 +1445,22 @@ function goToPillar(id){
       `).join('')}
     `;
   } else {
-    // الركن الشخصي — الأدوات المتاحة
-    body.innerHTML = `
-      <div class="tool-row" onclick="startEhkily()">
-        <div class="icon-circle">💬</div>
-        <div><div class="card-title">طبيبك النفسي السري</div><div class="card-sub">احكيلي — مساحة آمنة ومجهولة</div></div>
-        <div class="arrow">‹</div>
+    // الركن الشخصي — الأدوات المتاحة بخلفيات صور
+    const personalTools = [
+      { onclick:"startEhkily()", icon:"💬", title:"طبيبك النفسي السري", sub:"احكيلي — مساحة آمنة ومجهولة", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
+      { onclick:"startMerat()", icon:"🪞", title:"مرآة العقل", sub:"افهم أنماطك الفكرية والشعورية", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,20,20,.68)" },
+      { onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
+      { onclick:"showScreen('screen-daftar')", icon:"📓", title:"مرآتي اليومية", sub:"تتبع مزاجك وطاقتك يوميًا", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(25,20,15,.68)" },
+      { onclick:"startReport()", icon:"📋", title:"جهزني للدكتور", sub:"تقرير مبسط قبل زيارة المتخصص", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
+      { onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
+    ];
+    body.innerHTML = personalTools.map(t => `
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+        <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
+        <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
+        <div class="arrow" style="color:#fff;">‹</div>
       </div>
-      <div class="tool-row" onclick="startMerat()">
-        <div class="icon-circle">🪞</div>
-        <div><div class="card-title">مرآة العقل</div><div class="card-sub">افهم أنماطك الفكرية والشعورية</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="startTabiei()">
-        <div class="icon-circle">❓</div>
-        <div><div class="card-title">هل أنا طبيعي؟</div><div class="card-sub">إجابات سريعة على أسئلتك</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="showScreen('screen-daftar')">
-        <div class="icon-circle">📓</div>
-        <div><div class="card-title">مرآتي اليومية</div><div class="card-sub">تتبع مزاجك وطاقتك يوميًا</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="startReport()">
-        <div class="icon-circle">📋</div>
-        <div><div class="card-title">جهزني للدكتور</div><div class="card-sub">تقرير مبسط قبل زيارة المتخصص</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="openFlashScreen()">
-        <div class="icon-circle">✨</div>
-        <div><div class="card-title">ومضة نفسية</div><div class="card-sub">١٠٠ موقف نفسي بمنظور قرآني</div></div>
-        <div class="arrow">‹</div>
-      </div>
-    `;
+    `).join('');
   }
   showScreen('screen-pillar');
 }
