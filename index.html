@@ -1379,34 +1379,23 @@ function goToPillar(id){
         <p>${p.tag}<br>الأدوات الخاصة بهذا الركن قيد الإعداد حاليًا، وستُضاف في مرحلة تالية.</p>
       </div>`;
   } else if(id === 1){
-    // الركن الروحاني — لوحة ملخص سريعة + الأدوات المتاحة
+    // الركن الروحاني — لوحة ملخص سريعة + الأدوات المتاحة بخلفيات صور
+    const spiritualTools = [
+      { onclick:"openRabbekScreen()", icon:"🤲", title:"علاقتك بربك", sub:"الخوف والرجاء والحب .. لمين موجّهين؟", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,35,.72)" },
+      { onclick:"openWorshipScreen()", icon:"📿", title:"متابعة عباداتك", sub:"الصلاة، القرآن، والأذكار يوميًا", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(90,70,20,.78)" },
+      { onclick:"openProphetsScreen()", icon:"📖", title:"قصص الأنبياء والتسليم", sub:"٢٢ نبيًا .. إزاي طبّقوا التسليم لله", img:"https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,15,10,.75)" },
+      { onclick:"openTawbaScreen()", icon:"🕊️", title:"التوبة والعودة", sub:"لحظة رجوعك لله بعد أي غلطة", img:"https://images.unsplash.com/photo-1506564461966-4107c88f6d29?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,45,60,.55)" },
+      { onclick:"openAsmaScreen()", icon:"📿", title:"أسماء الله الحسنى", sub:"معنى، أثر نفسي، وتطبيق عملي لكل اسم", img:"https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
+    ];
     body.innerHTML = `
       ${renderSpiritualDashboard()}
-      <div class="tool-row" onclick="openRabbekScreen()">
-        <div class="icon-circle">🤲</div>
-        <div><div class="card-title">علاقتك بربك</div><div class="card-sub">الخوف والرجاء والحب .. لمين موجّهين؟</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="openWorshipScreen()">
-        <div class="icon-circle">📿</div>
-        <div><div class="card-title">متابعة عباداتك</div><div class="card-sub">الصلاة، القرآن، والأذكار يوميًا</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="openProphetsScreen()">
-        <div class="icon-circle">📖</div>
-        <div><div class="card-title">قصص الأنبياء والتسليم</div><div class="card-sub">٢٢ نبيًا .. إزاي طبّقوا التسليم لله</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="openTawbaScreen()">
-        <div class="icon-circle">🕊️</div>
-        <div><div class="card-title">التوبة والعودة</div><div class="card-sub">لحظة رجوعك لله بعد أي غلطة</div></div>
-        <div class="arrow">‹</div>
-      </div>
-      <div class="tool-row" onclick="openAsmaScreen()">
-        <div class="icon-circle">📿</div>
-        <div><div class="card-title">أسماء الله الحسنى</div><div class="card-sub">معنى، أثر نفسي، وتطبيق عملي لكل اسم</div></div>
-        <div class="arrow">‹</div>
-      </div>
+      ${spiritualTools.map(t => `
+        <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+          <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
+          <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
+          <div class="arrow" style="color:#fff;">‹</div>
+        </div>
+      `).join('')}
     `;
   } else {
     // الركن الشخصي — الأدوات المتاحة
