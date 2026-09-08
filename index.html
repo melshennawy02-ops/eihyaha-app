@@ -368,6 +368,29 @@
     <div style="padding:0 16px;" id="tawbaBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: KNOW YOURSELF (اعرف نفسك) ===================== -->
+  <div class="screen" id="screen-self-know">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(2)">→</div>
+      <h1>اعرف نفسك</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;">
+      <div id="selfKnowQuiz"></div>
+      <div id="selfKnowContent" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== SCREEN: PERSONAL REPORT (التقرير الشخصي الشامل) ===================== -->
+  <div class="screen" id="screen-personal-report">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(2)">→</div>
+      <h1>تقريرك الشخصي</h1>
+      <div style="width:34px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="personalReportBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: SPIRITUAL REPORT (التقرير الروحاني الشامل) ===================== -->
   <div class="screen" id="screen-spiritual-report">
     <div class="topbar">
@@ -1447,6 +1470,7 @@ function goToPillar(id){
   } else {
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
+      { onclick:"openSelfKnowScreen()", icon:"🧠", title:"اعرف نفسك", sub:"مين أنت؟ .. مشاعرك وأفكارك وسلوكك", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
       { onclick:"startEhkily()", icon:"💬", title:"طبيبك النفسي السري", sub:"احكيلي — مساحة آمنة ومجهولة", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
       { onclick:"startMerat()", icon:"🪞", title:"مرآة العقل", sub:"افهم أنماطك الفكرية والشعورية", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,20,20,.68)" },
       { onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
@@ -1454,8 +1478,10 @@ function goToPillar(id){
       { onclick:"startReport()", icon:"📋", title:"جهزني للدكتور", sub:"تقرير مبسط قبل زيارة المتخصص", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
       { onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
     ];
-    body.innerHTML = personalTools.map(t => `
-      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+    const isNewToSelf = !localStorage.getItem('eihyaha_self_know_state');
+    body.innerHTML = renderPersonalDashboard() + personalTools.map((t,idx) => `
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===0 && isNewToSelf ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
+        ${idx===0 && isNewToSelf ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -2626,6 +2652,320 @@ function renderHomeDailyFlash(){
   `;
 }
 
+// ================= اعرف نفسك — أسئلة تشخيصية ثم أبعاد الذات الثلاثة =================
+const SELF_KNOW_QUESTIONS = [
+  {
+    q: "لو حد سألك دلوقتي: مين إنت في ٣ كلمات؟",
+    options: [
+      { label:"عارف أوصف نفسي بدقة وبثقة", tag:"clear" },
+      { label:"هقولك حاجات عامة، مش واضحة أوي", tag:"vague" },
+      { label:"هلاقي نفسي تايه، مش عارف أجاوب", tag:"lost" },
+    ],
+  },
+  {
+    q: "لما حاجة تضايقك، بتعرف تحدد السبب الحقيقي وراها؟",
+    options: [
+      { label:"غالبًا آه، بفهم نفسي كويس", tag:"clear" },
+      { label:"أحيانًا، وأحيانًا بتلخبط عليّا", tag:"vague" },
+      { label:"نادرًا، بحس بالضيق بس مش عارف ليه", tag:"lost" },
+    ],
+  },
+  {
+    q: "تقدر تسمي ٣ نقاط قوة و٣ نقاط ضعف فيك بصراحة تامة؟",
+    options: [
+      { label:"آه، بسهولة ومن غير تفكير كتير", tag:"clear" },
+      { label:"أقدر جزئيًا، بعضها واضح وبعضها لأ", tag:"vague" },
+      { label:"صعبة عليّا جدًا، مش عارف أحكم على نفسي", tag:"lost" },
+    ],
+  },
+];
+
+let selfKnowAnswers = [];
+
+function renderSelfKnowQuiz(){
+  selfKnowAnswers = [];
+  document.getElementById('selfKnowContent').style.display = 'none';
+  document.getElementById('selfKnowContent').innerHTML = '';
+  renderSelfKnowQuestion(0);
+}
+function renderSelfKnowQuestion(index){
+  const wrap = document.getElementById('selfKnowQuiz');
+  if(index >= SELF_KNOW_QUESTIONS.length){ revealSelfKnow(); return; }
+  const q = SELF_KNOW_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${SELF_KNOW_QUESTIONS.length} — محتاجين نفهم مساحتك مع نفسك دلوقتي</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerSelfKnow(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerSelfKnow(qIndex, oIndex){
+  selfKnowAnswers.push(SELF_KNOW_QUESTIONS[qIndex].options[oIndex].tag);
+  renderSelfKnowQuestion(qIndex + 1);
+}
+
+const SELF_KNOW_INTRO_MSGS = {
+  clear: "واضح إن عندك أساس حقيقي في معرفتك بنفسك، وده حاجة نبني عليها. خلينا نعمّق الصورة دي أكتر.",
+  vague: "معرفتك بنفسك موجودة بس لسه محتاجة توضّح أكتر — ده طبيعي جدًا، معرفة النفس بتتبني بالوقت والتأمل.",
+  lost: "لو حاسس إنك تايه في السؤال ده، إنت مش لوحدك — كتير من الناس بتعيش سنين من غير ما تسأل نفسها الأسئلة دي. الشجاعة إنك تسأل دلوقتي هي أول خطوة حقيقية.",
+};
+
+function revealSelfKnow(){
+  const counts = { clear:0, vague:0, lost:0 };
+  selfKnowAnswers.forEach(t => counts[t] = (counts[t]||0) + 1);
+  let dominant = 'vague', max = -1;
+  for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
+  localStorage.setItem('eihyaha_self_know_state', dominant);
+  document.getElementById('selfKnowQuiz').innerHTML = '';
+  renderSelfKnowContent(dominant);
+}
+
+function renderSelfKnowContent(dominant){
+  const content = document.getElementById('selfKnowContent');
+  content.style.display = 'block';
+  content.innerHTML = `
+    <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0 0 10px; background:var(--sand); padding:12px 14px; border-radius:12px;">${SELF_KNOW_INTRO_MSGS[dominant]}</p>
+    <div style="text-align:left; margin-bottom:14px;">
+      <span style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;" onclick="renderSelfKnowQuiz()">🔄 أعد تقييم نفسك</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="font-size:14px;">🧠</span>
+      <p style="font-size:15px; font-weight:700; margin:0;">أبعاد ذاتك التلاتة</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.7;">علم النفس بيقسّم تجربتك الداخلية لتلات أبعاد مترابطة — فهمك لكل واحد فيهم بيغيّر تعاملك مع نفسك بالكامل.</p>
+    <div class="tool-row" onclick="showSelfDimensionDetail(0)">
+      <div class="icon-circle" style="font-size:15px;">💗</div>
+      <div><div class="card-title" style="font-size:13px;">مشاعرك</div><div class="card-sub">مؤشر مش عدو — بتحمل رسالة</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div class="tool-row" onclick="showSelfDimensionDetail(1)">
+      <div class="icon-circle" style="font-size:15px;">💭</div>
+      <div><div class="card-title" style="font-size:13px;">أفكارك</div><div class="card-sub">تفسيرات مش حقايق مطلقة</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div class="tool-row" onclick="showSelfDimensionDetail(2)">
+      <div class="icon-circle" style="font-size:15px;">🚶</div>
+      <div><div class="card-title" style="font-size:13px;">سلوكك</div><div class="card-sub">بيشكّل هويتك أكتر من نواياك</div></div>
+      <div class="arrow">‹</div>
+    </div>
+    <div id="selfDimensionDetailWrap"></div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
+      <span style="font-size:14px;">✍️</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">حاجة عن نفسك مش فاهمها؟ اكتبها</p>
+    </div>
+    <p style="font-size:10.5px; color:var(--muted); margin:0 0 8px;">🔒 كلامك هنا خاص بيك، محفوظ في حسابك بس.</p>
+    <textarea id="selfKnowFreeText" placeholder="اكتب حاجة في نفسك مش فاهمها كويس..." style="min-height:60px;"></textarea>
+    <button class="btn-primary" style="margin-top:8px;" onclick="analyzeSelfKnowText()">حلّلها لي</button>
+    <div id="selfKnowAnalysisResult"></div>
+  `;
+}
+
+// أبعاد الذات الثلاثة — تعريف + أثر نفسي + سؤال تأملي + ربط بأداة مناسبة
+const SELF_DIMENSIONS_BANK = [
+  {
+    icon:"💗", title:"مشاعرك",
+    def:"مشاعرك مش خصم بيهاجمك ولا ضعف يعيبك — هي نظام إنذار مبكر بيحاول يقولك حاجة عن احتياج مش متحقق أو حد بيتخطى حدودك.",
+    psych:"لما تتجاهل مشاعرك أو تكبتها، هي مبتختفيش — بتتراكم وبتطلع بشكل جسدي (توتر، أرق) أو انفجار مفاجئ. لكن لما تسمّيها وتفهم رسالتها، بتفرغ طاقتها تلقائيًا.",
+    question:"لما بتحس بمشاعر قوية، بتسأل نفسك 'أنا حاسس بإيه بالظبط وليه؟' — ولا بتكبتها وتكمل يومك وكأن مفيش حاجة؟",
+    linkTool:"startEhkily()", linkLabel:"احكيلي عن مشاعرك دلوقتي 💬",
+  },
+  {
+    icon:"💭", title:"أفكارك",
+    def:"أفكارك عن نفسك والدنيا مش حقايق مطلقة — هي تفسيرات عقلك، وممكن تكون مشوّهة (تعميم، تهويل، قراءة أفكار) من غير ما تلاحظ.",
+    psych:"الفكرة السلبية اللي بتصدّقها من غير تحقق (زي 'أنا فاشل' أو 'محدش بيحبني') بتتحول لعدسة بتشوف بيها كل حاجة، حتى لو مش حقيقية.",
+    question:"لما تفكر فكرة سلبية عن نفسك، بتسأل 'هل ده حقيقي فعلًا، ولا مجرد إحساس لحظي؟' — ولا بتاخدها كحقيقة نهائية؟",
+    linkTool:"startMerat()", linkLabel:"افهم أنماط تفكيرك في مرآة العقل 🪞",
+  },
+  {
+    icon:"🚶", title:"سلوكك",
+    def:"سلوكك المتكرر (مش قراراتك الكبيرة العابرة) هو اللي بيشكّل هويتك فعليًا — العادة الصغيرة المتكررة أقوى من النية الكبيرة اللي ما اتنفذتش.",
+    psych:"الفجوة بين 'اللي بتؤمن بيه' و'اللي بتعمله فعليًا' هي مصدر شعور بعدم الرضا عن النفس عند كتير من الناس — مش لأنهم أشرار، لكن لأن الفعل مش متوافق مع القيمة.",
+    question:"أفعالك المتكررة في أسبوعك ده بتعبّر عن القيم اللي بتقول إنك مؤمن بيها، ولا فيه فجوة كبيرة بينهم؟",
+    linkTool:"showScreen('screen-daftar')", linkLabel:"تابع سلوكك اليومي في مرآتك اليومية 📓",
+  },
+];
+
+function showSelfDimensionDetail(i){
+  const d = SELF_DIMENSIONS_BANK[i];
+  const wrap = document.getElementById('selfDimensionDetailWrap');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:10px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${d.icon} ${d.title}</p>
+      <p class="layer-text" style="margin-top:6px;"><b>التعريف:</b> ${d.def}</p>
+      <p class="layer-text" style="margin-top:6px;"><b>الأثر النفسي:</b> ${d.psych}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">🔍 سؤال لنفسك</p>
+      <p class="layer-text" style="color:#fff; margin-top:6px;">${d.question}</p>
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="${d.linkTool}">${d.linkLabel}</div>
+  `;
+}
+
+function openSelfKnowScreen(){
+  const savedState = localStorage.getItem('eihyaha_self_know_state');
+  if(savedState){
+    document.getElementById('selfKnowQuiz').innerHTML = '';
+    renderSelfKnowContent(savedState);
+  } else {
+    renderSelfKnowQuiz();
+  }
+  showScreen('screen-self-know');
+}
+
+async function analyzeSelfKnowText(){
+  const input = document.getElementById('selfKnowFreeText');
+  const text = input.value.trim();
+  if(!text) return;
+  if(checkSafety(text)){ showSafety(); return; }
+
+  const dateLabel = new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+  await firestoreWrite('journal', { uid:getUserId(), note:text, source:'selfknow', date:new Date().toISOString() });
+  const localJournal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  localJournal.unshift({ type:'sticky', text: '🧠 ' + text, date: dateLabel });
+  localStorage.setItem('eihyaha_journal', JSON.stringify(localJournal.slice(0,200)));
+  renderJournalHistory();
+
+  const matchedId = matchFreeText(text);
+  const result = document.getElementById('selfKnowAnalysisResult');
+  if(matchedId){
+    const p = MERAT_PATTERNS.find(x => x.id === matchedId);
+    result.innerHTML = `
+      <div class="layer-card l1" style="margin-top:14px;">
+        <p class="layer-title" style="color:var(--navy-dark);">أقرب نمط لكلامك</p>
+        <p class="layer-text" style="margin-top:8px;">${p.psych}</p>
+      </div>
+      <div class="choice-btn" style="text-align:center;" onclick="openMeratPattern('${matchedId}')">شوف التحليل الكامل في مرآة العقل ←</div>`;
+  } else {
+    result.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية — جرب "احكيلي" لمساحة حوار أعمق حول اللي كتبته.</p>`;
+  }
+  input.value = '';
+}
+
+// ---------- تتبّع التطبيق العملي لمرآة العقل (مثل أسماء الله والأنبياء في الركن الروحاني) ----------
+function getMeratAppliedLog(){ return JSON.parse(localStorage.getItem('eihyaha_merat_applied') || '[]'); }
+function markMeratApplied(id){
+  const log = getMeratAppliedLog();
+  log.unshift({ id, date: new Date().toISOString() });
+  localStorage.setItem('eihyaha_merat_applied', JSON.stringify(log.slice(0,300)));
+}
+function getTotalPersonalAppliedCount(){
+  return getMeratAppliedLog().length;
+}
+
+// ---------- استمرارية تسجيل المزاج (Streak) — تعزيز إيجابي زي استمرارية العبادة ----------
+function computeMoodStreak(){
+  const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  const moodDates = new Set();
+  local.forEach(e => {
+    if(e.type === 'mood'){
+      // e.date بصيغة عربية محلية، نحاول نطابقها بتاريخ اليوم بدل تحويل دقيق
+      moodDates.add(e.date.split(' - ')[0]);
+    }
+  });
+  let streak = 0;
+  const now = new Date();
+  for(let i = 0; i < 365; i++){
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString('ar-EG');
+    if(moodDates.has(key)) streak++; else break;
+  }
+  return streak;
+}
+
+// ---------- لوحة ملخص سريعة للركن الشخصي (محلية وفورية) ----------
+function renderPersonalDashboard(){
+  const selfState = localStorage.getItem('eihyaha_self_know_state');
+  const moodStreak = computeMoodStreak();
+  const appliedCount = getTotalPersonalAppliedCount();
+
+  const stateMessages = {
+    lost: "آخر مرة قيّمت معرفتك بنفسك حسّيت إنك تايه — تحب ترجع تكمل «اعرف نفسك»؟",
+    vague: "معرفتك بنفسك لسه بتتوضح — استمر في الأدوات دي بانتظام.",
+    clear: "عندك أساس واضح في معرفتك بنفسك — استمر تعمّقها.",
+  };
+
+  let hasAnyData = selfState || moodStreak > 0 || appliedCount > 0;
+  if(!hasAnyData){
+    return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
+      <p style="font-size:12px; color:var(--muted); margin:0;">لسه معندناش بيانات كفاية عنك هنا — ابدأ بـ"اعرف نفسك" وهنبني صورتك هنا تدريجيًا.</p>
+    </div>`;
+  }
+
+  let html = `<div class="card" style="background:linear-gradient(rgba(8,30,26,.82), rgba(8,30,26,.82)), url('https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:18px 16px;">`;
+
+  if(moodStreak >= 3){
+    const streakMsgs = { 3:"٣ أيام متتالية بتسجّل مزاجك 🎉", 7:"أسبوع كامل من المتابعة! ما شاء الله 🌟", 14:"أسبوعين متواصلين — وعي حقيقي بنفسك 💪", 30:"شهر كامل من متابعة نفسك! إنجاز يستاهل الفخر 🧠" };
+    const milestone = [30,14,7,3].find(m => moodStreak >= m);
+    html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 10px;">${streakMsgs[milestone] || (moodStreak + ' يوم متتالي من متابعة نفسك 🎉')}</p>`;
+  }
+  if(selfState && stateMessages[selfState]){
+    html += `<p style="font-size:13.5px; color:#fff; line-height:1.7; margin:0 0 12px; font-weight:600;">${stateMessages[selfState]}</p>`;
+  }
+  if(appliedCount > 0){
+    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة عملية لحد دلوقتي</p>`;
+  }
+  html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openPersonalReport()">📊 شوف تقريرك الشخصي الكامل ←</p>`;
+  html += `</div>`;
+  return html;
+}
+
+// ---------- التقرير الشخصي الشامل ----------
+async function openPersonalReport(){
+  const body = document.getElementById('personalReportBody');
+  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">جاري تجميع تقريرك...</p>`;
+  showScreen('screen-personal-report');
+
+  const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  const moodEntries = local.filter(e => e.type === 'mood');
+  const moodStreak = computeMoodStreak();
+  const appliedCount = getTotalPersonalAppliedCount();
+  const selfState = localStorage.getItem('eihyaha_self_know_state');
+  const stateLabels = { clear:"واضحة", vague:"في طور التوضيح", lost:"تايهة حاليًا" };
+
+  let summary = "";
+  if(moodEntries.length === 0 && appliedCount === 0 && !selfState){
+    summary = "لسه معندناش بيانات كفاية نبني بيها تقرير حقيقي — استخدم أدوات الركن كذا يوم وارجع تاني.";
+  } else {
+    const parts = [];
+    if(moodStreak >= 3) parts.push(`متابعتك لمزاجك مستمرة (${moodStreak} يوم)`);
+    if(appliedCount > 0) parts.push(`طبّقت ${appliedCount} خطوة عملية فعليًا`);
+    if(selfState) parts.push(`معرفتك بنفسك ${stateLabels[selfState]}`);
+    summary = parts.join(" — ") + ".";
+  }
+
+  body.innerHTML = `
+    <div class="card" style="background:var(--sand);">
+      <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0;">${summary}</p>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${moodEntries.length}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">تسجيلات مزاج</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${moodStreak}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">يوم متتالي من المتابعة</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${appliedCount}</p>
+        <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عملية طبّقتها فعليًا (مش قراءة بس)</p>
+      </div>
+    </div>
+    ${selfState ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:6px;">معرفتك بنفسك</p>
+        <p style="font-size:12.5px; color:var(--text); margin:0;">${stateLabels[selfState]}</p>
+      </div>` : ''}
+    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الشخصي بس حاليًا — تقرير شامل لكل الأركان السبعة هييجي في مرحلة لاحقة.</p>
+  `;
+}
+
 function openMeratPattern(id){
   showMeratResult(id);
   showScreen('screen-merat');
@@ -3147,6 +3487,7 @@ function showMeratResult(id){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff;">${p.actionStep}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markMeratApplied('${p.id}'); this.textContent='✓ تم — أحسنت';  this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>` : ''}
     <div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="openProphetsScreen()">عايز تعرف قصص باقي الأنبياء؟ 📖</div>
     <button class="btn-ghost" onclick="startMerat()">اختار نمط تاني</button>
