@@ -3458,6 +3458,32 @@ function startMerat(){
   showScreen('screen-merat');
 }
 
+// تلخيص سطر واحد لكل قصة نبي — القصة الكاملة بقت حصريًا في "قصص الأنبياء والتسليم" بالركن الروحاني
+const PROPHET_SUMMARY = {
+  anger: "غضب من قومه وهرب، لكن اعترافه الكامل في بطن الحوت كان مفتاح النجاة.",
+  grief: "فقد أقرب أبنائه، لكنه ظل يشتكي حزنه لله وحده ولم يفقد الأمل.",
+  isolation: "دعا قومه سنين طويلة وسط رفض ووحدة تامة، لكنه لم يتوقف عن الدعوة.",
+  chronic_illness: "ابتُلي بمرض طويل، فصبر بلا شكوى للناس ورفعه الله بصبره.",
+  anxiety: "القرآن يصف قلقًا يسكن القلب بلا سبب واضح، وعلاجه في ذكر الله والطمأنينة به.",
+  envy_betrayal: "خانه إخوته وسُجن ظلمًا، لكن صبره على الظلم كان طريقه للتمكين.",
+  fear_confrontation: "خاف من مواجهة فرعون فهرب، لكن الله ثبّته ليواجه أعتى طاغية.",
+  guilt_return: "أخطأ أول خطأ في التاريخ، لكنه تعلّم كيف يعترف ويرجع لله فورًا.",
+  unseen_effort: "صبر في الخفاء من غير أن يراه أحد، فرفعه الله مكانًا عليًا.",
+  facing_arrogance: "واجه قومًا متكبرين بقوتهم، فثبت على الحق رغم استهزائهم.",
+  standing_firm_mockery: "آمن وسط سخرية قومه من معجزته، وثبت على دعوته رغم التكذيب.",
+  sacrifice: "امتُحن بأعظم فقد ممكن، فسلّم أمره لله فكان الفرج بعد التسليم الكامل.",
+  corrupt_environment: "عاش وسط بيئة فاسدة تمامًا، لكنه ظل متمسكًا بقيمه رغم العزلة.",
+  letting_go_grudge: "قَبِل أصعب اختبار برضا تام، وعلّمنا التسليم من غير اعتراض.",
+  biased_rejection: "رفضه قومه وغرّبوه رغم صدقه، فصبر على الرفض غير المُبرر.",
+  unjust_blame: "اتُّهم ظلمًا وسط فتنة قومه، لكنه دعم أخاه ولم ينكسر من التهمة.",
+  keeping_promise: "التزم بوعده رغم صعوبته، فكان الوفاء بالعهد سر رفعته.",
+  power_fairness: "امتُحن بالسلطة والحكم، فحرص على العدل التام رغم إغراء القوة.",
+  gratitude_success: "أُعطي مُلكًا عظيمًا، فقابله بالشكر لا بالغرور.",
+  standing_alone_deviation: "ثبتا وسط انحراف قومهما الكامل، من غير أن يتبعا التيار.",
+  long_wait_hope: "انتظر سنين طويلة دعوة يستجاب لها، فلم يفقد الأمل رغم طول الانتظار.",
+  false_accusation: "اتُّهم ظلمًا واتُّبع بأذى شديد، فصبر وسط الوحدة والاتهام الباطل.",
+};
+
 function showMeratResult(id){
   const p = MERAT_PATTERNS.find(x => x.id === id);
   const body = document.getElementById('meratBody');
@@ -3475,8 +3501,8 @@ function showMeratResult(id){
     </div>` : ''}
     <div class="layer-card l2">
       <p class="layer-title" style="color:#8A6A1E;">📖 ${p.prophetTitle}</p>
-      <p class="layer-text">${p.prophet}</p>
-      <p style="font-size:13px; color:var(--muted); margin-top:6px;">من كتاب «مرآة الأنبياء»</p>
+      <p class="layer-text">${PROPHET_SUMMARY[p.id] || p.prophet.slice(0, 120) + '...'}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="showProphetDetail('${p.id}'); showScreen('screen-prophets');">اقرأ القصة النبوية كاملة في الركن الروحاني ←</div>
     </div>
     <div class="layer-card l3">
       <p class="layer-title" style="color:#2E6459;">🤲 زاوية التسليم</p>
@@ -3489,7 +3515,6 @@ function showMeratResult(id){
       <p class="layer-text" style="color:#fff;">${p.actionStep}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markMeratApplied('${p.id}'); this.textContent='✓ تم — أحسنت';  this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>` : ''}
-    <div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="openProphetsScreen()">عايز تعرف قصص باقي الأنبياء؟ 📖</div>
     <button class="btn-ghost" onclick="startMerat()">اختار نمط تاني</button>
   `;
 }
