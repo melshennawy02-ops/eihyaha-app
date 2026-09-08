@@ -308,6 +308,7 @@
       <label class="flabel">أهم حدث في يومك</label>
       <textarea id="journalText" placeholder="اكتب سطرين عن يومك..."></textarea>
       <button class="btn-primary" onclick="saveJournal()">حفظ اليوم</button>
+      <div id="journalMatchResult"></div>
       <div class="card" style="margin-top:16px;">
         <p class="card-title">سجلك (على الجهاز ده بس)</p>
         <div id="journalHistory" style="font-size:14px; color:var(--muted);">لسه معملتش تسجيل</div>
@@ -1655,9 +1656,9 @@ const EHKILY_TREE = {
       {label:"مع شريك حياتي", next:"rel_partner"},
     ]
   },
-  rel_family: { bot:"الركن العائلي في المنصة هيكون فيه أدوات مخصصة لده قريبًا. لحد ما يجهز، «مرآة العقل» ممكن تساعدك تفهم رد فعلك أنت في الموقف.", choices:[{label:"يلا نجرب مرآة العقل", next:"go_merat"},{label:"أرجع للقائمة", next:"start"}] },
-  rel_friend: { bot:"العلاقات مع الأصدقاء بتفتح مواضيع تانية زي الحدود الشخصية والثقة. جرّب تكتب اللي حصل بالتفصيل في «مرآتي اليومية» عشان تراجعه بهدوء.", choices:[{label:"تمام", next:"start"}] },
-  rel_partner: { bot:"علاقة الزوجية أدواتها هتكون جوه الركن العائلي قريبًا. حاليًا ننصحك تكتب اللي حاسس بيه في دفتر النفس.", choices:[{label:"تمام", next:"start"}] },
+  rel_family: { bot:"الركن العائلي فيه أدوات مخصصة دلوقتي فعلًا. تحب تشوف أثر علاقتك بأبوك وأمك على المواقف اللي بتتكرر معاك؟", choices:[{label:"علاقتي بأبويا وأمي", next:"go_family_wound"},{label:"مرآة العقل تساعدني أفهم رد فعلي أنا", next:"go_merat"},{label:"أرجع للقائمة", next:"start"}] },
+  rel_friend: { bot:"لو حابب تقيّم الصداقة دي بمقياس واضح، عندنا أداة مخصصة في الركن الاجتماعي. أو جرّب تكتب اللي حصل بالتفصيل في «مرآتي اليومية» عشان تراجعه بهدوء.", choices:[{label:"قيّم صحبتي", next:"go_relcheck_social"},{label:"تمام", next:"start"}] },
+  rel_partner: { bot:"علاقة الزوجية أدواتها موجودة في الركن العائلي دلوقتي — تقدر تقيّم شريك حياتك، أو ترجع لأثر علاقتك بأبوك وأمك على اختيارك.", choices:[{label:"قيّم شريك حياتي", next:"go_relcheck_family"},{label:"علاقتي بأبويا وأمي", next:"go_family_wound"},{label:"تمام", next:"start"}] },
   unsure: {
     bot: "عادي جدًا متعرفش تحدد اللي جواك بالظبط. تحب تجرب «هل أنا طبيعي؟» وتسأل سؤال زي ما هو في دماغك؟",
     choices: [
@@ -2860,6 +2861,8 @@ function renderSelfKnowContent(dominant){
 
     <div id="mbtiSection">${renderMbtiEntryPoint()}</div>
 
+    <div id="combinedInsightSection">${computeCombinedInsightHtml()}</div>
+
     <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
 
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
@@ -3006,6 +3009,26 @@ function renderMbtiResult(type){
     <p style="font-size:10.5px; color:var(--muted); text-align:center; margin:10px 0;">دي اتجاهات عامة للتأمل مبنية على نمط شخصيتك، مش قواعد ثابتة أو توصيات نهائية — قراراتك الحقيقية لازم تاخد في الاعتبار ظروفك وميولك الفعلية.</p>
     <div class="choice-btn" style="text-align:center;" onclick="startMbtiTest()">🔄 أعد الاختبار</div>
   `;
+  const combinedWrap = document.getElementById('combinedInsightSection');
+  if(combinedWrap) combinedWrap.innerHTML = computeCombinedInsightHtml();
+}
+function computeCombinedInsightHtml(){
+  const dominant = localStorage.getItem('eihyaha_self_know_state');
+  const mbtiType = localStorage.getItem('eihyaha_mbti_type');
+  if(!dominant || !mbtiType || !MBTI_TYPES[mbtiType]) return '';
+  const stateLabel = { clear:"واضحة", vague:"في طور التوضيح", lost:"تايهة حاليًا" }[dominant];
+  const t = MBTI_TYPES[mbtiType];
+  const bridgeText = dominant === 'lost'
+    ? 'يعني عندك وصف عام لطبعك من الاختبار، بس لسه محتاج تربطه بمواقفك الحقيقية عشان يبقى وعي عميق مش مجرد تصنيف — جرب تراجع وصف نمطك وانت بتقرا نتائج «مرآة العقل».'
+    : dominant === 'vague'
+    ? 'استخدم وصف نمطك كنقطة بداية تفهم بيها ردود أفعالك، وكمّل توضيح الصورة بباقي أدوات الركن.'
+    : 'وعيك بنفسك واضح، ونمط شخصيتك بيديك تفاصيل إضافية تقدر تستخدمها في علاقاتك ومجال شغلك مباشرة.';
+  return `
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0;"></div>
+    <div class="layer-card l3">
+      <p class="layer-title" style="color:var(--navy-dark);">🔗 خلاصة تجمع الاتنين</p>
+      <p class="layer-text" style="margin-top:6px;">معرفتك بنفسك ${stateLabel}، ونمط شخصيتك ${mbtiType} (${t.name}). ${bridgeText}</p>
+    </div>`;
 }
 function renderMbtiEntryPoint(){
   const savedType = localStorage.getItem('eihyaha_mbti_type');
@@ -3389,7 +3412,7 @@ function markMeratApplied(id){
   localStorage.setItem('eihyaha_merat_applied', JSON.stringify(log.slice(0,300)));
 }
 function getTotalPersonalAppliedCount(){
-  return getMeratAppliedLog().length;
+  return getMeratAppliedLog().length + getHealingProgress().length;
 }
 
 // ---------- استمرارية تسجيل المزاج (Streak) — تعزيز إيجابي زي استمرارية العبادة ----------
@@ -3398,8 +3421,9 @@ function computeMoodStreak(){
   const moodDates = new Set();
   local.forEach(e => {
     if(e.type === 'mood'){
-      // e.date بصيغة عربية محلية، نحاول نطابقها بتاريخ اليوم بدل تحويل دقيق
-      moodDates.add(e.date.split(' - ')[0]);
+      // نفضّل dateKey الثابت (ISO)، ولو تسجيل قديم من غيره نرجع للطريقة القديمة كتوافق مؤقت
+      if(e.dateKey) moodDates.add(e.dateKey);
+      else if(e.date) moodDates.add(e.date.split(' - ')[0]);
     }
   });
   let streak = 0;
@@ -3407,8 +3431,9 @@ function computeMoodStreak(){
   for(let i = 0; i < 365; i++){
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    const key = d.toLocaleDateString('ar-EG');
-    if(moodDates.has(key)) streak++; else break;
+    const isoKey = d.toISOString().slice(0,10);
+    const legacyKey = d.toLocaleDateString('ar-EG');
+    if(moodDates.has(isoKey) || moodDates.has(legacyKey)) streak++; else break;
   }
   return streak;
 }
@@ -3461,6 +3486,7 @@ async function openPersonalReport(){
   const moodStreak = computeMoodStreak();
   const appliedCount = getTotalPersonalAppliedCount();
   const selfState = localStorage.getItem('eihyaha_self_know_state');
+  const healingCount = getHealingProgress().length;
   const stateLabels = { clear:"واضحة", vague:"في طور التوضيح", lost:"تايهة حاليًا" };
 
   let summary = "";
@@ -3470,6 +3496,7 @@ async function openPersonalReport(){
     const parts = [];
     if(moodStreak >= 3) parts.push(`متابعتك لمزاجك مستمرة (${moodStreak} يوم)`);
     if(appliedCount > 0) parts.push(`طبّقت ${appliedCount} خطوة عملية فعليًا`);
+    if(healingCount > 0) parts.push(`قطعت ${healingCount} من ٣٠ في تحدي الشفاء`);
     if(selfState) parts.push(`معرفتك بنفسك ${stateLabels[selfState]}`);
     summary = parts.join(" — ") + ".";
   }
@@ -3491,6 +3518,11 @@ async function openPersonalReport(){
         <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${appliedCount}</p>
         <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عملية طبّقتها فعليًا (مش قراءة بس)</p>
       </div>
+      ${healingCount > 0 ? `
+      <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2;">
+        <p style="font-size:20px; font-weight:700; margin:0; color:var(--navy-dark);">${healingCount} / ٣٠</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">📆 تقدمك في تحدي الشفاء</p>
+      </div>` : ''}
     </div>
     ${selfState ? `
       <div class="card">
@@ -3611,6 +3643,9 @@ function renderEhkilyNode(key){
       if(c.next === 'go_merat'){ startMerat(); return; }
       if(c.next === 'go_tabiei'){ startTabiei(); return; }
       if(c.next === 'go_report'){ startReport(); return; }
+      if(c.next === 'go_family_wound'){ openFamilyWoundScreen(); return; }
+      if(c.next === 'go_relcheck_family'){ openRelationshipCheckScreen(3, 'زوجك أو زوجتك'); return; }
+      if(c.next === 'go_relcheck_social'){ openRelationshipCheckScreen(4, 'صاحبك'); return; }
       if(c.next && c.next.startsWith('go_merat_')){ openMeratPattern(c.next.replace('go_merat_','')); return; }
       ehkilyCurrent = c.next;
       renderEhkilyNode(c.next);
@@ -4413,12 +4448,20 @@ async function saveMoodWithNote(){
 
   // 2) تسجيل محلي فوري في نفس صفحة مرآتي اليومية
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, subLabel: sub.label, text: note, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
+  local.unshift({ type:'mood', moodEmoji: info.emoji, moodLabel: info.label, subLabel: sub.label, text: note, dateKey: new Date().toISOString().slice(0,10), date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
   localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
 
   const feedback = document.getElementById('moodFeedback');
-  feedback.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:8px 0;">${ok ? '✅ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس (مشكلة في الاتصال)'}</p>`;
+  let matchSuggestion = '';
+  if(note){
+    const matchedId = matchFreeText(note);
+    if(matchedId){
+      const p = MERAT_PATTERNS.find(x => x.id === matchedId);
+      matchSuggestion = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`;
+    }
+  }
+  feedback.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:8px 0;">${ok ? '✅ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس (مشكلة في الاتصال)'}</p>${matchSuggestion}`;
 }
 
 async function saveJournal(){
@@ -4432,10 +4475,21 @@ async function saveJournal(){
 
   // تخزين محلي مبسط لعرض السجل فورًا (بديل مؤقت لحد ما نقرأ من Firestore)
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  local.unshift({ anxiety, energy, sleep, text, date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
+  local.unshift({ anxiety, energy, sleep, text, dateKey: new Date().toISOString().slice(0,10), date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
   localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
   document.getElementById('journalText').value = '';
+
+  const matchWrap = document.getElementById('journalMatchResult');
+  if(text.trim()){
+    const matchedId = matchFreeText(text.trim());
+    matchWrap.innerHTML = matchedId
+      ? (() => { const p = MERAT_PATTERNS.find(x => x.id === matchedId);
+          return `<div class="choice-btn" style="margin-top:10px; text-align:center;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`; })()
+      : '';
+  } else {
+    matchWrap.innerHTML = '';
+  }
   showFirebaseStatus(ok, 'يومك', 'journal');
 }
 
