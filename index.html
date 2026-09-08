@@ -11,7 +11,7 @@
     --app-bg-overlay: rgba(242,238,227,.88);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0; padding:0; height:100%; background:var(--sand); font-family:'Segoe UI', Tahoma, Arial, sans-serif; color:var(--text); overflow-x:hidden;}
+  html,body{margin:0; padding:0; height:100%; background:var(--sand); font-family:'Segoe UI', Tahoma, Arial, sans-serif; color:var(--text); overflow-x:hidden; font-weight:600;}
   #appBgFixed{position:fixed; inset:0; z-index:0;
     background:
       linear-gradient(var(--app-bg-overlay), var(--app-bg-overlay)),
@@ -24,98 +24,98 @@
 
   /* ===== Top bar ===== */
   .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 8px;}
-  .topbar h1{font-size:16px; margin:0; font-weight:600;}
-  .backbtn{width:34px; height:34px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid #E4DFCF; font-size:16px;}
-  .sos{padding:8px 14px; border-radius:20px; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; font-size:12px; white-space:nowrap;}
+  .topbar h1{font-size:19px; margin:0; font-weight:600;}
+  .backbtn{width:34px; height:34px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid #E4DFCF; font-size:19px;}
+  .sos{padding:8px 14px; border-radius:20px; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; font-size:14px; white-space:nowrap;}
 
   /* ===== Cards ===== */
   .card{background:var(--white); border-radius:14px; padding:14px 16px; margin-bottom:12px; border:1px solid #EDE8D8;}
-  .card-title{font-size:14px; font-weight:600; margin:0 0 4px;}
-  .card-sub{font-size:12px; color:var(--muted); margin:0;}
+  .card-title{font-size:17px; font-weight:600; margin:0 0 4px;}
+  .card-sub{font-size:14px; color:var(--muted); margin:0;}
   .row{display:flex; align-items:center; gap:12px;}
-  .icon-circle{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; position:relative; overflow:hidden; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); border:1px solid var(--gold); box-shadow:inset 0 -4px 6px rgba(0,0,0,.18), inset 0 2px 3px rgba(255,255,255,.65), 0 2px 4px rgba(0,0,0,.22); filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));}
+  .icon-circle{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; position:relative; overflow:hidden; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); border:1px solid var(--gold); box-shadow:inset 0 -4px 6px rgba(0,0,0,.18), inset 0 2px 3px rgba(255,255,255,.65), 0 2px 4px rgba(0,0,0,.22); filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));}
 
   /* ===== Home ===== */
-  .greeting{font-size:20px; font-weight:700; margin:4px 0 2px;}
-  .greeting-sub{font-size:13px; color:var(--muted); margin:0 0 16px;}
+  .greeting{font-size:24px; font-weight:700; margin:4px 0 2px;}
+  .greeting-sub{font-size:15px; color:var(--muted); margin:0 0 16px;}
   .mood-row{display:flex; justify-content:space-between; gap:6px; margin-bottom:6px;}
   .mood-card{flex:1; border-radius:14px; padding:10px 2px 8px; text-align:center;}
-  .mood-label{font-size:9.5px; font-weight:700; color:var(--text); margin:6px 0 0;}
-  .mood-emoji{font-size:24px; cursor:pointer; padding:6px; border-radius:50%; transition:all .15s; position:relative; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(0,0,0,.04) 75%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.14), inset 0 2px 3px rgba(255,255,255,.45); filter:drop-shadow(0 2px 2px rgba(0,0,0,.28)); display:inline-block;}
+  .mood-label{font-size:11px; font-weight:700; color:var(--text); margin:6px 0 0;}
+  .mood-emoji{font-size:28px; cursor:pointer; padding:6px; border-radius:50%; transition:all .15s; position:relative; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(0,0,0,.04) 75%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.14), inset 0 2px 3px rgba(255,255,255,.45); filter:drop-shadow(0 2px 2px rgba(0,0,0,.28)); display:inline-block;}
   .mood-emoji.selected{background:radial-gradient(circle at 32% 28%, #ffffff, var(--gold) 78%); box-shadow:inset 0 -3px 6px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.6), 0 2px 6px rgba(0,0,0,.22); transform:scale(1.1);}
 
-  .pillars-title{font-size:15px; font-weight:600; margin:8px 0 10px;}
+  .pillars-title{font-size:18px; font-weight:600; margin:8px 0 10px;}
 
   /* ===== New premium home design ===== */
   .topbar-new{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 10px;}
-  .icon-badge-sm{width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); border:1px solid var(--gold); box-shadow:inset 0 -3px 5px rgba(0,0,0,.15), inset 0 2px 3px rgba(255,255,255,.5); filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+  .icon-badge-sm{width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; cursor:pointer; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); border:1px solid var(--gold); box-shadow:inset 0 -3px 5px rgba(0,0,0,.15), inset 0 2px 3px rgba(255,255,255,.5); filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
   .hero-banner{background:var(--navy-dark); border-radius:16px; padding:18px 16px; margin-bottom:14px; color:#fff; position:relative; overflow:hidden;}
   .hero-banner::before{content:""; position:absolute; top:-30px; left:-30px; width:100px; height:100px; border-radius:50%; background:rgba(201,162,75,.12);}
   .quick-help-card{display:flex; align-items:center; gap:10px; background:var(--white); border:1px solid var(--gold); border-radius:14px; padding:10px 12px; margin-bottom:20px; cursor:pointer;}
-  .section-title{font-size:15px; font-weight:700; margin:0 0 2px;}
-  .section-sub{font-size:11px; color:var(--muted); margin:0 0 12px;}
+  .section-title{font-size:18px; font-weight:700; margin:0 0 2px;}
+  .section-sub{font-size:13px; color:var(--muted); margin:0 0 12px;}
   .pillar-card-photo{position:relative; border-radius:16px; padding:16px; margin-bottom:12px; min-height:92px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; overflow:hidden; color:#fff;}
-  .pillar-card-photo .ptitle-lg{font-size:15px; font-weight:700; margin:0 0 3px;}
-  .pillar-card-photo .ptag{font-size:10.5px; opacity:.85; margin:0;}
-  .pillar-arrow{width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0;}
+  .pillar-card-photo .ptitle-lg{font-size:18px; font-weight:700; margin:0 0 3px;}
+  .pillar-card-photo .ptag{font-size:12px; opacity:.85; margin:0;}
+  .pillar-arrow{width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;}
   .pillars-grid{display:flex; flex-direction:column;}
   .pillar-card{background:var(--navy-dark); color:var(--white); border-radius:14px; padding:14px 12px; cursor:pointer; min-height:96px; display:flex; flex-direction:column; justify-content:space-between;}
-  .pillar-card .pnum{font-size:11px; color:var(--gold); font-weight:700;}
-  .pillar-card .ptitle{font-size:13px; font-weight:600; line-height:1.35;}
+  .pillar-card .pnum{font-size:13px; color:var(--gold); font-weight:700;}
+  .pillar-card .ptitle{font-size:15px; font-weight:600; line-height:1.35;}
   .pillar-card.soon{opacity:.55;}
   .pillar-card.wide{grid-column:1 / span 2;}
 
   /* ===== Bottom nav ===== */
   .bottomnav{position:fixed; bottom:0; left:0; right:0; background:var(--white); border-top:1px solid #EDE8D8; display:flex; justify-content:space-around; padding:10px 0 14px; max-width:480px; margin:0 auto; z-index:50;}
-  .navitem{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:var(--muted); cursor:pointer;}
+  .navitem{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:12px; color:var(--muted); cursor:pointer;}
   .navitem.active{color:var(--navy-dark); font-weight:700;}
-  .navitem .navicon{font-size:19px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
+  .navitem .navicon{font-size:22px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
 
   /* ===== Tools grid (pillar detail) ===== */
   .tool-row{display:flex; align-items:center; gap:12px; background:var(--white); border-radius:14px; padding:14px; margin-bottom:10px; border:1px solid #EDE8D8; cursor:pointer;}
-  .tool-row .arrow{margin-right:auto; color:#B9B2A0; font-size:14px;}
+  .tool-row .arrow{margin-right:auto; color:#B9B2A0; font-size:17px;}
 
   /* ===== Soon placeholder ===== */
   .soon-box{text-align:center; padding:60px 20px;}
-  .soon-box .icon-circle{width:64px; height:64px; font-size:28px; margin:0 auto 16px; background:var(--navy); color:var(--gold);}
-  .soon-box h2{font-size:16px; margin:0 0 6px;}
-  .soon-box p{font-size:13px; color:var(--muted); line-height:1.7;}
+  .soon-box .icon-circle{width:64px; height:64px; font-size:33px; margin:0 auto 16px; background:var(--navy); color:var(--gold);}
+  .soon-box h2{font-size:19px; margin:0 0 6px;}
+  .soon-box p{font-size:15px; color:var(--muted); line-height:1.7;}
 
   /* ===== Chat (احكيلي) ===== */
   .chat-window{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
-  .bubble{max-width:82%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.6;}
+  .bubble{max-width:82%; padding:10px 14px; border-radius:16px; font-size:16px; line-height:1.6;}
   .bubble.bot{align-self:flex-start; background:var(--white); border:1px solid #EDE8D8; border-bottom-right-radius:4px;}
   .bubble.user{align-self:flex-end; background:var(--navy-dark); color:var(--white); border-bottom-left-radius:4px;}
   .choices{display:flex; flex-direction:column; gap:8px; margin-top:6px;}
-  .choice-btn{background:var(--white); border:1px solid var(--gold); color:var(--navy-dark); padding:10px 14px; border-radius:12px; font-size:13px; text-align:right; cursor:pointer; font-weight:600;}
+  .choice-btn{background:var(--white); border:1px solid var(--gold); color:var(--navy-dark); padding:10px 14px; border-radius:12px; font-size:15px; text-align:right; cursor:pointer; font-weight:600;}
   .choice-btn:active{background:var(--sand);}
 
   /* ===== Forms ===== */
-  label.flabel{display:block; font-size:12px; color:var(--muted); margin:12px 0 6px;}
+  label.flabel{display:block; font-size:14px; color:var(--muted); margin:12px 0 6px;}
   input[type=range]{width:100%;}
-  textarea, input[type=text], input[type=email], input[type=password], input[type=number], select{width:100%; border:1px solid #E4DFCF; border-radius:10px; padding:10px 12px; font-size:13px; font-family:inherit; background:#fff; color:var(--text);}
-  input[type=file]{width:100%; font-size:12px; color:var(--muted); padding:8px 0;}
+  textarea, input[type=text], input[type=email], input[type=password], input[type=number], select{width:100%; border:1px solid #E4DFCF; border-radius:10px; padding:10px 12px; font-size:15px; font-family:inherit; background:#fff; color:var(--text);}
+  input[type=file]{width:100%; font-size:14px; color:var(--muted); padding:8px 0;}
   textarea{min-height:70px; resize:none;}
-  .btn-primary{width:100%; background:var(--navy-dark); color:var(--white); border:none; padding:13px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; margin-top:14px;}
+  .btn-primary{width:100%; background:var(--navy-dark); color:var(--white); border:none; padding:13px; border-radius:12px; font-size:17px; font-weight:700; cursor:pointer; margin-top:14px;}
   .btn-primary:active{opacity:.85;}
-  .btn-ghost{width:100%; background:transparent; color:var(--navy-dark); border:1px solid var(--navy-dark); padding:13px; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; margin-top:10px;}
+  .btn-ghost{width:100%; background:transparent; color:var(--navy-dark); border:1px solid var(--navy-dark); padding:13px; border-radius:12px; font-size:17px; font-weight:600; cursor:pointer; margin-top:10px;}
 
   /* ===== Result layers (مرآة العقل) ===== */
   .layer-card{border-radius:14px; padding:14px 16px; margin-bottom:10px;}
   .layer-card.l1{background:var(--white); border:1px solid #EDE8D8;}
   .layer-card.l2{background:#FBF3E3; border:1px solid #EFDBAE;}
   .layer-card.l3{background:#E6F0EE; border:1px solid #C7DED9;}
-  .layer-title{font-size:12px; font-weight:700; margin:0 0 6px;}
-  .layer-text{font-size:12.5px; line-height:1.7; margin:0; color:var(--text);}
+  .layer-title{font-size:14px; font-weight:700; margin:0 0 6px;}
+  .layer-text{font-size:15px; line-height:1.7; margin:0; color:var(--text);}
 
   /* ===== Safety overlay ===== */
   .safety-overlay{position:fixed; inset:0; background:rgba(7,43,40,.92); display:none; align-items:center; justify-content:center; z-index:999; padding:24px;}
   .safety-overlay.show{display:flex;}
   .safety-box{background:var(--white); border-radius:18px; padding:26px 22px; text-align:center; max-width:340px;}
-  .safety-box .icon-circle{width:60px; height:60px; font-size:26px; margin:0 auto 14px; background:var(--danger-bg); color:var(--danger);}
-  .safety-box h2{font-size:16px; margin:0 0 8px;}
-  .safety-box p{font-size:13px; color:var(--muted); line-height:1.7; margin:0 0 18px;}
-  .safety-btn{width:100%; padding:12px; border-radius:12px; border:none; font-size:14px; font-weight:700; margin-bottom:8px; cursor:pointer;}
+  .safety-box .icon-circle{width:60px; height:60px; font-size:31px; margin:0 auto 14px; background:var(--danger-bg); color:var(--danger);}
+  .safety-box h2{font-size:19px; margin:0 0 8px;}
+  .safety-box p{font-size:15px; color:var(--muted); line-height:1.7; margin:0 0 18px;}
+  .safety-btn{width:100%; padding:12px; border-radius:12px; border:none; font-size:17px; font-weight:700; margin-bottom:8px; cursor:pointer;}
   .safety-btn.call{background:var(--danger); color:#fff;}
   .safety-btn.trust{background:var(--sand); color:var(--text);}
 </style>
@@ -127,9 +127,9 @@
   <!-- ===================== SCREEN: ONBOARDING (ترحيب مرة واحدة) ===================== -->
   <div class="screen" id="screen-onboarding">
     <div style="padding:50px 16px 0; text-align:center;">
-      <p style="font-size:11px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها باستمتاع ✦</p>
-      <h1 style="font-size:20px; font-weight:700; margin:0 0 16px;">أهلًا بيك في رحلتك</h1>
-      <p style="font-size:13px; color:var(--muted); line-height:1.8; margin:0 0 24px; padding:0 8px;">إحياها باستمتاع مش تطبيق دعم نفسي عادي — هدفنا نساعدك توازن حياتك كاملة في <b style="color:var(--text);">٧ أركان</b>، مش ركن واحد بس.</p>
+      <p style="font-size:13px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها باستمتاع ✦</p>
+      <h1 style="font-size:24px; font-weight:700; margin:0 0 16px;">أهلًا بيك في رحلتك</h1>
+      <p style="font-size:15px; color:var(--muted); line-height:1.8; margin:0 0 24px; padding:0 8px;">إحياها باستمتاع مش تطبيق دعم نفسي عادي — هدفنا نساعدك توازن حياتك كاملة في <b style="color:var(--text);">٧ أركان</b>، مش ركن واحد بس.</p>
     </div>
     <div style="padding:0 16px;">
       <div id="onboardingPillarsList" style="margin-bottom:20px;"></div>
@@ -140,9 +140,9 @@
   <!-- ===================== SCREEN: GATE (تسجيل دخول إجباري) ===================== -->
   <div class="screen active" id="screen-gate">
     <div style="padding:50px 16px 0; text-align:center;">
-      <p style="font-size:11px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها ✦</p>
-      <h1 style="font-size:21px; font-weight:700; margin:0 0 4px;">إحياها باستمتاع</h1>
-      <p style="font-size:12px; color:var(--muted); margin:0 0 24px;">سجّل دخولك للمتابعة</p>
+      <p style="font-size:13px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها ✦</p>
+      <h1 style="font-size:25px; font-weight:700; margin:0 0 4px;">إحياها باستمتاع</h1>
+      <p style="font-size:14px; color:var(--muted); margin:0 0 24px;">سجّل دخولك للمتابعة</p>
     </div>
     <div style="padding:0 16px;" id="gateBody"></div>
   </div>
@@ -155,34 +155,34 @@
         <div id="notifDot" style="display:none; position:absolute; top:-2px; left:-2px; width:10px; height:10px; border-radius:50%; background:#D9483C; border:1.5px solid var(--white);"></div>
       </div>
       <div style="text-align:center; flex:1;">
-        <p style="font-size:10px; color:var(--gold); margin:0;">🌿</p>
-        <h1 id="h1-brand" style="font-size:18px; margin:2px 0 0;">إحياها باستمتاع</h1>
-        <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">توازن حياتك الكامل .. في ٧ أركان</p>
+        <p style="font-size:12px; color:var(--gold); margin:0;">🌿</p>
+        <h1 id="h1-brand" style="font-size:21px; margin:2px 0 0;">إحياها باستمتاع</h1>
+        <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">توازن حياتك الكامل .. في ٧ أركان</p>
       </div>
       <div class="icon-badge-sm" onclick="openAccountScreen()">👤</div>
     </div>
 
     <div style="padding:0 16px;">
       <div class="hero-banner" style="background:linear-gradient(135deg, rgba(7,43,40,.88), rgba(7,43,40,.55)), url('https://images.unsplash.com/photo-1763793927066-e737cd50bd1a?fm=jpg&q=70&w=900&auto=format&fit=crop') center/cover no-repeat;">
-        <p style="font-size:15px; font-weight:700; line-height:1.6; margin:0 0 8px; position:relative;">السلام الداخلي النفسي<br>هو بوابتك للجنة</p>
+        <p style="font-size:18px; font-weight:700; line-height:1.6; margin:0 0 8px; position:relative;">السلام الداخلي النفسي<br>هو بوابتك للجنة</p>
         <div style="width:34px; height:2px; background:var(--gold); position:relative;"></div>
       </div>
 
       <div style="display:flex; align-items:center; gap:8px; margin:6px 0 14px;">
-        <span style="font-size:14px;">🌿</span>
-        <p style="font-size:10.5px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
+        <span style="font-size:17px;">🌿</span>
+        <p style="font-size:12px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
         <div style="flex:1; height:1px; background:var(--gold); opacity:.4;"></div>
         <p class="pillars-title" style="margin:0; white-space:nowrap;">الأركان السبعة لحياتك</p>
       </div>
       <div class="pillars-grid" id="pillarsGrid"></div>
 
       <div class="quick-help-card" onclick="startEhkily()" style="margin-top:8px;">
-        <div class="icon-circle" style="width:38px; height:38px; font-size:17px;">🧠</div>
+        <div class="icon-circle" style="width:38px; height:38px; font-size:20px;">🧠</div>
         <div style="flex:1;">
-          <p style="font-size:13px; font-weight:700; margin:0;">مساعدة فورية</p>
-          <p style="font-size:10.5px; color:var(--muted); margin:2px 0 0;">تحدث مع مختص الآن</p>
+          <p style="font-size:15px; font-weight:700; margin:0;">مساعدة فورية</p>
+          <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">تحدث مع مختص الآن</p>
         </div>
-        <div style="font-size:16px; color:var(--gold);">‹</div>
+        <div style="font-size:19px; color:var(--gold);">‹</div>
       </div>
 
       <p class="section-title">كيف حالك اليوم؟</p>
@@ -198,9 +198,9 @@
 
       <div class="card" style="margin-bottom:20px; margin-top:8px;">
         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-          <div class="icon-circle" style="width:34px; height:34px; font-size:15px;">✅</div>
-          <p style="font-size:13px; font-weight:700; margin:0; flex:1;">مهامك اليوم</p>
-          <div onclick="openTasksScreen()" style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;">التقويم كامل ‹</div>
+          <div class="icon-circle" style="width:34px; height:34px; font-size:18px;">✅</div>
+          <p style="font-size:15px; font-weight:700; margin:0; flex:1;">مهامك اليوم</p>
+          <div onclick="openTasksScreen()" style="font-size:13px; color:var(--gold); font-weight:700; cursor:pointer;">التقويم كامل ‹</div>
         </div>
         <div id="homeTasksPreview"></div>
         <div style="display:flex; gap:6px; margin-top:8px;">
@@ -219,7 +219,7 @@
 
       <div class="card" style="background:var(--navy-dark); margin-bottom:20px; cursor:pointer;" onclick="openFlashScreen()">
         <div id="homeDailyFlash"></div>
-        <p style="font-size:10.5px; color:var(--gold); margin:8px 0 0; font-weight:700;">شوف كل الومضات ‹</p>
+        <p style="font-size:12px; color:var(--gold); margin:8px 0 0; font-weight:700;">شوف كل الومضات ‹</p>
       </div>
 
       <div class="card" style="background:#7A5A1C; margin-bottom:20px;">
@@ -293,7 +293,7 @@
       <button class="btn-primary" onclick="saveJournal()">حفظ اليوم</button>
       <div class="card" style="margin-top:16px;">
         <p class="card-title">سجلك (على الجهاز ده بس)</p>
-        <div id="journalHistory" style="font-size:12px; color:var(--muted);">لسه معملتش تسجيل</div>
+        <div id="journalHistory" style="font-size:14px; color:var(--muted);">لسه معملتش تسجيل</div>
       </div>
       <button class="btn-ghost" onclick="loadFullHistory()">📂 عرض السجلات</button>
       <div id="fullHistoryWrap" style="margin-top:14px;"></div>
@@ -664,7 +664,7 @@ async function renderAdminScreen(){
       <p class="card-sub" style="margin-bottom:10px;">الترتيب ده هيتطبّق على كل المستخدمين في التطبيق — مش على جهازك بس.</p>
       <div id="adminPillarOrderList"></div>
     </div>
-    <p style="font-size:12px; color:var(--muted); text-align:center; margin:18px 0 10px;">جاري تحميل طلبات المتخصصين...</p>
+    <p style="font-size:14px; color:var(--muted); text-align:center; margin:18px 0 10px;">جاري تحميل طلبات المتخصصين...</p>
   `;
   renderAdminPillarOrder();
 
@@ -673,7 +673,7 @@ async function renderAdminScreen(){
   const specialistsWrap = document.createElement('div');
 
   if(specialists.length === 0){
-    specialistsWrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
+    specialistsWrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
   } else {
     const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗' };
     const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34' };
@@ -684,11 +684,11 @@ async function renderAdminScreen(){
             <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
             <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
           </div>
-          <span style="font-size:10px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
+          <span style="font-size:12px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
         </div>
-        ${s.bio ? `<p style="font-size:12px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
-        ${s.license ? `<p style="font-size:11px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
-        <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
+        ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
+        ${s.license ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
+        <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
         ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
         ${s.status === 'pending' ? `
           <div style="display:flex; gap:8px;">
@@ -713,9 +713,9 @@ function renderAdminPillarOrder(){
     <div class="choice-btn" style="text-align:center; margin:0 0 10px; color:var(--danger); border-color:var(--danger);" onclick="resetPillarOrder()">↺ استعادة الترتيب الافتراضي</div>
     ${PILLARS.map((p, i) => `
       <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EDE8D8;">
-        <span style="font-size:13px; flex:1;">${p.icon} ${p.title}</span>
-        <div onclick="movePillar(${i}, -1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▲</div>
-        <div onclick="movePillar(${i}, 1)" style="cursor:pointer; font-size:15px; color:var(--gold); padding:2px 8px;">▼</div>
+        <span style="font-size:15px; flex:1;">${p.icon} ${p.title}</span>
+        <div onclick="movePillar(${i}, -1)" style="cursor:pointer; font-size:18px; color:var(--gold); padding:2px 8px;">▲</div>
+        <div onclick="movePillar(${i}, 1)" style="cursor:pointer; font-size:18px; color:var(--gold); padding:2px 8px;">▼</div>
       </div>
     `).join('')}
   `;
@@ -796,8 +796,8 @@ function showOnboarding(){
   const wrap = document.getElementById('onboardingPillarsList');
   wrap.innerHTML = PILLARS.map(p => `
     <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #EDE8D8;">
-      <div style="width:34px; height:34px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:16px;">${p.icon}</div>
-      <p style="font-size:13px; font-weight:600; margin:0;">${p.title}</p>
+      <div style="width:34px; height:34px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:19px;">${p.icon}</div>
+      <p style="font-size:15px; font-weight:600; margin:0;">${p.title}</p>
     </div>
   `).join('');
   document.getElementById('bottomNav').style.display = 'none';
@@ -945,9 +945,9 @@ function renderAuthFields(mode){
       <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
       <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
         <input type="checkbox" id="specCommissionAgree" style="width:auto; margin-top:3px;">
-        <label for="specCommissionAgree" style="font-size:11.5px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد <b>عمولة</b> على أي جلسة أو استشارة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
+        <label for="specCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد <b>عمولة</b> على أي جلسة أو استشارة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
       </div>
-      <p style="font-size:11px; color:var(--muted); margin-top:8px;">حسابك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:8px;">حسابك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
     `;
   } else {
     wrap.innerHTML = `
@@ -983,23 +983,23 @@ function renderGateScreen(){
       <div class="choice-btn" style="flex:1; text-align:center; margin:0;" id="tabSignup" onclick="setAuthMode('signup')">حساب جديد</div>
     </div>
     <div id="specialistToggleWrap" style="display:none; margin-bottom:14px;">
-      <div class="choice-btn" style="text-align:center; margin:0; font-size:11.5px;" onclick="setAuthMode('specialist')">🩺 عندي تخصص مهني؟ سجّل كمتخصص</div>
+      <div class="choice-btn" style="text-align:center; margin:0; font-size:14px;" onclick="setAuthMode('specialist')">🩺 عندي تخصص مهني؟ سجّل كمتخصص</div>
     </div>
     <div id="authFieldsWrap"></div>
-    <p id="authError" style="display:none; color:var(--danger); font-size:12px; margin-top:8px;"></p>
+    <p id="authError" style="display:none; color:var(--danger); font-size:14px; margin-top:8px;"></p>
     <button class="btn-primary" id="authSubmitBtn">دخول</button>
     ${biometricReady ? `
       <div style="display:flex; flex-direction:column; align-items:center; margin-top:18px;">
-        <div onclick="loginWithBiometric()" style="width:56px; height:56px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.5), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 6px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.4);">👆</div>
-        <p style="font-size:11px; color:var(--muted); margin:8px 0 0;">أو ادخل ببصمة الإصبع</p>
+        <div onclick="loginWithBiometric()" style="width:56px; height:56px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:31px; cursor:pointer; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.5), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 6px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.4);">👆</div>
+        <p style="font-size:13px; color:var(--muted); margin:8px 0 0;">أو ادخل ببصمة الإصبع</p>
       </div>
     ` : ''}
-    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px;">تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق</p>
+    <p style="font-size:13px; color:var(--muted); text-align:center; margin-top:14px;">تسجيل الدخول بجوجل أو فيسبوك هيتفعّل لاحقًا مع النسخة الاحترافية من التطبيق</p>
   `;
   setAuthMode(isFirstTime ? 'signup' : 'signin');
   if(isFirstTime){
     const note = document.createElement('p');
-    note.style.cssText = 'font-size:12px; color:var(--gold); text-align:center; margin:-8px 0 14px; font-weight:700;';
+    note.style.cssText = 'font-size:14px; color:var(--gold); text-align:center; margin:-8px 0 14px; font-weight:700;';
     note.textContent = 'أول مرة معانا؟ اعمل حسابك دلوقتي 👋';
     document.getElementById('tabSignin').parentElement.after(note);
   }
@@ -1035,24 +1035,24 @@ function renderStatsScreen(){
   body.innerHTML = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${moodEntries.length}</p>
-        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">تسجيلات مزاج</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${moodEntries.length}</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">تسجيلات مزاج</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${doneTasks}/${tasks.length}</p>
-        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">مهام منجزة</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${doneTasks}/${tasks.length}</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">مهام منجزة</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${journal.length}</p>
-        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">تسجيلات في رحلتي</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${journal.length}</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">تسجيلات في رحلتي</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${stickyCount}</p>
-        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">ملاحظات سريعة</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${stickyCount}</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">ملاحظات سريعة</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${getTawbaCount()}</p>
-        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">مرات رجوعك في "التوبة والعودة" — كل مرة خطوة، مش رقم بيتحاسب عليه</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${getTawbaCount()}</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">مرات رجوعك في "التوبة والعودة" — كل مرة خطوة، مش رقم بيتحاسب عليه</p>
       </div>
     </div>
     ${Object.keys(counts).length > 0 ? `
@@ -1060,7 +1060,7 @@ function renderStatsScreen(){
         <p class="card-title" style="margin-bottom:12px;">توزيع مشاعرك المسجّلة</p>
         ${Object.entries(counts).map(([label, count]) => `
           <div style="margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:4px;">
+            <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;">
               <span>${label}</span><span style="color:var(--muted);">${count}</span>
             </div>
             <div style="height:6px; background:var(--sand); border-radius:3px;">
@@ -1068,7 +1068,7 @@ function renderStatsScreen(){
             </div>
           </div>
         `).join('')}
-      </div>` : `<p style="font-size:12px; color:var(--muted); text-align:center;">لسه مفيش بيانات كفاية لعرض إحصائيات — سجّل مزاجك كل يوم عشان تشوف تطورك هنا.</p>`}
+      </div>` : `<p style="font-size:14px; color:var(--muted); text-align:center;">لسه مفيش بيانات كفاية لعرض إحصائيات — سجّل مزاجك كل يوم عشان تشوف تطورك هنا.</p>`}
   `;
 }
 
@@ -1083,7 +1083,7 @@ function renderSettingsSection(){
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${notifOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setTaskNotifications('on')">مفعّلة</div>
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${!notifOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setTaskNotifications('off')">مقفولة</div>
       </div>
-      <p style="font-size:11px; color:var(--muted); margin-top:10px;">إشعارات محلية تشتغل بس لو التطبيق مفتوح — الإشعارات الحقيقية للتطبيق المقفول هتتضاف لاحقًا.</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:10px;">إشعارات محلية تشتغل بس لو التطبيق مفتوح — الإشعارات الحقيقية للتطبيق المقفول هتتضاف لاحقًا.</p>
     </div>
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">${t('theme_title')}</p>
@@ -1094,7 +1094,7 @@ function renderSettingsSection(){
               <div style="width:16px; height:16px; border-radius:50%; background:${THEMES[key].navyDark};"></div>
               <div style="width:16px; height:16px; border-radius:50%; background:${THEMES[key].gold};"></div>
             </div>
-            <p style="font-size:11.5px; font-weight:700; margin:0; color:${THEMES[key].text};">${THEMES[key].label}</p>
+            <p style="font-size:14px; font-weight:700; margin:0; color:${THEMES[key].text};">${THEMES[key].label}</p>
           </div>
         `).join('')}
       </div>
@@ -1105,7 +1105,7 @@ function renderSettingsSection(){
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${currentLang === 'ar' ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setLanguage('ar')">العربية</div>
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${currentLang === 'en' ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setLanguage('en')">English</div>
       </div>
-      ${currentLang === 'en' ? `<p style="font-size:11px; color:var(--muted); margin-top:10px;">${t('lang_note')}</p>` : ''}
+      ${currentLang === 'en' ? `<p style="font-size:13px; color:var(--muted); margin-top:10px;">${t('lang_note')}</p>` : ''}
     </div>
   `;
 }
@@ -1115,9 +1115,9 @@ function renderAccountScreen(){
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   body.innerHTML = auth ? `
       <div class="card" style="text-align:center; padding:24px 16px;">
-        <div class="icon-circle" style="width:60px; height:60px; font-size:26px; margin:0 auto 12px; color:var(--gold);">👤</div>
+        <div class="icon-circle" style="width:60px; height:60px; font-size:31px; margin:0 auto 12px; color:var(--gold);">👤</div>
         <p class="card-sub" style="margin:0;">${t('logged_in_as')}</p>
-        <p style="font-size:17px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
+        <p style="font-size:20px; font-weight:700; margin:4px 0 18px;">${auth.username}</p>
         <button class="btn-ghost" onclick="authSignOut()">${t('logout')}</button>
       </div>` : '';
 }
@@ -1286,10 +1286,10 @@ function renderHome(){
       <div style="position:relative; z-index:1;">
         <p class="ptitle-lg">${p.title}</p>
         <p class="ptag">${p.tag}</p>
-        ${p.ready ? '' : `<p style="font-size:9px; color:var(--gold); margin:6px 0 0; font-weight:700;">${t('soon')}</p>`}
+        ${p.ready ? '' : `<p style="font-size:11px; color:var(--gold); margin:6px 0 0; font-weight:700;">${t('soon')}</p>`}
       </div>
       <div style="display:flex; flex-direction:column; align-items:center; gap:8px; position:relative; z-index:1;">
-        <div style="width:44px; height:44px; border-radius:50%; border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.35), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.3), inset 0 2px 3px rgba(255,255,255,.35);">${p.icon}</div>
+        <div style="width:44px; height:44px; border-radius:50%; border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:24px; background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.35), rgba(255,255,255,.05) 70%); box-shadow:inset 0 -3px 5px rgba(0,0,0,.3), inset 0 2px 3px rgba(255,255,255,.35);">${p.icon}</div>
         <div class="pillar-arrow">‹</div>
       </div>
     </div>`;
@@ -1357,7 +1357,7 @@ function renderSpiritualDashboard(){
   let hasAnyData = consistency !== null || tawbaLog.length > 0 || quizState;
   if(!hasAnyData){
     return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
-      <p style="font-size:12px; color:var(--muted); margin:0;">لسه معندناش بيانات كفاية عنك هنا — ابدأ بأي أداة تحت وهنبني صورتك هنا تدريجيًا.</p>
+      <p style="font-size:14px; color:var(--muted); margin:0;">لسه معندناش بيانات كفاية عنك هنا — ابدأ بأي أداة تحت وهنبني صورتك هنا تدريجيًا.</p>
     </div>`;
   }
 
@@ -1366,7 +1366,7 @@ function renderSpiritualDashboard(){
   if(consistency !== null && previousConsistency !== null && (previousConsistency - consistency) >= 25){
     alertHtml = `
       <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:10px;">
-        <p style="font-size:12.5px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن انتظامك نزل من <b>${previousConsistency}٪</b> لـ<b>${consistency}٪</b> الأسبوع ده. مفيش لوم، بس يستاهل تسأل نفسك: فيه حاجة تغيّرت؟</p>
+        <p style="font-size:15px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن انتظامك نزل من <b>${previousConsistency}٪</b> لـ<b>${consistency}٪</b> الأسبوع ده. مفيش لوم، بس يستاهل تسأل نفسك: فيه حاجة تغيّرت؟</p>
         <div style="display:flex; gap:8px; margin-top:10px;">
           <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openRabbekScreen()">علاقتك بربك</div>
           <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openWorshipScreen()">متابعة عباداتك</div>
@@ -1381,7 +1381,7 @@ function renderSpiritualDashboard(){
     const milestone = [30,14,7,3].find(m => streak >= m);
     alertHtml += `
       <div class="card" style="background:var(--navy-dark); margin-bottom:10px;">
-        <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0;">${streakMsgs[milestone] || (streak + ' يوم متتالي بانتظام عالي 🎉')}</p>
+        <p style="font-size:15px; color:var(--gold); font-weight:700; margin:0;">${streakMsgs[milestone] || (streak + ' يوم متتالي بانتظام عالي 🎉')}</p>
       </div>`;
   }
 
@@ -1391,22 +1391,22 @@ function renderSpiritualDashboard(){
   if(consistency !== null){
     html += `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <p style="font-size:14px; color:rgba(255,255,255,.9); margin:0; font-weight:600;">انتظامك آخر ٧ أيام</p>
-        <p style="font-size:26px; font-weight:700; color:var(--gold); margin:0;">${consistency}٪</p>
+        <p style="font-size:17px; color:rgba(255,255,255,.9); margin:0; font-weight:600;">انتظامك آخر ٧ أيام</p>
+        <p style="font-size:31px; font-weight:700; color:var(--gold); margin:0;">${consistency}٪</p>
       </div>
-      <p style="font-size:12px; color:var(--gold); margin:0 0 12px; cursor:pointer; font-weight:600;" onclick="openWorshipInsights()">شوف مؤشرك الكامل (٣٠ يوم من كل بياناتك) ←</p>`;
+      <p style="font-size:14px; color:var(--gold); margin:0 0 12px; cursor:pointer; font-weight:600;" onclick="openWorshipInsights()">شوف مؤشرك الكامل (٣٠ يوم من كل بياناتك) ←</p>`;
   }
   if(tawbaLog.length > 0){
     const daysSince = Math.floor((Date.now() - new Date(tawbaLog[0].date)) / 86400000);
-    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px;">آخر مرة سجّلت فيها توبتك لله: ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم فات'}</p>`;
+    html += `<p style="font-size:15px; color:rgba(255,255,255,.9); margin:0 0 10px;">آخر مرة سجّلت فيها توبتك لله: ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم فات'}</p>`;
   }
   if(quizState && stateMessages[quizState]){
-    html += `<p style="font-size:13.5px; color:#fff; line-height:1.7; margin:0 0 12px; font-weight:600;">${stateMessages[quizState]}</p>`;
+    html += `<p style="font-size:16px; color:#fff; line-height:1.7; margin:0 0 12px; font-weight:600;">${stateMessages[quizState]}</p>`;
   }
   if(appliedCount > 0){
-    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة عملية لحد دلوقتي</p>`;
+    html += `<p style="font-size:15px; color:rgba(255,255,255,.9); margin:0 0 10px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة عملية لحد دلوقتي</p>`;
   }
-  html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSpiritualReport()">📊 شوف تقريرك الروحاني الكامل ←</p>`;
+  html += `<p style="font-size:15px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSpiritualReport()">📊 شوف تقريرك الروحاني الكامل ←</p>`;
   html += `</div>`;
   return html;
 }
@@ -1437,7 +1437,7 @@ function goToPillar(id){
       ${renderSpiritualDashboard()}
       ${spiritualTools.map((t,idx) => `
         <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===0 && isNewToSpirit ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-          ${idx===0 && isNewToSpirit ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+          ${idx===0 && isNewToSpirit ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:12px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
           <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
           <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
           <div class="arrow" style="color:#fff;">‹</div>
@@ -1711,7 +1711,7 @@ const WHO_IS_ALLAH_QUESTIONS = [
     q: "حد قريب منك فسّرلك يومًا مين هو ربنا بطريقة قرّبتك ليه فعلًا؟",
     options: [
       { label:"آه، من زمان وده أثّر فيّا لحد دلوقتي", tag:"clear" },
-      { label:"سمعت كلام كتير بس ما لخبطنيش أو ما وصلنيش", tag:"vague" },
+      { label:"سمعت كلام كتير بس لخبطني أو ما وصلنيش", tag:"vague" },
       { label:"لأ، حاسس إني بكتشف الموضوع ده لوحدي دلوقتي", tag:"lost" },
     ],
   },
@@ -1743,8 +1743,8 @@ function renderWhoIsAllahQuestion(index){
   }
   const q = WHO_IS_ALLAH_QUESTIONS[index];
   wrap.innerHTML = `
-    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${WHO_IS_ALLAH_QUESTIONS.length} — محتاجين نفهم مساحتك النفسية والروحانية دلوقتي</p>
-    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${WHO_IS_ALLAH_QUESTIONS.length} — محتاجين نفهم مساحتك النفسية والروحانية دلوقتي</p>
+    <p style="font-size:17px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
       ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWhoIsAllah(${index}, ${i})">${o.label}</div>`).join('')}
     </div>
@@ -1779,39 +1779,39 @@ function renderWhoIsAllahContent(dominant){
   content.style.display = 'block';
   content.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px;">
-      <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0; background:var(--sand); padding:12px 14px; border-radius:12px; flex:1;">${WHO_IS_ALLAH_INTRO_MSGS[dominant]}</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.8; margin:0; background:var(--sand); padding:12px 14px; border-radius:12px; flex:1;">${WHO_IS_ALLAH_INTRO_MSGS[dominant]}</p>
     </div>
     ${(dominant === 'lost' || dominant === 'vague') ? `<div class="choice-btn" style="text-align:center; margin-bottom:14px;" onclick="openAsmaScreen()">ابدأ من أسماء الله الحسنى — أساس المعرفة 📿</div>` : ''}
     <div style="text-align:left; margin-bottom:14px;">
-      <span style="font-size:11px; color:var(--gold); font-weight:700; cursor:pointer;" onclick="renderWhoIsAllahQuiz()">🔄 أعد تقييم علاقتك</span>
+      <span style="font-size:13px; color:var(--gold); font-weight:700; cursor:pointer;" onclick="renderWhoIsAllahQuiz()">🔄 أعد تقييم علاقتك</span>
     </div>
 
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-      <span style="font-size:14px;">✨</span>
-      <p style="font-size:15px; font-weight:700; margin:0;">مين هو الله</p>
+      <span style="font-size:17px;">✨</span>
+      <p style="font-size:18px; font-weight:700; margin:0;">مين هو الله</p>
     </div>
 
     <div class="layer-card l3" style="text-align:center; padding:22px 16px;">
-      <p style="font-size:15px; font-weight:700; color:var(--navy-dark); line-height:2; margin:0;">﴿اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ ۚ مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ ۖ الْمِصْبَاحُ فِي زُجَاجَةٍ ۖ الزُّجَاجَةُ كَأَنَّهَا كَوْكَبٌ دُرِّيٌّ يُوقَدُ مِن شَجَرَةٍ مُّبَارَكَةٍ زَيْتُونَةٍ لَّا شَرْقِيَّةٍ وَلَا غَرْبِيَّةٍ يَكَادُ زَيْتُهَا يُضِيءُ وَلَوْ لَمْ تَمْسَسْهُ نَارٌ ۚ نُّورٌ عَلَىٰ نُورٍ ۗ يَهْدِي اللَّهُ لِنُورِهِ مَن يَشَاءُ﴾</p>
-      <p style="font-size:11px; color:var(--muted); margin-top:10px;">سورة النور ٣٥</p>
+      <p style="font-size:18px; font-weight:700; color:var(--navy-dark); line-height:2; margin:0;">﴿اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ ۚ مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ ۖ الْمِصْبَاحُ فِي زُجَاجَةٍ ۖ الزُّجَاجَةُ كَأَنَّهَا كَوْكَبٌ دُرِّيٌّ يُوقَدُ مِن شَجَرَةٍ مُّبَارَكَةٍ زَيْتُونَةٍ لَّا شَرْقِيَّةٍ وَلَا غَرْبِيَّةٍ يَكَادُ زَيْتُهَا يُضِيءُ وَلَوْ لَمْ تَمْسَسْهُ نَارٌ ۚ نُّورٌ عَلَىٰ نُورٍ ۗ يَهْدِي اللَّهُ لِنُورِهِ مَن يَشَاءُ﴾</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:10px;">سورة النور ٣٥</p>
     </div>
-    <p style="font-size:12px; color:var(--muted); margin:10px 0 20px; line-height:1.7;">ربنا وصف نفسه بالنور — مش ظلمة ولا رعب ولا بُعد. النور بيهدي ومريح ومرشد للطريق، مش بيعاقب أو يخوّف. لو صورتك عن ربنا مليانة ظلمة أو خوف بس، الآية دي نقطة بداية تصحيح.</p>
+    <p style="font-size:14px; color:var(--muted); margin:10px 0 20px; line-height:1.7;">ربنا وصف نفسه بالنور — مش ظلمة ولا رعب ولا بُعد. النور بيهدي ومريح ومرشد للطريق، مش بيعاقب أو يخوّف. لو صورتك عن ربنا مليانة ظلمة أو خوف بس، الآية دي نقطة بداية تصحيح.</p>
 
-    <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.7;">مشاعرك تجاه ربنا بتتبني على حاجة أعمق: هل معرفتك بربنا نفسها صح؟ العلماء قسّموا التوحيد لتلات أنواع — كل نوع منهم له أثر نفسي مباشر لو فهمته صح أو فهمته غلط.</p>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:14px; line-height:1.7;">مشاعرك تجاه ربنا بتتبني على حاجة أعمق: هل معرفتك بربنا نفسها صح؟ العلماء قسّموا التوحيد لتلات أنواع — كل نوع منهم له أثر نفسي مباشر لو فهمته صح أو فهمته غلط.</p>
 
     <div class="tool-row" onclick="showTawheedDetail(0)">
-      <div class="icon-circle" style="font-size:15px;">🌍</div>
-      <div><div class="card-title" style="font-size:13px;">توحيد الربوبية</div><div class="card-sub">مين اللي بيتحكم في مصيرك فعليًا؟</div></div>
+      <div class="icon-circle" style="font-size:18px;">🌍</div>
+      <div><div class="card-title" style="font-size:15px;">توحيد الربوبية</div><div class="card-sub">مين اللي بيتحكم في مصيرك فعليًا؟</div></div>
       <div class="arrow">‹</div>
     </div>
     <div class="tool-row" onclick="showTawheedDetail(1)">
-      <div class="icon-circle" style="font-size:15px;">🤲</div>
-      <div><div class="card-title" style="font-size:13px;">توحيد الألوهية</div><div class="card-sub">قلبك بيتعلق ويخضع لمين فعليًا؟</div></div>
+      <div class="icon-circle" style="font-size:18px;">🤲</div>
+      <div><div class="card-title" style="font-size:15px;">توحيد الألوهية</div><div class="card-sub">قلبك بيتعلق ويخضع لمين فعليًا؟</div></div>
       <div class="arrow">‹</div>
     </div>
     <div class="tool-row" onclick="showTawheedDetail(2)">
-      <div class="icon-circle" style="font-size:15px;">✨</div>
-      <div><div class="card-title" style="font-size:13px;">توحيد الأسماء والصفات</div><div class="card-sub">صورة ربنا في دماغك... صح ولا مشوّهة؟</div></div>
+      <div class="icon-circle" style="font-size:18px;">✨</div>
+      <div><div class="card-title" style="font-size:15px;">توحيد الأسماء والصفات</div><div class="card-sub">صورة ربنا في دماغك... صح ولا مشوّهة؟</div></div>
       <div class="arrow">‹</div>
     </div>
     <div id="tawheedDetailWrap"></div>
@@ -1826,7 +1826,7 @@ function showTawheedDetail(i){
       <p class="layer-title" style="color:var(--navy-dark);">${t.icon} ${t.title}</p>
       <p class="layer-text" style="margin-top:6px;"><b>التعريف:</b> ${t.def}</p>
       <p class="layer-text" style="margin-top:6px;"><b>الأثر النفسي:</b> ${t.psych}</p>
-      <p style="font-size:11.5px; color:var(--muted); margin-top:6px;">${t.quran}</p>
+      <p style="font-size:14px; color:var(--muted); margin-top:6px;">${t.quran}</p>
     </div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">🔍 سؤال لنفسك</p>
@@ -1862,7 +1862,7 @@ function openAsmaScreen(){
   const body = document.getElementById('asmaBody');
   const readList = getReadAsma();
   body.innerHTML = `
-    <p style="font-size:11px; color:var(--muted); margin-bottom:12px;">تعرّف على ${Object.keys(readList).length} من ${ASMA_ALLAH_BANK.length} اسم (٩٩ اسمًا رسميًا + اسم إضافي واحد)</p>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">تعرّف على ${Object.keys(readList).length} من ${ASMA_ALLAH_BANK.length} اسم (٩٩ اسمًا رسميًا + اسم إضافي واحد)</p>
     <input type="text" id="asmaSearchInput" placeholder="دوّر باسم (مثلاً: الرزاق، اللطيف...)" oninput="renderAsmaList()" style="margin-bottom:12px;">
     <div id="asmaListWrap"></div>
   `;
@@ -1876,7 +1876,7 @@ function renderAsmaList(){
   const readList = getReadAsma();
   const filtered = q ? ASMA_ALLAH_BANK.filter(a => a.name.includes(q)) : ASMA_ALLAH_BANK;
   if(filtered.length === 0){
-    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة</p>`;
     return;
   }
   wrap.innerHTML = filtered.map((a) => {
@@ -1886,13 +1886,13 @@ function renderAsmaList(){
     if(lastRead){
       const daysAgo = Math.floor((Date.now() - new Date(lastRead)) / 86400000);
       badge = daysAgo > 30
-        ? `<span style="font-size:10px; color:#8A6A1E; margin-left:6px;">🔄 راجعها تاني</span>`
-        : `<span style="font-size:11px; color:var(--gold); margin-left:6px;">✓ من ${daysAgo === 0 ? 'النهاردة' : daysAgo + ' يوم'}</span>`;
+        ? `<span style="font-size:12px; color:#8A6A1E; margin-left:6px;">🔄 راجعها تاني</span>`
+        : `<span style="font-size:13px; color:var(--gold); margin-left:6px;">✓ من ${daysAgo === 0 ? 'النهاردة' : daysAgo + ' يوم'}</span>`;
     }
     return `
       <div class="tool-row" onclick="showAsmaDetail(${i})">
-        <div class="icon-circle" style="font-size:15px;">📿</div>
-        <div><div class="card-title" style="font-size:13px;">${a.name}</div></div>
+        <div class="icon-circle" style="font-size:18px;">📿</div>
+        <div><div class="card-title" style="font-size:15px;">${a.name}</div></div>
         ${badge}
         <div class="arrow">‹</div>
       </div>`;
@@ -1905,8 +1905,8 @@ function showAsmaDetail(i){
   const body = document.getElementById('asmaBody');
   body.innerHTML = `
     <div class="layer-card l3" style="text-align:center; padding:20px 16px;">
-      <p style="font-size:20px; font-weight:700; color:var(--navy-dark); margin:0;">${a.name}</p>
-      ${a.note ? `<p style="font-size:10.5px; color:var(--muted); margin-top:6px;">${a.note}</p>` : ''}
+      <p style="font-size:24px; font-weight:700; color:var(--navy-dark); margin:0;">${a.name}</p>
+      ${a.note ? `<p style="font-size:12px; color:var(--muted); margin-top:6px;">${a.note}</p>` : ''}
     </div>
     <div class="layer-card l1">
       <p class="layer-title" style="color:var(--navy-dark);">📖 المعنى</p>
@@ -1919,8 +1919,14 @@ function showAsmaDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ تطبيق عملي النهاردة</p>
       <p class="layer-text" style="color:#fff; margin-top:6px;">${a.practice}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; border-color:var(--gold);" onclick="markAsmaApplied('${a.name}'); this.textContent='✓ تم — جزاك الله خيرًا'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markAsmaApplied('${a.name}'); this.textContent='✓ تم — جزاك الله خيرًا'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
+    ${(() => {
+      const relatedProphetId = Object.keys(PROPHET_ASMA_MAP).find(pid => PROPHET_ASMA_MAP[pid] === a.name);
+      if(!relatedProphetId) return '';
+      const rp = MERAT_PATTERNS.find(x => x.id === relatedProphetId);
+      return rp ? `<div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="showProphetDetail('${relatedProphetId}'); showScreen('screen-prophets');">اقرأ قصة ${rp.prophetTitle.split(' —')[0]} المرتبطة 📖</div>` : '';
+    })()}
     <button class="btn-ghost" onclick="openAsmaScreen()">رجوع للقائمة</button>
   `;
 }
@@ -1937,7 +1943,7 @@ function openRabbekScreen(){
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
 
-    <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px; line-height:1.7;">قلبك دايمًا بيخاف من حاجة، بيرجو حاجة، وبيحب حاجة — والسؤال مش "هل تخاف/ترجو/تحب؟" لكن "لمين موجّه ده؟"</p>
+    <p style="font-size:15px; color:var(--muted); margin-bottom:16px; line-height:1.7;">قلبك دايمًا بيخاف من حاجة، بيرجو حاجة، وبيحب حاجة — والسؤال مش "هل تخاف/ترجو/تحب؟" لكن "لمين موجّه ده؟"</p>
 
     <div class="layer-card l1">
       <p class="layer-title" style="color:var(--navy-dark);">😰 الخوف</p>
@@ -1957,26 +1963,26 @@ function openRabbekScreen(){
       <p class="layer-text" style="margin-top:6px;"><b>لله:</b> أحب الناس والأشياء، لكن خلّي حبك الأكبر لله — كده محدش وقراره بيبقى قادر يهزّك من جذورك.</p>
     </div>
 
-    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:14px; margin-bottom:20px;">من كتاب «بوصلة التسليم»</p>
+    <p style="font-size:13px; color:var(--muted); text-align:center; margin-top:14px; margin-bottom:20px;">من كتاب «بوصلة التسليم»</p>
 
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 4px;">
-      <span style="font-size:14px;">✍️</span>
-      <p style="font-size:14px; font-weight:700; margin:0;">أو اكتب حاسس بإيه بالظبط دلوقتي</p>
+      <span style="font-size:17px;">✍️</span>
+      <p style="font-size:17px; font-weight:700; margin:0;">أو اكتب حاسس بإيه بالظبط دلوقتي</p>
     </div>
-    <p style="font-size:10.5px; color:var(--muted); margin:0 0 8px;">🔒 كلامك هنا خاص بينك وبين ربك، محفوظ في حسابك بس.</p>
+    <p style="font-size:12px; color:var(--muted); margin:0 0 8px;">🔒 كلامك هنا خاص بينك وبين ربك، محفوظ في حسابك بس.</p>
     <textarea id="rabbekFreeText" placeholder="اكتب مشاعرك تجاه علاقتك بربك..." style="min-height:60px;"></textarea>
     <button class="btn-primary" style="margin-top:8px; margin-bottom:16px;" onclick="analyzeRabbekText()">حلّلها لي</button>
     <div id="rabbekAnalysisResult"></div>
 
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
-      <span style="font-size:14px;">🔍</span>
-      <p style="font-size:14px; font-weight:700; margin:0;">أو اختار الأقرب لإحساسك</p>
+      <span style="font-size:17px;">🔍</span>
+      <p style="font-size:17px; font-weight:700; margin:0;">أو اختار الأقرب لإحساسك</p>
     </div>
     <div id="closenessList">
       ${CLOSENESS_BANK.map((c,i) => `
         <div class="tool-row" onclick="showClosenessDetail(${i})">
-          <div class="icon-circle" style="font-size:15px;">${c.emoji}</div>
-          <div><div class="card-title" style="font-size:13px;">${c.label}</div></div>
+          <div class="icon-circle" style="font-size:18px;">${c.emoji}</div>
+          <div><div class="card-title" style="font-size:15px;">${c.label}</div></div>
           <div class="arrow">‹</div>
         </div>
       `).join('')}
@@ -2032,7 +2038,7 @@ async function analyzeRabbekText(){
       ${c.prophetId ? `<div class="choice-btn" style="text-align:center;" onclick="showProphetDetail('${c.prophetId}'); showScreen('screen-prophets');">اقرأ قصة ${MERAT_PATTERNS.find(x=>x.id===c.prophetId).prophetTitle.split(' —')[0]} 📖</div>` : ''}
       ${c.asmaName ? `<div class="choice-btn" style="text-align:center;" onclick="openAsmaByName('${c.asmaName}')">تعرّف على اسم الله «${c.asmaName}» المناسب لحالتك 📿</div>` : ''}`;
   } else {
-    result.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية، لكن مش لاقي نمط مطابق بالظبط — جرب تختار من القائمة تحت أقرب حاجة لإحساسك.</p>`;
+    result.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية، لكن مش لاقي نمط مطابق بالظبط — جرب تختار من القائمة تحت أقرب حاجة لإحساسك.</p>`;
   }
   input.value = '';
 }
@@ -2067,7 +2073,7 @@ function showClosenessDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${c.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; border-color:var(--gold);" onclick="markClosenessApplied('${c.label}'); this.textContent='✓ تم — الله يعينك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markClosenessApplied('${c.label}'); this.textContent='✓ تم — الله يعينك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
     ${c.prophetId ? `<div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="showProphetDetail('${c.prophetId}'); showScreen('screen-prophets');">اقرأ قصة ${MERAT_PATTERNS.find(x=>x.id===c.prophetId).prophetTitle.split(' —')[0]} 📖</div>` : ''}
     ${c.asmaName ? `<div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="openAsmaByName('${c.asmaName}')">تعرّف على اسم الله «${c.asmaName}» المناسب لحالتك 📿</div>` : ''}
@@ -2128,11 +2134,11 @@ function renderWorshipScreen(){
   body.innerHTML = `
     <div class="card">
       <p class="card-title" style="margin-bottom:4px;">صلوات اليوم</p>
-      <p style="font-size:10.5px; color:var(--muted); margin-bottom:10px;">دوس على الصلاة عشان تنقّل بين: منفرد ← جماعة ← قضاء ← إلغاء</p>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">دوس على الصلاة عشان تنقّل بين: منفرد ← جماعة ← قضاء ← إلغاء</p>
       ${prayers.map(p => `
         <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-          <div onclick="cyclePrayer('${p.id}')" style="min-width:76px; text-align:center; padding:5px 8px; border-radius:10px; border:1.5px solid var(--gold); cursor:pointer; font-size:11.5px; font-weight:700; color:${w[p.id] > 0 ? '#fff' : 'var(--text)'}; background:${PRAYER_STATE_COLORS[w[p.id]]};">${w[p.id] > 0 ? PRAYER_STATE_LABELS[w[p.id]] : 'لسه'}</div>
-          <p style="font-size:13px; margin:0;">${p.label}</p>
+          <div onclick="cyclePrayer('${p.id}')" style="min-width:76px; text-align:center; padding:5px 8px; border-radius:10px; border:1.5px solid var(--gold); cursor:pointer; font-size:14px; font-weight:700; color:${w[p.id] > 0 ? '#fff' : 'var(--text)'}; background:${PRAYER_STATE_COLORS[w[p.id]]};">${w[p.id] > 0 ? PRAYER_STATE_LABELS[w[p.id]] : 'لسه'}</div>
+          <p style="font-size:15px; margin:0;">${p.label}</p>
         </div>
       `).join('')}
     </div>
@@ -2140,7 +2146,7 @@ function renderWorshipScreen(){
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">القرآن</p>
       <div style="display:flex; align-items:center; gap:10px;">
-        <p style="font-size:13px; margin:0; flex:1;">كام صفحة قرأت النهاردة؟</p>
+        <p style="font-size:15px; margin:0; flex:1;">كام صفحة قرأت النهاردة؟</p>
         <input type="number" min="0" id="quranPagesInput" value="${w.quranPages || 0}" style="width:70px; text-align:center;" onchange="setQuranPages(this.value)">
       </div>
     </div>
@@ -2148,12 +2154,12 @@ function renderWorshipScreen(){
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">الأذكار</p>
       <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-        <div onclick="toggleWorshipBool('azkarSubh')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarSubh ? 'background:var(--gold);' : ''}">${w.azkarSubh ? '✓' : ''}</div>
-        <p style="font-size:13px; margin:0;">أذكار الصباح</p>
+        <div onclick="toggleWorshipBool('azkarSubh')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; ${w.azkarSubh ? 'background:var(--gold);' : ''}">${w.azkarSubh ? '✓' : ''}</div>
+        <p style="font-size:15px; margin:0;">أذكار الصباح</p>
       </div>
       <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-        <div onclick="toggleWorshipBool('azkarMasaa')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w.azkarMasaa ? 'background:var(--gold);' : ''}">${w.azkarMasaa ? '✓' : ''}</div>
-        <p style="font-size:13px; margin:0;">أذكار المساء</p>
+        <div onclick="toggleWorshipBool('azkarMasaa')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; ${w.azkarMasaa ? 'background:var(--gold);' : ''}">${w.azkarMasaa ? '✓' : ''}</div>
+        <p style="font-size:15px; margin:0;">أذكار المساء</p>
       </div>
     </div>
 
@@ -2161,13 +2167,13 @@ function renderWorshipScreen(){
       <p class="card-title" style="margin-bottom:10px;">عبادات إضافية</p>
       ${extras.map(e => `
         <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-          <div onclick="toggleWorshipBool('${e.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; ${w[e.id] ? 'background:var(--gold);' : ''}">${w[e.id] ? '✓' : ''}</div>
-          <p style="font-size:13px; margin:0;">${e.icon} ${e.label}</p>
+          <div onclick="toggleWorshipBool('${e.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; ${w[e.id] ? 'background:var(--gold);' : ''}">${w[e.id] ? '✓' : ''}</div>
+          <p style="font-size:15px; margin:0;">${e.icon} ${e.label}</p>
         </div>
       `).join('')}
     </div>
 
-    <p id="worshipStatus" style="font-size:11.5px; color:var(--muted); text-align:center;"></p>
+    <p id="worshipStatus" style="font-size:14px; color:var(--muted); text-align:center;"></p>
     <button class="btn-ghost" onclick="openWorshipInsights()">📊 شوف مؤشر انتظامك ونمط مزاجك</button>
   `;
 }
@@ -2215,7 +2221,7 @@ function prayerScoreForDay(doc){
 // ================= التقرير الروحاني الشامل — يجمع كل مصادر بيانات الركن في مكان واحد =================
 async function openSpiritualReport(){
   const body = document.getElementById('spiritualReportBody');
-  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">جاري تجميع تقريرك...</p>`;
+  body.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">جاري تجميع تقريرك...</p>`;
   showScreen('screen-spiritual-report');
 
   const uid = getUserId();
@@ -2247,45 +2253,45 @@ async function openSpiritualReport(){
 
   body.innerHTML = `
     <div class="card" style="background:var(--sand);">
-      <p style="font-size:13px; color:var(--text); line-height:1.8; margin:0;">${summary}</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.8; margin:0;">${summary}</p>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${consistency30 !== null ? consistency30 + '٪' : '—'}</p>
-        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">انتظام العبادة (٣٠ يوم)</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${consistency30 !== null ? consistency30 + '٪' : '—'}</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">انتظام العبادة (٣٠ يوم)</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${tawbaLog.length}</p>
-        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرات التوبة والعودة</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${tawbaLog.length}</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">مرات التوبة والعودة</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${readProphets}/22</p>
-        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">قصص أنبياء قريتها</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${readProphets}/22</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">قصص أنبياء قريتها</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/98</p>
-        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">أسماء الله قريتها</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/98</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">أسماء الله قريتها</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${getTotalAppliedCount()}</p>
-        <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عملية طبّقتها فعليًا (مش قراءة بس)</p>
+        <p style="font-size:31px; font-weight:700; margin:0; color:var(--gold);">${getTotalAppliedCount()}</p>
+        <p style="font-size:13px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عملية طبّقتها فعليًا (مش قراءة بس)</p>
       </div>
     </div>
 
     ${quizState ? `
       <div class="card">
         <p class="card-title" style="margin-bottom:6px;">معرفتك بربك</p>
-        <p style="font-size:12.5px; color:var(--text); margin:0;">${stateLabels[quizState]}</p>
+        <p style="font-size:15px; color:var(--text); margin:0;">${stateLabels[quizState]}</p>
       </div>` : ''}
 
-    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الروحاني بس حاليًا — تقرير شامل لكل الأركان السبعة هييجي في مرحلة لاحقة.</p>
+    <p style="font-size:12px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الروحاني بس حاليًا — تقرير شامل لكل الأركان السبعة هييجي في مرحلة لاحقة.</p>
   `;
 }
 
 async function openWorshipInsights(){
   const body = document.getElementById('worshipInsightsBody');
-  body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">جاري تحليل بياناتك...</p>`;
+  body.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">جاري تحليل بياناتك...</p>`;
   showScreen('screen-worship-insights');
 
   const uid = getUserId();
@@ -2301,7 +2307,7 @@ async function openWorshipInsights(){
   moodDocs.map(parseFirestoreDoc).filter(d => d.uid === uid && d.date).forEach(d => moodEntries.push(d));
 
   if(worship.length === 0){
-    body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">لسه معندناش بيانات كفاية — سجّل عباداتك كذا يوم وارجع تاني تشوف مؤشرك هنا.</p>`;
+    body.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">لسه معندناش بيانات كفاية — سجّل عباداتك كذا يوم وارجع تاني تشوف مؤشرك هنا.</p>`;
     return;
   }
 
@@ -2334,20 +2340,20 @@ async function openWorshipInsights(){
         <p class="card-title" style="margin-bottom:10px;">📊 لاحظنا نمط في بياناتك</p>
         <p class="layer-text">الأيام اللي صليت فيها ٤ صلوات أو أكتر، متوسط مزاجك كان <b style="color:var(--navy-dark);">${avgHigh} من ٥</b></p>
         <p class="layer-text" style="margin-top:6px;">الأيام اللي صليت فيها ٣ صلوات أو أقل، متوسط مزاجك كان <b style="color:var(--navy-dark);">${avgLow} من ٥</b></p>
-        <p style="font-size:11px; color:var(--muted); margin-top:10px;">ده نمط لاحظناه في بياناتك إنت تحديدًا، مش قاعدة عامة — يستاهل تلاحظه بنفسك وتفكّر فيه.</p>
+        <p style="font-size:13px; color:var(--muted); margin-top:10px;">ده نمط لاحظناه في بياناتك إنت تحديدًا، مش قاعدة عامة — يستاهل تلاحظه بنفسك وتفكّر فيه.</p>
       </div>`;
   } else {
     correlationHtml = `
       <div class="card">
         <p class="card-title" style="margin-bottom:8px;">📊 الربط بالمزاج</p>
-        <p style="font-size:12px; color:var(--muted); line-height:1.7;">لسه محتاجين بيانات أكتر من الفئتين (أيام التزام عالي وأيام التزام منخفض) عشان نطلعلك نمط موثوق — كمّل تسجّل مزاجك وعباداتك يوميًا وهنعرضلك هنا.</p>
+        <p style="font-size:14px; color:var(--muted); line-height:1.7;">لسه محتاجين بيانات أكتر من الفئتين (أيام التزام عالي وأيام التزام منخفض) عشان نطلعلك نمط موثوق — كمّل تسجّل مزاجك وعباداتك يوميًا وهنعرضلك هنا.</p>
       </div>`;
   }
 
   body.innerHTML = `
     <div class="card" style="text-align:center;">
-      <p style="font-size:11px; color:var(--muted); margin:0 0 6px;">مؤشر انتظامك الروحاني (آخر ٣٠ يوم)</p>
-      <p style="font-size:32px; font-weight:700; color:var(--navy-dark); margin:0;">${consistencyPct}٪</p>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 6px;">مؤشر انتظامك الروحاني (آخر ٣٠ يوم)</p>
+      <p style="font-size:38px; font-weight:700; color:var(--navy-dark); margin:0;">${consistencyPct}٪</p>
       <div style="height:6px; background:var(--sand); border-radius:3px; margin-top:10px;">
         <div style="width:${consistencyPct}%; height:100%; background:var(--gold); border-radius:3px;"></div>
       </div>
@@ -2383,12 +2389,12 @@ function renderHomeSpiritualTouch(){
   const p = getProphetOfDay();
   const asmaName = PROPHET_ASMA_MAP[p.id];
   wrap.innerHTML = `
-    <p style="font-size:11px; color:#F0EAD6; font-weight:700; margin:0 0 6px;">📖 قصة نبي اليوم — ${p.prophetTitle}</p>
-    <p style="font-size:12.5px; color:#FBF6D9; line-height:1.7; margin:0 0 10px; cursor:pointer;" onclick="openProphetOfDay()">${p.prophet.slice(0, 120)}... <span style="color:#D4AF6A;">اقرا كامل ‹</span></p>
+    <p style="font-size:13px; color:#F0EAD6; font-weight:700; margin:0 0 6px;">📖 قصة نبي اليوم — ${p.prophetTitle}</p>
+    <p style="font-size:15px; color:#FBF6D9; line-height:1.7; margin:0 0 10px; cursor:pointer;" onclick="openProphetOfDay()">${p.prophet.slice(0, 120)}... <span style="color:#D4AF6A;">اقرا كامل ‹</span></p>
     ${asmaName ? `
       <div style="border-top:1px solid rgba(255,255,255,.2); padding-top:10px; cursor:pointer;" onclick="openAsmaByName('${asmaName}')">
-        <p style="font-size:11px; color:#D4AF6A; font-weight:700; margin:0 0 4px;">📿 الاسم المرتبط: ${asmaName}</p>
-        <p style="font-size:11.5px; color:#F0EAD6; margin:0;">شوف معناه وأثره وتطبيقه العملي ‹</p>
+        <p style="font-size:13px; color:#D4AF6A; font-weight:700; margin:0 0 4px;">📿 الاسم المرتبط: ${asmaName}</p>
+        <p style="font-size:14px; color:#F0EAD6; margin:0;">شوف معناه وأثره وتطبيقه العملي ‹</p>
       </div>` : ''}
   `;
 }
@@ -2426,24 +2432,24 @@ function renderProphetsList(){
   const filtered = q ? MERAT_PATTERNS.filter(p => p.prophetTitle.includes(q) || p.title.includes(q)) : MERAT_PATTERNS;
   const readList = getReadProphets();
   if(filtered.length === 0){
-    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
     return;
   }
   wrap.innerHTML = `
-    <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">قريت ${Object.keys(readList).length} من ${MERAT_PATTERNS.length} قصة</p>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">قريت ${Object.keys(readList).length} من ${MERAT_PATTERNS.length} قصة</p>
     ${filtered.map(p => {
       const lastRead = readList[p.id];
       let badge = '';
       if(lastRead){
         const daysAgo = Math.floor((Date.now() - new Date(lastRead)) / 86400000);
         badge = daysAgo > 30
-          ? `<span style="font-size:10px; color:#8A6A1E; margin-left:6px;">🔄 راجعها تاني</span>`
-          : `<span style="font-size:11px; color:var(--gold); margin-left:6px;">✓ من ${daysAgo === 0 ? 'النهاردة' : daysAgo + ' يوم'}</span>`;
+          ? `<span style="font-size:12px; color:#8A6A1E; margin-left:6px;">🔄 راجعها تاني</span>`
+          : `<span style="font-size:13px; color:var(--gold); margin-left:6px;">✓ من ${daysAgo === 0 ? 'النهاردة' : daysAgo + ' يوم'}</span>`;
       }
       return `
       <div class="tool-row" onclick="showProphetDetail('${p.id}')">
-        <div class="icon-circle" style="font-size:15px;">📖</div>
-        <div><div class="card-title" style="font-size:13px;">${p.prophetTitle}</div></div>
+        <div class="icon-circle" style="font-size:18px;">📖</div>
+        <div><div class="card-title" style="font-size:15px;">${p.prophetTitle}</div></div>
         ${badge}
         <div class="arrow">‹</div>
       </div>`;
@@ -2457,7 +2463,7 @@ function showProphetDetail(id){
     <div class="layer-card l2">
       <p class="layer-title" style="color:#8A6A1E;">📖 ${p.prophetTitle}</p>
       <p class="layer-text" style="margin-top:8px;">${p.prophet}</p>
-      <p style="font-size:11px; color:var(--muted); margin-top:6px;">من كتاب «مرآة الأنبياء»</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:6px;">من كتاب «مرآة الأنبياء»</p>
     </div>
     <div class="layer-card l3">
       <p class="layer-title" style="color:#2E6459;">🤲 زاوية التسليم</p>
@@ -2467,8 +2473,9 @@ function showProphetDetail(id){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية</p>
       <p class="layer-text" style="color:#fff; margin-top:6px;">${p.actionStep}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; border-color:var(--gold);" onclick="markProphetApplied('${p.id}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProphetApplied('${p.id}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>` : ''}
+    ${PROPHET_ASMA_MAP[p.id] ? `<div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="openAsmaByName('${PROPHET_ASMA_MAP[p.id]}')">تعرّف على اسم الله «${PROPHET_ASMA_MAP[p.id]}» المرتبط بموقفه 📿</div>` : ''}
     <button class="btn-ghost" onclick="openProphetsScreen()">رجوع للقائمة</button>
   `;
 }
@@ -2492,7 +2499,7 @@ function openTawbaScreen(){
   body.innerHTML = `
     ${count > 0 ? `
       <div class="card" style="background:var(--sand); text-align:center;">
-        <p style="font-size:12.5px; color:var(--text); margin:0; line-height:1.7;">${count === 1 ? 'دي أول مرة بتسجّل فيها رجوعك — بداية حقيقية.' : `ده تسجيلك رقم ${count} — والاستمرار في المحاولة نفسه، حتى لو رجعت أكتر من مرة، هو قوة مش ضعف.`}</p>
+        <p style="font-size:15px; color:var(--text); margin:0; line-height:1.7;">${count === 1 ? 'دي أول مرة بتسجّل فيها رجوعك — بداية حقيقية.' : `ده تسجيلك رقم ${count} — والاستمرار في المحاولة نفسه، حتى لو رجعت أكتر من مرة، هو قوة مش ضعف.`}</p>
       </div>
     ` : ''}
     <div class="layer-card l2">
@@ -2500,11 +2507,11 @@ function openTawbaScreen(){
       <p class="layer-text" style="margin-top:8px;">${adam.prophet}</p>
     </div>
     <div class="card" style="background:var(--navy-dark);">
-      <p style="color:var(--gold); font-size:13px; font-weight:700; margin:0 0 4px;">اعترافك بينك وبين ربك</p>
-      <p style="color:#9FB3AE; font-size:10.5px; margin:0 0 8px;">🔒 اللي بتكتبه هنا خاص بينك وبين ربك ومحفوظ في حسابك بس — محدش تاني بيشوفه.</p>
+      <p style="color:var(--gold); font-size:15px; font-weight:700; margin:0 0 4px;">اعترافك بينك وبين ربك</p>
+      <p style="color:#9FB3AE; font-size:12px; margin:0 0 8px;">🔒 اللي بتكتبه هنا خاص بينك وبين ربك ومحفوظ في حسابك بس — محدش تاني بيشوفه.</p>
       <textarea id="tawbaInput" placeholder="اكتب اللي حاسس إنك عايز تعترف بيه وترجع فيه لله..." style="min-height:70px; background:rgba(255,255,255,.05); color:#fff; border-color:var(--gold);"></textarea>
       <button class="btn-primary" style="margin-top:8px;" onclick="saveTawba()">سجّل واستغفر</button>
-      <p id="tawbaStatus" style="font-size:11px; color:#9FB3AE; margin-top:8px; text-align:center;"></p>
+      <p id="tawbaStatus" style="font-size:13px; color:#9FB3AE; margin-top:8px; text-align:center;"></p>
     </div>
     <div id="tawbaResultWrap"></div>
   `;
@@ -2561,7 +2568,7 @@ async function saveTawba(){
     if(repeatCount >= 3){
       matchedHtml += `
         <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-top:14px;">
-          <p style="font-size:12px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن "${c.label}" رجع معاك كذا مرة قريّب من بعض. ده مش انتقاد، لكن أحيانًا النمط المتكرر محتاج مساحة أعمق نتكلم فيها — تحب تحكي عن اللي بيحصل بالتفصيل؟</p>
+          <p style="font-size:14px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن "${c.label}" رجع معاك كذا مرة قريّب من بعض. ده مش انتقاد، لكن أحيانًا النمط المتكرر محتاج مساحة أعمق نتكلم فيها — تحب تحكي عن اللي بيحصل بالتفصيل؟</p>
           <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startEhkily()">احكيلي عن اللي بيحصل ←</div>
         </div>`;
     }
@@ -2571,8 +2578,8 @@ async function saveTawba(){
     ${matchedHtml}
     ${prophetHtml}
     <div class="layer-card l3" style="text-align:center; padding:20px 16px; margin-top:14px;">
-      <p style="font-size:11px; color:var(--muted); margin:0 0 8px;">استغفارك دلوقتي</p>
-      <p style="font-size:15px; font-weight:700; color:var(--navy-dark); line-height:1.9; margin:0;">أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ</p>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 8px;">استغفارك دلوقتي</p>
+      <p style="font-size:18px; font-weight:700; color:var(--navy-dark); line-height:1.9; margin:0;">أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ</p>
     </div>
     <div style="display:flex; gap:8px; margin-top:14px;">
       <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openWorshipScreen()">سجّل استغفار/قيام في عباداتك ←</div>
@@ -2594,13 +2601,13 @@ function renderFlashList(){
   const filtered = q ? FLASH_BANK.filter(f => f.title.includes(q)) : FLASH_BANK;
 
   if(filtered.length === 0){
-    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
     return;
   }
   wrap.innerHTML = filtered.map(f => `
     <div class="tool-row" onclick="showFlashDetail(${f.id})">
-      <div class="icon-circle" style="width:36px; height:36px; font-size:15px;">✨</div>
-      <div><div class="card-title" style="font-size:13px;">${f.title}</div></div>
+      <div class="icon-circle" style="width:36px; height:36px; font-size:18px;">✨</div>
+      <div><div class="card-title" style="font-size:15px;">${f.title}</div></div>
       <div class="arrow">‹</div>
     </div>
   `).join('');
@@ -2613,7 +2620,7 @@ function showFlashDetail(id){
     <div class="layer-card l3">
       <p class="layer-title" style="color:var(--navy-dark);">✨ ${f.title}</p>
       <p class="layer-text" style="margin-top:8px;">${f.script}</p>
-      <p style="font-size:11px; color:var(--muted); margin-top:8px;">${f.ref}</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:8px;">${f.ref}</p>
     </div>
     <button class="btn-ghost" onclick="renderFlashList()">رجوع للقائمة</button>
   `;
@@ -2630,9 +2637,9 @@ function renderHomeDailyFlash(){
   if(!wrap) return;
   const f = getDailyFlash();
   wrap.innerHTML = `
-    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">✨ ومضة اليوم — ${f.title}</p>
-    <p style="font-size:12.5px; color:#F0EAD6; line-height:1.7; margin:0;">${f.script}</p>
-    <p style="font-size:10.5px; color:#9FB3AE; margin:6px 0 0;">${f.ref}</p>
+    <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">✨ ومضة اليوم — ${f.title}</p>
+    <p style="font-size:15px; color:#F0EAD6; line-height:1.7; margin:0;">${f.script}</p>
+    <p style="font-size:12px; color:#9FB3AE; margin:6px 0 0;">${f.ref}</p>
   `;
 }
 
@@ -3116,7 +3123,7 @@ const MERAT_PATTERNS = [
 function startMerat(){
   const body = document.getElementById('meratBody');
   body.innerHTML = `
-    <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">اختار النمط الأقرب لإحساسك دلوقتي:</p>
+    <p style="font-size:15px; color:var(--muted); margin-bottom:14px;">اختار النمط الأقرب لإحساسك دلوقتي:</p>
     ${MERAT_PATTERNS.map(p => `
       <div class="tool-row" onclick="showMeratResult('${p.id}')">
         <div class="icon-circle">${p.icon}</div>
@@ -3146,12 +3153,12 @@ function showMeratResult(id){
     <div class="layer-card l2">
       <p class="layer-title" style="color:#8A6A1E;">📖 ${p.prophetTitle}</p>
       <p class="layer-text">${p.prophet}</p>
-      <p style="font-size:11px; color:var(--muted); margin-top:6px;">من كتاب «مرآة الأنبياء»</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:6px;">من كتاب «مرآة الأنبياء»</p>
     </div>
     <div class="layer-card l3">
       <p class="layer-title" style="color:#2E6459;">🤲 زاوية التسليم</p>
       <p class="layer-text">${p.submission}</p>
-      <p style="font-size:11px; color:var(--muted); margin-top:6px;">من كتاب «بوصلة التسليم»</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:6px;">من كتاب «بوصلة التسليم»</p>
     </div>
     ${p.actionStep ? `
     <div class="layer-card" style="background:var(--navy-dark);">
@@ -3191,20 +3198,20 @@ const LEVEL_STYLE = {
 function startTabiei(){
   const body = document.getElementById('tabieiBody');
   body.innerHTML = `
-    <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">اختار سؤال قريب من اللي في دماغك:</p>
+    <p style="font-size:15px; color:var(--muted); margin-bottom:14px;">اختار سؤال قريب من اللي في دماغك:</p>
     ${TABIEI_QUESTIONS.map((item,i) => `
       <div class="card" style="cursor:pointer;" onclick="revealTabiei(${i})">
         <p class="card-title">${item.q}</p>
         <div id="tabiei-a-${i}" style="display:none; margin-top:8px;">
           ${item.level !== 'urgent' ? `
-            <span style="display:inline-block; font-size:10px; font-weight:700; padding:3px 10px; border-radius:12px; margin-bottom:6px; color:${LEVEL_STYLE[item.level].color}; background:${LEVEL_STYLE[item.level].bg};">${LEVEL_STYLE[item.level].label}</span>
+            <span style="display:inline-block; font-size:12px; font-weight:700; padding:3px 10px; border-radius:12px; margin-bottom:6px; color:${LEVEL_STYLE[item.level].color}; background:${LEVEL_STYLE[item.level].bg};">${LEVEL_STYLE[item.level].label}</span>
             <p class="card-sub" style="line-height:1.7;">${item.a}</p>
             ${item.related ? `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="event.stopPropagation(); openMeratPattern('${item.related}')">شوف تحليل أعمق في مرآة العقل ←</div>` : ''}
           ` : ''}
         </div>
       </div>
     `).join('')}
-    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:10px;">هذه الإجابات لا تُعد تشخيصًا طبيًا نهائيًا</p>
+    <p style="font-size:13px; color:var(--muted); text-align:center; margin-top:10px;">هذه الإجابات لا تُعد تشخيصًا طبيًا نهائيًا</p>
   `;
   showScreen('screen-tabiei');
 }
@@ -3241,7 +3248,7 @@ function generateReport(){
       <p class="card-sub" style="color:#DCE6E4;">الأعراض: ${r2}</p>
       <p class="card-sub" style="color:#DCE6E4;">التأثير: ${r3}</p>
     </div>
-    <p style="font-size:11px; color:var(--muted); margin-top:8px;">يمكنك مشاركة هذا التقرير مع المتخصص عند الزيارة.</p>
+    <p style="font-size:13px; color:var(--muted); margin-top:8px;">يمكنك مشاركة هذا التقرير مع المتخصص عند الزيارة.</p>
   `;
 }
 
@@ -3307,9 +3314,9 @@ function showMoodSubChoices(primary){
       <p class="card-sub" style="margin-bottom:10px;">${info.emoji} حاسس إنك <b style="color:var(--text);">${info.label}</b> — اختار الأقرب لإحساسك بالظبط:</p>
       <div style="display:flex; flex-wrap:wrap; gap:8px;">
         ${subs.map((s, i) => `
-          <div class="choice-btn" style="margin:0; padding:8px 14px; font-size:12.5px;" onclick="pickSubMood(${primary}, ${i})">${s.label}</div>
+          <div class="choice-btn" style="margin:0; padding:8px 14px; font-size:15px;" onclick="pickSubMood(${primary}, ${i})">${s.label}</div>
         `).join('')}
-        <div class="choice-btn" style="margin:0; padding:8px 14px; font-size:12.5px; opacity:.75;" onclick="pickSubMood(${primary}, -1)">حاجة تانية غير كده</div>
+        <div class="choice-btn" style="margin:0; padding:8px 14px; font-size:15px; opacity:.75;" onclick="pickSubMood(${primary}, -1)">حاجة تانية غير كده</div>
       </div>
     </div>`;
   feedback.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -3387,7 +3394,7 @@ async function saveMoodWithNote(){
   renderJournalHistory();
 
   const feedback = document.getElementById('moodFeedback');
-  feedback.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:8px 0;">${ok ? '✅ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس (مشكلة في الاتصال)'}</p>`;
+  feedback.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:8px 0;">${ok ? '✅ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس (مشكلة في الاتصال)'}</p>`;
 }
 
 async function saveJournal(){
@@ -3447,10 +3454,10 @@ function saveStickyPrompt(inputId, chooserId){
   const chooser = document.getElementById(chooserId);
   chooser.innerHTML = `
     <div class="card" style="background:var(--navy-dark); margin-top:10px;">
-      <p style="color:var(--gold); font-size:12px; font-weight:700; margin:0 0 10px;">تحب تحفظها فين؟</p>
+      <p style="color:var(--gold); font-size:14px; font-weight:700; margin:0 0 10px;">تحب تحفظها فين؟</p>
       <div style="display:flex; gap:8px;">
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky('${inputId}','${chooserId}', true)">في مرآتي اليومية</div>
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; border-color:var(--gold);" onclick="finalizeSticky('${inputId}','${chooserId}', false)">في الملاحظات بس</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="finalizeSticky('${inputId}','${chooserId}', true)">في مرآتي اليومية</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="finalizeSticky('${inputId}','${chooserId}', false)">في الملاحظات بس</div>
       </div>
     </div>`;
 }
@@ -3488,8 +3495,8 @@ function renderStickyNotes(targetId, limit){
   if(notes.length === 0){ wrap.innerHTML = ''; return; }
   wrap.innerHTML = notes.slice(0, limit || 10).map(n => `
     <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; padding:10px 14px; margin-bottom:6px;">
-      <p style="font-size:11px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
-      <p style="font-size:12.5px; color:var(--text); margin:0;">${n.text}</p>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
+      <p style="font-size:15px; color:var(--text); margin:0;">${n.text}</p>
     </div>`).join('');
 }
 
@@ -3508,7 +3515,7 @@ function renderNotificationsPanel(){
   const tasks = getTasksForDate(key).filter(t => t.time).sort((a,b) => a.time.localeCompare(b.time));
 
   if(tasks.length === 0){
-    body.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:24px 0;">مفيش تنبيهات مهام النهاردة</p>`;
+    body.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:24px 0;">مفيش تنبيهات مهام النهاردة</p>`;
     return;
   }
   const now = new Date();
@@ -3518,10 +3525,10 @@ function renderNotificationsPanel(){
     const isPast = t.time <= nowHHMM;
     return `
       <div class="card" style="display:flex; align-items:center; gap:10px;">
-        <div class="icon-circle" style="width:34px; height:34px; font-size:15px;">${t.done ? '✅' : (isPast ? '⏰' : '🕐')}</div>
+        <div class="icon-circle" style="width:34px; height:34px; font-size:18px;">${t.done ? '✅' : (isPast ? '⏰' : '🕐')}</div>
         <div style="flex:1;">
-          <p style="font-size:13px; font-weight:700; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
-          <p style="font-size:11px; color:var(--muted); margin:2px 0 0;">الساعة ${t.time}${isPast && !t.done ? ' — فات ميعادها' : ''}</p>
+          <p style="font-size:15px; font-weight:700; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
+          <p style="font-size:13px; color:var(--muted); margin:2px 0 0;">الساعة ${t.time}${isPast && !t.done ? ' — فات ميعادها' : ''}</p>
         </div>
       </div>`;
   }).join('');
@@ -3570,7 +3577,7 @@ function renderTaskCalendar(){
     const hasTasks = getTasksForDate(key).length > 0;
     const isToday = key === todayKey;
     const isSelected = key === selectedKey;
-    let style = 'text-align:center; padding:6px 0; border-radius:8px; cursor:pointer; font-size:12px; position:relative;';
+    let style = 'text-align:center; padding:6px 0; border-radius:8px; cursor:pointer; font-size:14px; position:relative;';
     if(isSelected) style += 'background:var(--gold); color:var(--navy-dark); font-weight:700;';
     else if(isToday) style += 'border:1px solid var(--gold); color:var(--text);';
     else style += 'color:var(--text);';
@@ -3581,11 +3588,11 @@ function renderTaskCalendar(){
   wrap.innerHTML = `
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <div onclick="changeCalendarMonth(-1)" style="cursor:pointer; font-size:16px; color:var(--gold); padding:0 6px;">›</div>
-        <p style="font-weight:700; font-size:13px; margin:0; color:var(--text);">${ARABIC_MONTHS[month]} ${year}</p>
-        <div onclick="changeCalendarMonth(1)" style="cursor:pointer; font-size:16px; color:var(--gold); padding:0 6px;">‹</div>
+        <div onclick="changeCalendarMonth(-1)" style="cursor:pointer; font-size:19px; color:var(--gold); padding:0 6px;">›</div>
+        <p style="font-weight:700; font-size:15px; margin:0; color:var(--text);">${ARABIC_MONTHS[month]} ${year}</p>
+        <div onclick="changeCalendarMonth(1)" style="cursor:pointer; font-size:19px; color:var(--gold); padding:0 6px;">‹</div>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:10px; color:var(--muted); margin-bottom:4px; text-align:center;">
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:12px; color:var(--muted); margin-bottom:4px; text-align:center;">
         <div>أحد</div><div>اثن</div><div>ثلا</div><div>أرب</div><div>خمي</div><div>جمعة</div><div>سبت</div>
       </div>
       <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px;">${cells}</div>
@@ -3608,17 +3615,17 @@ function renderTaskList(){
   const tasks = getTasksForDate(key).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
   const wrap = document.getElementById('taskListWrap');
   if(tasks.length === 0){
-    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:14px 0;">مفيش مهام في اليوم ده</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:14px 0;">مفيش مهام في اليوم ده</p>`;
     return;
   }
   wrap.innerHTML = tasks.map(t => `
     <div class="card" style="display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:8px;">
-      <div onclick="toggleTaskDone('${t.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <div onclick="toggleTaskDone('${t.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:15px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
       <div style="flex:1;">
-        <p style="font-size:13px; font-weight:600; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
-        ${t.time ? `<p style="font-size:11px; color:var(--muted); margin:2px 0 0;">🕐 ${t.time}</p>` : ''}
+        <p style="font-size:15px; font-weight:600; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
+        ${t.time ? `<p style="font-size:13px; color:var(--muted); margin:2px 0 0;">🕐 ${t.time}</p>` : ''}
       </div>
-      <div onclick="deleteTask('${t.id}')" style="cursor:pointer; color:var(--danger); font-size:18px; padding:0 4px;">×</div>
+      <div onclick="deleteTask('${t.id}')" style="cursor:pointer; color:var(--danger); font-size:21px; padding:0 4px;">×</div>
     </div>`).join('');
 }
 
@@ -3659,14 +3666,14 @@ function renderHomeTasksPreview(){
   const key = formatDateKey(new Date());
   const tasks = getTasksForDate(key).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
   if(tasks.length === 0){
-    wrap.innerHTML = `<p style="font-size:11.5px; color:var(--muted); text-align:center; padding:6px 0;">مفيش مهام مسجّلة النهاردة</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:6px 0;">مفيش مهام مسجّلة النهاردة</p>`;
     return;
   }
   wrap.innerHTML = tasks.map(t => `
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #F0EDE2;">
-      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:11px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
-      <p style="font-size:12px; margin:0; flex:1; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
-      ${t.time ? `<span style="font-size:10px; color:var(--muted);">🕐 ${t.time}</span>` : ''}
+      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <p style="font-size:14px; margin:0; flex:1; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
+      ${t.time ? `<span style="font-size:12px; color:var(--muted);">🕐 ${t.time}</span>` : ''}
     </div>`).join('');
 }
 
@@ -3757,7 +3764,7 @@ function parseFirestoreDoc(doc){
 
 async function loadFullHistory(){
   const wrap = document.getElementById('fullHistoryWrap');
-  wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">جاري التحميل من Firebase...</p>`;
+  wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل من Firebase...</p>`;
 
   const uid = getUserId();
   const [journalDocs, moodDocs] = await Promise.all([
@@ -3775,7 +3782,7 @@ async function loadFullHistory(){
   moodDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'mood'}));
 
   if(entries.length === 0){
-    wrap.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center;">مفيش سجل محفوظ على Firebase لحد دلوقتي (أو تعذّر الاتصال).</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش سجل محفوظ على Firebase لحد دلوقتي (أو تعذّر الاتصال).</p>`;
     return;
   }
 
@@ -3800,21 +3807,21 @@ async function loadFullHistory(){
       <p class="card-title" style="margin-bottom:8px;">📅 سنة ${y}</p>
       ${Object.keys(tree[y]).sort((a,b) => b - a).map(m => `
         <div style="margin-bottom:8px; padding-right:8px; border-right:2px solid #EFDBAE;">
-          <p style="font-size:13px; font-weight:600; color:var(--navy-dark); margin:6px 0;">${ARABIC_MONTHS[m]}</p>
+          <p style="font-size:15px; font-weight:600; color:var(--navy-dark); margin:6px 0;">${ARABIC_MONTHS[m]}</p>
           ${Object.keys(tree[y][m]).sort((a,b) => b - a).map(day => `
             <div style="margin-bottom:6px; padding-right:8px;">
-              <p style="font-size:12px; font-weight:600; color:var(--muted); margin:0 0 4px;">يوم ${day}</p>
+              <p style="font-size:14px; font-weight:600; color:var(--muted); margin:0 0 4px;">يوم ${day}</p>
               ${tree[y][m][day].map(e => {
                 if(e.type === 'mood'){
                   const info = MOOD_INFO[e.mood];
                   const noteText = (e.note && e.note !== '(بدون كتابة)') ? ' — 📝 ' + e.note : '';
                   const shownLabel = e.subLabel || (info ? info.label : String(e.mood));
-                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">${info ? info.emoji : ''} ${shownLabel}${noteText}</div>`;
+                  return `<div style="font-size:14px; color:var(--text); padding:3px 0;">${info ? info.emoji : ''} ${shownLabel}${noteText}</div>`;
                 }
                 if(e.type === 'sticky'){
-                  return `<div style="font-size:12px; color:var(--text); padding:3px 0;">📌 ${e.note}</div>`;
+                  return `<div style="font-size:14px; color:var(--text); padding:3px 0;">📌 ${e.note}</div>`;
                 }
-                return `<div style="font-size:12px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
+                return `<div style="font-size:14px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
               }).join('')}
             </div>
           `).join('')}
