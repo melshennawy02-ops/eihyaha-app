@@ -2813,6 +2813,25 @@ function renderSelfKnowContent(dominant){
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
 
+    <div id="woundSection">${renderWoundEntryPoint()}</div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+      <span style="font-size:14px;">🎭</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">قيّم علاقتك — علامات المنافق والمثلث المظلم</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">صاحب، شريك حياة، حتى زميل شغل — قيّم أي علاقة بمقياس نبوي بسيط: هل الكلام بيتطابق مع الفعل؟</p>
+    <div id="darkTriadSection">
+      <div class="choice-btn" style="text-align:center;" onclick="startDarkTriadTool()">ابدأ التقييم 🎭</div>
+    </div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+
+    <div id="healingChallengeSection">${renderHealingEntryPoint()}</div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
       <span style="font-size:14px;">✍️</span>
       <p style="font-size:14px; font-weight:700; margin:0;">حاجة عن نفسك مش فاهمها؟ اكتبها</p>
@@ -2971,6 +2990,309 @@ function renderMbtiEntryPoint(){
     </div>
     <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">اختبار ٨ أسئلة سريع يوريك نمط شخصيتك من ١٦ نمط، وإزاي ده ممكن يفيدك في علاقاتك ومجال شغلك.</p>
     <div class="choice-btn" style="text-align:center;" onclick="startMbtiTest()">ابدأ اختبار نمط الشخصية 🧩</div>
+  `;
+}
+
+// ================= الاختيار الخفي: جرح الأم وجرح الأب =================
+// مبني على كتاب "الاختيار الخفي" — كوتش محمد الشناوي
+const WOUND_QUESTIONS = [
+  { type:'mom', q:"لما كنت بتحتاج حضن أو كلمة حنان من أمك وانت صغير، كان بيحصل إيه غالبًا؟", options:[
+    { label:"كانت موجودة ومحتضناني بسهولة", score:0 },
+    { label:"كانت موجودة بس مش معبّرة كتير عن مشاعرها", score:1 },
+    { label:"كانت غايبة عاطفيًا، أو ناقدة، أو قلقانة بشكل بيخنقني", score:2 },
+  ]},
+  { type:'mom', q:"هل حسّيت إن حب أمك ليك كان مشروط بحاجة (شطارة، هدوء، مذاكرة)؟", options:[
+    { label:"لأ، كنت حاسس إني محبوب لمجرد إني موجود", score:0 },
+    { label:"أحيانًا حسّيت كده", score:1 },
+    { label:"آه، كان لازم أستاهل الحب ده بحاجة", score:2 },
+  ]},
+  { type:'mom', q:"لغاية دلوقتي، بيجيلك جوّاك سؤال زي: «هل أنا محبوب لمجرد إني موجود؟»", options:[
+    { label:"لأ، مش سؤال بيشغلني خالص", score:0 },
+    { label:"بيجيلي أحيانًا", score:1 },
+    { label:"آه، السؤال ده بيفضل شغال جوايا", score:2 },
+  ]},
+  { type:'dad', q:"أبوك (أو اللي قام بدوره)، كان بيسمع رأيك ويحترمه وانت صغير؟", options:[
+    { label:"آه، كان بيسألني رأيي فعلًا", score:0 },
+    { label:"أحيانًا، بس مش دايمًا", score:1 },
+    { label:"لأ، رأيه هو بس اللي كان بيتسمع", score:2 },
+  ]},
+  { type:'dad', q:"فاكر كلمة «أنا فخور بيك» من أبوك بشكل مباشر؟", options:[
+    { label:"آه، كتير", score:0 },
+    { label:"مرة أو اتنين بس", score:1 },
+    { label:"لأ، مش فاكر إنه قالها", score:2 },
+  ]},
+  { type:'dad', q:"لغاية دلوقتي، بتحس إنك لازم تثبت نفسك وتنجز عشان تستاهل تقدير؟", options:[
+    { label:"لأ، مرتاح لإنجازاتي من غير ما أثبت حاجة", score:0 },
+    { label:"أحيانًا", score:1 },
+    { label:"آه، حاسس إني لازم أثبت نفسي طول الوقت", score:2 },
+  ]},
+];
+
+const WOUND_CONTENT = {
+  mom: {
+    title:"جرح الأم",
+    def:"الأثر النفسي اللي بيتكوّن لما الطفل ميلاقيش من أمه الاحتضان العاطفي والقبول غير المشروط في السنين الأولى — حتى لو الأصل، زي ما القرآن وضّح، إن الأم بتدفع من ذاتها بلا حدود («حملته أمه وهنًا على وهن»).",
+    behavior:"بيظهر في نمطين: إما الإرضاء المستمر (فرط عطاء عاطفي، صعب تقول «لأ»، بتحس إنك لازم «تستاهل» الحب)، أو الاكتفاء الذاتي القسري (بتقفل باب الاحتياج تمامًا وتقنع نفسك إنك «مش محتاج حد»).",
+    attraction:"بتنجذب من غير وعي لطرف بارد أو صعب المنال، أو طرف متملّك ومسيطر — لأن ده «مألوف»، مش لأنه صحي. العقل الباطن بيفضّل المألوف على الصح (التكرار القهري).",
+    attachment:"غالبًا نمط ارتباط قلق (خايف من الهجر، محتاج تطمين مستمر) أو متجنّب (بيبني حيطان عاطفية عشان محدش يوجعه تاني).",
+  },
+  dad: {
+    title:"جرح الأب",
+    def:"الأثر النفسي المرتبط بغياب التقدير والتوجيه والاحترام من الأب — مش شرط غياب جسدي، ممكن يكون أب موجود بس نقّاد أو بيقيس قيمتك بالإنجاز بس. عكسه نموذج سيدنا إبراهيم مع إسماعيل: «فانظر ماذا ترى».",
+    behavior:"بيظهر في نمطين: إما الإفراط في الإنجاز (بتثبت نفسك باستمرار، وكل إنجاز بيدّي راحة مؤقتة وبترجع نفس الفجوة)، أو التمرد على أي سلطة (رفض غير واعي لأي حد بيمثّل «طاقة الأب الناقد»).",
+    attraction:"بتنجذب لناس ناقدة أو صعب ترضى (بتحاول تكسب موافقة اتحرمت منها)، أو لناس غايبة أو نصف موجودة.",
+    attachment:"بيتحرك غالبًا من مكان «إثبات» مش «طمأنينة» — سواء في الشغل أو في العلاقات.",
+  },
+};
+
+let woundAnswers = [];
+function startWoundQuiz(){
+  woundAnswers = [];
+  renderWoundQuestion(0);
+}
+function renderWoundQuestion(index){
+  const wrap = document.getElementById('woundSection');
+  if(index >= WOUND_QUESTIONS.length){ revealWoundResult(); return; }
+  const q = WOUND_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${WOUND_QUESTIONS.length} — الاختيار الخفي</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWound(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerWound(qIndex, oIndex){
+  const q = WOUND_QUESTIONS[qIndex];
+  woundAnswers.push({ type:q.type, score:q.options[oIndex].score });
+  renderWoundQuestion(qIndex + 1);
+}
+function revealWoundResult(){
+  const momScore = woundAnswers.filter(a => a.type==='mom').reduce((s,a)=>s+a.score,0);
+  const dadScore = woundAnswers.filter(a => a.type==='dad').reduce((s,a)=>s+a.score,0);
+  const result = { mom:momScore, dad:dadScore, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_wound_result', JSON.stringify(result));
+  renderWoundResult(result);
+}
+function renderWoundResult(result){
+  const wrap = document.getElementById('woundSection');
+  const showMom = result.mom >= 2;
+  const showDad = result.dad >= 2;
+  let html = '';
+  if(!showMom && !showDad){
+    html += `
+      <div class="layer-card l3">
+        <p class="layer-title" style="color:var(--navy-dark);">🌱 فطرتك في المنطقة دي سليمة إلى حد كبير</p>
+        <p class="layer-text" style="margin-top:6px;">إجاباتك بتقول إن علاقتك بأبويك كانت مصدر أمان غالبًا، مش جرح. «لا تبديل لخلق الله» — استمر تراقب نفسك، ده مش معناه إنك في مأمن دايمًا من التكرار في علاقاتك.</p>
+      </div>`;
+  }
+  [['mom', showMom], ['dad', showDad]].forEach(([key, show]) => {
+    if(!show) return;
+    const c = WOUND_CONTENT[key];
+    html += `
+      <div class="layer-card l2" style="margin-top:10px;">
+        <p class="layer-title" style="color:#8A6A1E;">${key==='mom'?'💛':'💙'} ${c.title}</p>
+        <p class="layer-text" style="margin-top:6px;">${c.def}</p>
+      </div>
+      <div class="layer-card l1">
+        <p class="layer-title" style="color:var(--navy-dark);">أثره على سلوكك غالبًا</p>
+        <p class="layer-text" style="margin-top:6px;">${c.behavior}</p>
+      </div>
+      <div class="layer-card l1">
+        <p class="layer-title" style="color:var(--navy-dark);">انجذابك من غير وعي</p>
+        <p class="layer-text" style="margin-top:6px;">${c.attraction}</p>
+      </div>
+      <div class="layer-card l3">
+        <p class="layer-title" style="color:var(--navy-dark);">نمط الارتباط الأقرب لك</p>
+        <p class="layer-text" style="margin-top:6px;">${c.attachment}</p>
+      </div>`;
+  });
+  html += `
+    <div class="layer-card l2" style="margin-top:10px; background:#E6F0EE; border-color:#C7DED9;">
+      <p class="layer-title" style="color:var(--navy-dark);">✨ خطوة الشفاء الأولى</p>
+      <p class="layer-text" style="margin-top:6px;">التسمية مش اتهام، هي تشخيص. جرب دلوقتي تكمّل الجملة: «أنا لاحظت إني بميل لـ...» — والخطوة اللي بعدها المحاسبة من غير جلد للذات، وبعدين مسامحة الأبوين: «أنا فاهم إنكم اتصرفتوا من مكان جرحكم إنتوا، وأنا مش هسيب جرحكم يبقى جرحي طول عمري».</p>
+      <p style="font-size:10.5px; color:var(--muted); margin:8px 0 0;">الجرح مش هويتك. الجرح طبقة اتحطت فوق فطرة سليمة، وممكن تتشال.</p>
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startWoundQuiz()">🔄 أعد التقييم</div>
+  `;
+  wrap.innerHTML = html;
+}
+function renderWoundEntryPoint(){
+  const saved = localStorage.getItem('eihyaha_wound_result');
+  if(saved){
+    setTimeout(() => renderWoundResult(JSON.parse(saved)), 0);
+    return '';
+  }
+  return `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+      <span style="font-size:14px;">🗝️</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">الاختيار الخفي: جرح الأم وجرح الأب</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">ليه بتكرر نفس نوع العلاقات اللي بتوجعك؟ ٦ أسئلة تكشفلك أثر جروح الطفولة على اختيارك لأصحابك وشريك حياتك.</p>
+    <div class="choice-btn" style="text-align:center;" onclick="startWoundQuiz()">ابدأ رحلة الاختيار الخفي 🗝️</div>
+  `;
+}
+
+// ================= قيّم علاقتك — علامات المنافق والمثلث المظلم =================
+const DARK_TRIAD_QUESTIONS = [
+  "بيوعد ومايوفيش بوعده باستمرار؟",
+  "بيتكلم بيكدب حتى في حاجات بسيطة؟",
+  "لو ائتمنته على سر أو مسؤولية، بيخونها؟",
+  "لو حصل خلاف بينكم، بيبالغ ويشوّه الموقف عشان يظهر إنه المظلوم؟",
+  "قدام الناس شخص، وفي الخفا معاك شخص تاني تمامًا؟",
+  "أي إنجاز ليك بيتقابل منه بتقليل أو تجاهل؟",
+  "بيستخدم المديح والكلام الحلو كأداة يتحكم بيها فيك وقت ما يحتاج؟",
+  "بتحس بذنب مش فاهم مصدره بعد أي خلاف معاه، حتى لو مش غلطان؟",
+];
+const DARK_TRIAD_OPTIONS = [
+  { label:"نادرًا أو أبدًا", score:0 },
+  { label:"بيحصل أحيانًا", score:1 },
+  { label:"بيحصل كتير وبشكل متكرر", score:2 },
+];
+let darkTriadIndex = 0, darkTriadScore = 0, darkTriadPersonName = '';
+function startDarkTriadTool(){
+  const wrap = document.getElementById('darkTriadSection');
+  wrap.innerHTML = `
+    <p style="font-size:12px; color:var(--muted); margin-bottom:8px; line-height:1.7;">فكّر في شخص معيّن (صاحب، شريك حياة...) وانت بتجاوب. ملاحظة: الهدف إنك تراقب النمط، مش إنك تطلق تشخيص نهائي — ده مش دورك ولا دورنا.</p>
+    <input type="text" id="darkTriadName" placeholder="اسم الشخص (اختياري)..." style="margin-bottom:10px;">
+    <div class="choice-btn" style="text-align:center;" onclick="beginDarkTriadQuiz()">ابدأ التقييم</div>
+  `;
+}
+function beginDarkTriadQuiz(){
+  darkTriadPersonName = document.getElementById('darkTriadName').value.trim();
+  darkTriadIndex = 0; darkTriadScore = 0;
+  renderDarkTriadQuestion();
+}
+function renderDarkTriadQuestion(){
+  const wrap = document.getElementById('darkTriadSection');
+  if(darkTriadIndex >= DARK_TRIAD_QUESTIONS.length){ revealDarkTriadResult(); return; }
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${darkTriadIndex+1} من ${DARK_TRIAD_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${DARK_TRIAD_QUESTIONS[darkTriadIndex]}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${DARK_TRIAD_OPTIONS.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerDarkTriad(${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerDarkTriad(oIndex){
+  darkTriadScore += DARK_TRIAD_OPTIONS[oIndex].score;
+  darkTriadIndex++;
+  renderDarkTriadQuestion();
+}
+function revealDarkTriadResult(){
+  const wrap = document.getElementById('darkTriadSection');
+  let level, text, cardClass;
+  if(darkTriadScore <= 4){
+    level = "مفيش مؤشرات قوية دلوقتي"; cardClass='l1';
+    text = "إجاباتك مبتوريش نمط خطر واضح. استمر تراقب، والمقياس النبوي بسيط: هل الكلام بيتطابق مع الفعل؟";
+  } else if(darkTriadScore <= 9){
+    level = "فيه أنماط تستاهل انتباه"; cardClass='l2';
+    text = "العلاقة دي فيها بعض علامات «آية المنافق» بشكل متكرر. مش لازم يبقى تشخيص، لكن يستاهل تراقب النمط بمرور الوقت مش موقف واحد.";
+  } else {
+    level = "علامات إنذار واضحة ومتكررة"; cardClass='l3';
+    text = "العلامات دي متكررة وواضحة، وده يستحق وقفة جدية مع نفسك عن العلاقة دي. لو حسّيت إنها بتأثر عليك نفسيًا بشكل كبير، التكلم مع مختص خطوة مهمة.";
+  }
+  wrap.innerHTML = `
+    <div class="layer-card ${cardClass}">
+      <p class="layer-title" style="color:var(--navy-dark);">${darkTriadPersonName ? 'بخصوص: ' + darkTriadPersonName : 'نتيجة التقييم'}</p>
+      <p class="layer-text" style="margin-top:6px; font-weight:700;">${level}</p>
+      <p class="layer-text" style="margin-top:6px;">${text}</p>
+    </div>
+    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin:8px 0;">التشخيص الإكلينيكي مش دورنا — الهدف نبقى أكتر وعي، مش نلصق لافتات على ناس حوالينا.</p>
+    <div class="choice-btn" style="text-align:center;" onclick="startDarkTriadTool()">🔄 قيّم علاقة تانية</div>
+  `;
+}
+
+// ================= خطة الشفاء — ٣٠ يوم =================
+const HEALING_30_DAYS = [
+  {week:1, title:"الفطرة والنفس", days:[
+    "اكتب إجابتك الصادقة لسؤال: مين أنا من غير أي لقب؟",
+    "لاحظ خلال يومك: إمتى كنت بتتصرف من النفس الأمّارة، ومتى من اللوّامة؟",
+    "اقرأ آية الروم (٣٠) وتأمل فيها ١٠ دقايق",
+    "اكتب ٣ لحظات حسيت فيها بسكينة حقيقية الأسبوع ده",
+    "راجع حديث الفطرة، واكتب: إيه اللي اتحط فوق فطرتي السليمة؟",
+    "مفيش مهمة كتابة — بس راقب نفسك في صمت",
+    "لخّص الأسبوع في ٣ جمل",
+  ]},
+  {week:2, title:"جذور الجرح", days:[
+    "اكتب تعريفك لجرح الأم بكلماتك إنت",
+    "اكتب تعريفك لجرح الأب بكلماتك إنت",
+    "حدد نمط سلوكي واحد فيك بيتكرر من زمان، وحاول تربطه بجرح",
+    "اسأل نفسك: هل بتنجذب لأنماط «مألوفة» مش «صحية»؟",
+    "راجع علامات المنافق الخمسة، وقيّم بيها علاقة مهمة في حياتك",
+    "اكتب خطاب (مش هتبعته بالضرورة) لأمك أو أبوك تعبّر فيه عن الجرح",
+    "لخّص الأسبوع في ٣ جمل",
+  ]},
+  {week:3, title:"الأصدقاء وشريك الحياة", days:[
+    "راجع قائمة أقرب ٥ أصدقاء ليك بمقياس «المعروف» مش «المألوف»",
+    "حدد صداقة واحدة بتوجعك أكتر مما بتفيدك",
+    "لو متجوز أو في علاقة: قيّمها بمقياس «سكن» مش «إثارة»",
+    "راجع أنماط الارتباط التلاتة، وحدد أقربهم لك",
+    "اكتب ٣ علامات «معروف» حابب تكون موجودة في علاقاتك",
+    "راجع علامات النرجسية، وطمّن نفسك أو خد قرار بخصوص علاقة معينة",
+    "لخّص الأسبوع في ٣ جمل",
+  ]},
+  {week:4, title:"الشفاء والثبات", days:[
+    "سمّي جرحك بصوت عالي قدام المراية",
+    "مارس المحاسبة (١٠ دقايق) من غير جلد للذات",
+    "اكتب جملة مسامحة لأمك أو أبوك، حتى لو مش هتقولها بصوت",
+    "جرب أداة السكينة بالذكر أول ما تحس بقلق قديم طالع",
+    "راجع قصص الكتاب: مين أقرب لحالتك؟",
+    "اكتب: إزاي هتبقى رحلتك انت للشفاء؟",
+    "قرر قرار واعي واحد ملموس هتغيره من النهاردة",
+    "راجع كل حاجة كتبتها في الأيام اللي فاتت",
+    "اكتب خطاب لنفسك المستقبلية، تفتحه بعد سنة من دلوقتي",
+  ]},
+];
+function renderHealingEntryPoint(){
+  const progress = getHealingProgress();
+  return `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+      <span style="font-size:14px;">📆</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">تحدي الشفاء — ٣٠ يوم</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">${progress.length > 0 ? `كمّل رحلتك — أنجزت ${progress.length} من ٣٠ لحد دلوقتي.` : "خطة عملية يوم بيوم لترجمة الوعي لتغيير حقيقي، مبنية على أبواب كتاب «الاختيار الخفي»."}</p>
+    <div class="choice-btn" style="text-align:center;" onclick="renderHealingChallenge()">${progress.length > 0 ? 'كمّل التحدي 📆' : 'ابدأ تحدي الـ٣٠ يوم 📆'}</div>
+  `;
+}
+function getHealingProgress(){ return JSON.parse(localStorage.getItem('eihyaha_healing30_progress') || '[]'); }
+function toggleHealingDay(dayNum){
+  let progress = getHealingProgress();
+  if(progress.includes(dayNum)) progress = progress.filter(d => d !== dayNum);
+  else progress.push(dayNum);
+  localStorage.setItem('eihyaha_healing30_progress', JSON.stringify(progress));
+  renderHealingChallenge();
+}
+function renderHealingChallenge(){
+  const wrap = document.getElementById('healingChallengeSection');
+  const progress = getHealingProgress();
+  let dayCounter = 0;
+  const weeksHtml = HEALING_30_DAYS.map(w => {
+    const daysHtml = w.days.map(text => {
+      dayCounter++;
+      const done = progress.includes(dayCounter);
+      return `
+        <div style="display:flex; align-items:flex-start; gap:8px; padding:7px 0; border-bottom:1px solid #EDE8D8; cursor:pointer;" onclick="toggleHealingDay(${dayCounter})">
+          <span style="font-size:16px; flex-shrink:0; margin-top:1px;">${done ? '✅' : '⬜'}</span>
+          <div>
+            <span style="font-size:12px; color:var(--gold); font-weight:700;">يوم ${dayCounter}</span>
+            <p style="font-size:13px; margin:2px 0 0; color:var(--text); ${done ? 'text-decoration:line-through; opacity:.6;' : ''}">${text}</p>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="card" style="margin-bottom:10px;">
+        <p class="card-title" style="margin-bottom:2px;">الأسبوع ${w.week} — ${w.title}</p>
+        <div style="margin-top:6px;">${daysHtml}</div>
+      </div>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+      <span style="font-size:14px;">📆</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">تحدي الشفاء — ٣٠ يوم</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">خطة عملية يوم بيوم، مبنية على أبواب كتاب «الاختيار الخفي». أنجزت ${progress.length} من ٣٠.</p>
+    ${weeksHtml}
   `;
 }
 
