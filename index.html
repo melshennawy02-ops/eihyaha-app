@@ -2389,7 +2389,7 @@ async function openSpiritualReport(){
         <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">قصص أنبياء قريتها</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/98</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/${ASMA_ALLAH_BANK.length}</p>
         <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">أسماء الله قريتها</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
@@ -2495,11 +2495,6 @@ const PROPHET_ASMA_MAP = {
   keeping_promise:"الحفيظ", power_fairness:"المقسط", gratitude_success:"الغني", standing_alone_deviation:"الصمد",
   long_wait_hope:"المجيب", false_accusation:"الشهيد",
 };
-
-function getProphetOfDay(){
-  const dayIndex = Math.floor(Date.now() / 86400000) % MERAT_PATTERNS.length;
-  return MERAT_PATTERNS[dayIndex];
-}
 
 // كارت موحّد في الرئيسية: قصة النبي + اسم الله المرتبط بيه، بدل كارتين منفصلين
 function renderHomeSpiritualTouch(){
@@ -3457,12 +3452,38 @@ function computeMoodStreak(){
   return streak;
 }
 
+// ---------- نسبة انتظام تسجيل المزاج خلال نافذة أيام معيّنة (نفس منطق العبادة) ----------
+function computeMoodConsistency(days, offset){
+  offset = offset || 0;
+  const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  const moodDates = new Set();
+  local.forEach(e => {
+    if(e.type === 'mood'){
+      if(e.dateKey) moodDates.add(e.dateKey);
+      else if(e.date) moodDates.add(e.date.split(' - ')[0]);
+    }
+  });
+  const now = new Date();
+  let count = 0;
+  for(let i = offset; i < offset + days; i++){
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const isoKey = d.toISOString().slice(0,10);
+    const legacyKey = d.toLocaleDateString('ar-EG');
+    if(moodDates.has(isoKey) || moodDates.has(legacyKey)) count++;
+  }
+  if(count === 0) return null;
+  return Math.round((count / days) * 100);
+}
+
 // ---------- لوحة ملخص سريعة للركن الشخصي (محلية وفورية) ----------
 function renderPersonalDashboard(){
   const selfState = localStorage.getItem('eihyaha_self_know_state');
   const moodStreak = computeMoodStreak();
   const appliedCount = getTotalPersonalAppliedCount();
   const healingCount = getHealingProgress().length;
+  const consistency = computeMoodConsistency(7, 0);
+  const previousConsistency = computeMoodConsistency(7, 7);
 
   const stateMessages = {
     lost: "آخر مرة قيّمت معرفتك بنفسك حسّيت إنك تايه — تحب ترجع تكمل «اعرف نفسك»؟",
@@ -3477,7 +3498,20 @@ function renderPersonalDashboard(){
     </div>`;
   }
 
-  let html = `<div class="card" style="background:linear-gradient(rgba(8,30,26,.82), rgba(8,30,26,.82)), url('https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:18px 16px;">`;
+  // ---------- تنبيه استباقي لو فيه تراجع ملحوظ عن الأسبوع اللي فات ----------
+  let alertHtml = '';
+  if(consistency !== null && previousConsistency !== null && (previousConsistency - consistency) >= 25){
+    alertHtml = `
+      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:10px;">
+        <p style="font-size:13px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن متابعتك لمزاجك نزلت من <b>${previousConsistency}٪</b> لـ<b>${consistency}٪</b> الأسبوع ده. مفيش لوم، بس يستاهل تسأل نفسك: فيه حاجة تغيّرت؟</p>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="showScreen('screen-daftar');">مرآتي اليومية</div>
+          <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openSelfKnowScreen()">اعرف نفسك</div>
+        </div>
+      </div>`;
+  }
+
+  let html = alertHtml + `<div class="card" style="background:linear-gradient(rgba(8,30,26,.82), rgba(8,30,26,.82)), url('https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:18px 16px;">`;
 
   if(moodStreak >= 3){
     const streakMsgs = { 3:"٣ أيام متتالية بتسجّل مزاجك 🎉", 7:"أسبوع كامل من المتابعة! ما شاء الله 🌟", 14:"أسبوعين متواصلين — وعي حقيقي بنفسك 💪", 30:"شهر كامل من متابعة نفسك! إنجاز يستاهل الفخر 🧠" };
