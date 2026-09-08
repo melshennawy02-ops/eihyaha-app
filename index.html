@@ -1810,7 +1810,7 @@ function renderCircleEntryPoint(){
 
 // ---------- ٢) صلة الرحم ----------
 const RAHM_BANK = [
-  { emoji:"😔", label:"قاطعت قريب بسبب خناقة قديمة", keywords:["خناقة","اتخانقنا","مش بكلمه بسبب","زعلان منه من زمان"], psych:"الخلاف الأصلي غالبًا نسيته أنت وهو تفاصيله، لكن اللي فضل هو المسافة نفسها اللي بقت عادة. كل يوم بيعدي من غير تواصل بيخلي الرجوع يبان أصعب مما هو فعلًا.", quran:"﴿وَالَّذِينَ يَصِلُونَ مَا أَمَرَ اللَّهُ بِهِ أَن يُوصَلَ وَيَخْشَوْنَ رَبَّهُمْ وَيَخَافُونَ سُوءَ الْحِسَابِ﴾ (سورة الرعد ٢١)", hadith:"«ليس الواصل بالمكافئ، ولكن الواصل الذي إذا قُطعت رحمه وصلها» (متفق عليه)", action:"ابعتله رسالة بسيطة من غير ما تفتح موضوع الخلاف القديم — «فاكرك، عامل إيه؟» كفاية كبداية." },
+  { emoji:"😔", label:"قاطعت قريب بسبب خناقة قديمة", keywords:["خناقة","اتخانقنا","مش بكلمه بسبب","زعلان منه من زمان"], psych:"الخلاف الأصلي غالبًا نسيته أنت وهو تفاصيله، لكن اللي فضل هو المسافة نفسها اللي بقت عادة. كل يوم بيعدي من غير تواصل بيخلي الرجوع يبان أصعب مما هو فعلًا.", quran:"﴿وَالَّذِينَ يَصِلُونَ مَا أَمَرَ اللَّهُ بِهِ أَن يُوصَلَ وَيَخْشَوْنَ رَبَّهُمْ وَيَخَافُونَ سُوءَ الْحِسَابِ﴾ (سورة الرعد ٢١)", hadith:"«ليس الواصل بالمكافئ، ولكن الواصل الذي إذا قُطعت رحمه وصلها» (متفق عليه)", action:"ابعتله رسالة بسيطة من غير ما تفتح موضوع الخلاف القديم — «فاكرك، عامل إيه؟» كفاية كبداية.", linkFn:"openSocialSkillsScreen()", linkLabel:"محتاج تحل الخلاف الأصلي؟ شوف مهارات التواصل ←" },
   { emoji:"🤷", label:"مش عارف أبدأ التواصل من الأول", keywords:["مش عارف اتواصل","مش عارف ابدأ","محرج اتصل","مش عارف اقول ايه"], psych:"الإحساس بالحرج في بداية أي تواصل بعد فترة انقطاع طبيعي جدًا — لكنه بيخلي كتير من الناس يأجلوا الخطوة للأبد لأنهم مستنيين اللحظة أو الكلام «المثالي».", quran:"﴿وَبِالْوَالِدَيْنِ إِحْسَانًا وَبِذِي الْقُرْبَىٰ﴾ (سورة البقرة ٨٣) — الإحسان لذي القربى مذكور بعد حق الوالدين مباشرة، يعني قريب من نفس الأولوية.", hadith:"«الرحم معلّقة بالعرش تقول: من وصلني وصله الله، ومن قطعني قطعه الله» (متفق عليه)", action:"مفيش «كلام مثالي» — أي رسالة صغيرة بداية كافية. جرّب النهاردة بس." },
   { emoji:"😤", label:"هو اللي قاطعني، مش أنا", keywords:["هو اللي قاطعني","هي اللي قاطعتني","هو المفروض يبدأ","مش أنا اللي المفروض اتصل"], psych:"التمسك بـ«مين يبدأ الأول» بيحوّل صلة الرحم لمنافسة كرامة، والحديث النبوي بالذات بيكسر المنطق ده — الواصل الحقيقي هو اللي يوصل حتى لو هو المظلوم.", quran:"﴿وَلَا تَسْتَوِي الْحَسَنَةُ وَلَا السَّيِّئَةُ ۚ ادْفَعْ بِالَّتِي هِيَ أَحْسَنُ﴾ (سورة فصلت ٣٤)", hadith:"«ليس الواصل بالمكافئ، ولكن الواصل الذي إذا قُطعت رحمه وصلها» (متفق عليه)", action:"جرّب تبدأ إنت المرة دي، مش عشان هو يستاهل، لكن عشان الأجر عند الله مش عنده." },
   { emoji:"😴", label:"مشغول جدًا ومفيش وقت", keywords:["مشغول","مفيش وقت","تعبان من الشغل","مالوش وقت اصلا"], psych:"الانشغال بيخلي التواصل الاجتماعي أول حاجة تتأجل، لأنه محدش بيحاسبك عليه فورًا زي الشغل أو الالتزامات التانية.", quran:"﴿فَإِذَا فَرَغْتَ فَانصَبْ﴾ (سورة الشرح ٧)", hadith:"«من كان يؤمن بالله واليوم الآخر فليصل رحمه» (متفق عليه)", action:"مكالمة صوتية دقيقتين وانت في الطريق كفاية — مش لازم زيارة كاملة." },
@@ -1856,6 +1856,7 @@ function showRahmDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${r.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('rahm','${r.label}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
+    ${r.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${r.linkFn}">${r.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openRahmScreen()">رجوع للقائمة</button>
   `;
 }
@@ -1864,7 +1865,7 @@ function showRahmDetail(i){
 const NEIGHBOR_BANK = [
   { emoji:"🚪", label:"مش عارف جيراني أصلًا", psych:"العزلة عن الجيران بقت طبيعية في حياة المدن، لكنها بتحرمك من أقرب شبكة أمان جغرافية ليك — الجار اللي جنبك أقرب ليك وقت الطوارئ من قريب بعيد.", quran:"﴿وَاعْبُدُوا اللَّهَ وَلَا تُشْرِكُوا بِهِ شَيْئًا ۖ وَبِالْوَالِدَيْنِ إِحْسَانًا ... وَالْجَارِ ذِي الْقُرْبَىٰ وَالْجَارِ الْجُنُبِ﴾ (سورة النساء ٣٦) — الجار مذكور في نفس آية حقوق الوالدين والأقارب.", hadith:"«ما زال جبريل يوصيني بالجار حتى ظننت أنه سيورّثه» (متفق عليه)", action:"في أول فرصة (مصعد، بوابة العمارة)، ابدأ بالسلام واسأل عن اسمه لو مش عارفه." },
   { emoji:"🍲", label:"جاري محتاج مساعدة ومش واخد بالي", psych:"الانشغال بحياتنا بيخلينا مانلاحظش احتياج اللي جنبنا مباشرة، رغم إن القرب الجغرافي ده بالذات هو اللي بيخليه مسؤوليتنا الأولى.", quran:"﴿وَآتِ ذَا الْقُرْبَىٰ حَقَّهُ وَالْمِسْكِينَ وَابْنَ السَّبِيلِ﴾ (سورة الإسراء ٢٦)", hadith:"«ليس المؤمن الذي يشبع وجاره جائع إلى جنبه» (رواه البخاري في الأدب المفرد)", action:"اسأل جارك النهاردة بشكل مباشر: «محتاج حاجة؟» — السؤال المباشر بيكسر حاجز التردد من الطرفين." },
-  { emoji:"😠", label:"عندي مشكلة أو إزعاج من جاري", psych:"الخلافات مع الجيران بتتراكم لأن محدش بيحب يبدأ الكلام المباشر، فبتتحول لتوتر صامت بيفضل سنين.", quran:"﴿وَإِن تَعْفُوا وَتَصْفَحُوا وَتَغْفِرُوا فَإِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ﴾ (سورة التغابن ١٤)", hadith:"«لا يدخل الجنة من لا يأمن جاره بوائقه» (رواه مسلم)", action:"جرّب تتكلم بهدوء ومباشرة عن المشكلة، بدل ما تسيبها تتراكم أو تشتكي لناس تانيين." },
+  { emoji:"😠", label:"عندي مشكلة أو إزعاج من جاري", psych:"الخلافات مع الجيران بتتراكم لأن محدش بيحب يبدأ الكلام المباشر، فبتتحول لتوتر صامت بيفضل سنين.", quran:"﴿وَإِن تَعْفُوا وَتَصْفَحُوا وَتَغْفِرُوا فَإِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ﴾ (سورة التغابن ١٤)", hadith:"«لا يدخل الجنة من لا يأمن جاره بوائقه» (رواه مسلم)", action:"جرّب تتكلم بهدوء ومباشرة عن المشكلة، بدل ما تسيبها تتراكم أو تشتكي لناس تانيين.", linkFn:"openSocialSkillsScreen()", linkLabel:"محتاج تتكلم من غير انفجار؟ شوف مهارات التواصل ←" },
   { emoji:"🏙️", label:"مبقتش حاسس بانتماء للمجتمع حواليا", psych:"الإحساس بالغربة وسط ناس كتير حاسة معروفة — بتشوف ناس كتير لكن محدش بيعرفك فعلًا، وده بيولّد وحدة رغم الزحمة.", quran:"﴿يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ وَجَعَلْنَاكُمْ شُعُوبًا وَقَبَائِلَ لِتَعَارَفُوا﴾ (سورة الحجرات ١٣)", hadith:"«المسلم للمسلم كالبنيان يشد بعضه بعضًا» (متفق عليه)", action:"شارك في نشاط جماعي صغير (صلاة جماعة، مناسبة حي، مبادرة تطوع) بدل ما تنتظر الانتماء يجيلك لوحده." },
 ];
 function openNeighborScreen(){
@@ -1900,6 +1901,7 @@ function showNeighborDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${n.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('neighbor','${n.label}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
+    ${n.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${n.linkFn}">${n.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openNeighborScreen()">رجوع للقائمة</button>
   `;
 }
@@ -2084,6 +2086,7 @@ function openSpouseScreen(){
   markToolOpened('spouse');
   const wrap = document.getElementById('spouseBody');
   wrap.innerHTML = `
+    ${renderWoundConnectorBanner()}
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">السكن جاي قبل المودة في الآية — يعني الهدف الأول أمان، مش إثارة دايمة. اختار أقرب حاجة لعلاقتك دلوقتي:</p>
     ${SPOUSE_BANK.map((s,i) => `
       <div class="tool-row" onclick="showSpouseDetail(${i})">
@@ -2119,7 +2122,7 @@ function showSpouseDetail(i){
 // ---------- ٢) الأولاد والتعامل معهم ----------
 const CHILDREN_BANK = [
   { emoji:"📢", label:"بصرخ بدل ما أتكلم بهدوء", psych:"الصراخ بيدّي راحة لحظية للأهل، لكنه بيعلّم الطفل إن الصوت العالي هو لغة التواصل، وبيضعف ثقته إنه يتكلم من غير خوف.", quran:"﴿وَاخْفِضْ جَنَاحَكَ لِمَنِ اتَّبَعَكَ مِنَ الْمُؤْمِنِينَ﴾ (سورة الشعراء ٢١٥)", hadith:"«ليس الشديد بالصرعة، إنما الشديد الذي يملك نفسه عند الغضب» (متفق عليه)", action:"لو حسيت إنك هتصرخ، خد نفس عميق واتكلم بصوت أهدأ من العادي بدرجة، مش أعلى." },
-  { emoji:"🔁", label:"بكرر نفس أسلوب أهلي في التربية من غير قصد", psych:"العقل الباطن بيميل يكرر النموذج اللي اتربى عليه، حتى لو كان مؤلم، لأنه النموذج الوحيد المتاح — وده بالظبط اللي بنتكلم عنه في «جرح الأم والأب».", quran:"﴿لَا تَبْدِيلَ لِخَلْقِ اللَّهِ﴾ (سورة الروم ٣٠) — الأصل سليم، والطبقة اللي فوقه ممكن تتغيّر بالوعي.", action:"لاحظ رد فعلك الجاي مع ولادك: ده اختيارك الواعي، ولا صدى قديم من طفولتك إنت؟" },
+  { emoji:"🔁", label:"بكرر نفس أسلوب أهلي في التربية من غير قصد", psych:"العقل الباطن بيميل يكرر النموذج اللي اتربى عليه، حتى لو كان مؤلم، لأنه النموذج الوحيد المتاح — وده بالظبط اللي بنتكلم عنه في «علاقتك بالأب والأم».", quran:"﴿لَا تَبْدِيلَ لِخَلْقِ اللَّهِ﴾ (سورة الروم ٣٠) — الأصل سليم، والطبقة اللي فوقه ممكن تتغيّر بالوعي.", action:"لاحظ رد فعلك الجاي مع ولادك: ده اختيارك الواعي، ولا صدى قديم من طفولتك إنت؟", linkFn:"openFamilyWoundScreen()", linkLabel:"راجع علاقتك بالأب والأم ←" },
   { emoji:"⚖️", label:"بقارن بين ولادي", psych:"المقارنة بتخلق غيرة وشعور بعدم الكفاية عند الطفل المقارَن بيه، حتى لو النية كانت تحفيزية.", quran:"قصة يوسف عليه السلام — المفاضلة الظاهرة بين الأبناء كانت سبب رئيسي للمأساة كلها (سورة يوسف).", action:"استبدل أي مقارنة بجملة تركّز على تقدّم الطفل نفسه: «إنت أحسن من إمتى؟» مش «ليه مش زي أخوك؟»" },
   { emoji:"👂", label:"صعب عليّ أسمع ولادي فعلًا", psych:"الأهل غالبًا بيسمعوا عشان يردوا أو يصححوا، مش عشان يفهموا — وده بيخلي الطفل يحس إن رأيه مش مهم من صغره.", quran:"نموذج إبراهيم وإسماعيل: ﴿فَانظُرْ مَاذَا تَرَى﴾ — سؤال الرأي حتى في أصعب المواقف (سورة الصافات ١٠٢).", action:"في أول حوار جاي مع ولادك، خليك ساكت وسامعهم يكملوا كلامهم كامل قبل ما ترد." },
   { emoji:"⏰", label:"مش لاقي وقت كافي معاهم", psych:"الوقت اللي بتقضيه فعليًا (مش بس فيزيائيًا موجود) هو اللي بيبني الترابط، وقلته بتخلي الطفل يحس إنه مش أولوية.", hadith:"«كلكم راعٍ وكلكم مسؤول عن رعيته» (متفق عليه)", action:"خصّص ١٥ دقيقة يوميًا بدون موبايل، نشاط بسيط يختاره هو مش إنت." },
@@ -2129,6 +2132,7 @@ function openChildrenScreen(){
   markToolOpened('children');
   const wrap = document.getElementById('childrenBody');
   wrap.innerHTML = `
+    ${renderWoundConnectorBanner()}
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">أنماط التربية غالبًا بتتوارث من غير وعي — اختار أقرب حاجة لحالتك:</p>
     ${CHILDREN_BANK.map((c,i) => `
       <div class="tool-row" onclick="showChildDetail(${i})">
@@ -2158,13 +2162,14 @@ function showChildDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${c.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markFamilyApplied('children','${c.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
+    ${c.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${c.linkFn}">${c.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openChildrenScreen()">رجوع للقائمة</button>
   `;
 }
 
 // ---------- ٣) الإخوة ----------
 const SIBLINGS_BANK = [
-  { emoji:"😞", label:"حاسس إن أهلي فضّلوا أخويا/أختي عليّا", psych:"إحساس التفضيل بيفضل شغال جوّه الإنسان لسنين حتى لو كبر، وبيشكّل علاقته بإخوته وبنفسه — زي ما حصل بالظبط في قصة يوسف.", quran:"﴿إِذْ قَالُوا لَيُوسُفُ وَأَخُوهُ أَحَبُّ إِلَىٰ أَبِينَا مِنَّا﴾ (سورة يوسف ٨) — القرآن نفسه بيوثّق الإحساس ده من غير تجميل.", action:"جرّب تفصل بين جرح الماضي وعلاقتك بأخوك دلوقتي — الاتنين مش نفس الموضوع بالضرورة." },
+  { emoji:"😞", label:"حاسس إن أهلي فضّلوا أخويا/أختي عليّا", psych:"إحساس التفضيل بيفضل شغال جوّه الإنسان لسنين حتى لو كبر، وبيشكّل علاقته بإخوته وبنفسه — زي ما حصل بالظبط في قصة يوسف.", quran:"﴿إِذْ قَالُوا لَيُوسُفُ وَأَخُوهُ أَحَبُّ إِلَىٰ أَبِينَا مِنَّا﴾ (سورة يوسف ٨) — القرآن نفسه بيوثّق الإحساس ده من غير تجميل.", action:"جرّب تفصل بين جرح الماضي وعلاقتك بأخوك دلوقتي — الاتنين مش نفس الموضوع بالضرورة.", linkFn:"openFamilyWoundScreen()", linkLabel:"راجع علاقتك بالأب والأم ←" },
   { emoji:"🔥", label:"بحس بغيرة من نجاح أخويا/أختي", psych:"الغيرة بين الإخوة طبيعية، لكنها بتتحول لمشكلة لو خليتها توجّه تصرفاتك بدل ما تلاحظها وتديرها.", quran:"﴿اقْتُلُوا يُوسُفَ أَوِ اطْرَحُوهُ أَرْضًا﴾ (سورة يوسف ٩) — القرآن بيوريك أقصى درجة ممكن توصلها الغيرة لو اتركت من غير علاج.", action:"قول لنفسك بصراحة: «أنا حاسس بغيرة»، بدل ما تقلّل من إنجاز أخوك أو تتجنبه." },
   { emoji:"💔", label:"مقاطع أخويا/أختي بسبب الميراث أو خلاف قديم", psych:"خلافات الميراث بتفتح جروح قديمة أعمق من المال نفسه — غالبًا بيكون الموضوع الحقيقي هو الإحساس بالعدل مش الفلوس.", hadith:"«الرحم معلّقة بالعرش تقول: من وصلني وصله الله» (متفق عليه)", action:"افصل بين حل الموضوع المالي (ممكن ياخد وقته أو يحتاج وسيط) وبين قطع صلة الرحم نفسها — الاتنين مش لازم يكونوا مربوطين." },
   { emoji:"📏", label:"بقارن نفسي بإخواتي طول الوقت", psych:"المقارنة المستمرة مع الإخوة بتيجي غالبًا من نفس مصدر مقارنة الأهل ليك وأنت صغير — بتكرر نفس الجرح مع نفسك دلوقتي.", quran:"﴿وَلَا تَتَمَنَّوْا مَا فَضَّلَ اللَّهُ بِهِ بَعْضَكُمْ عَلَىٰ بَعْضٍ﴾ (سورة النساء ٣٢)", action:"قارن نفسك بنفسك بس: انت النهاردة أحسن ولا أوحش من انت السنة اللي فاتت؟" },
@@ -2174,6 +2179,7 @@ function openSiblingsScreen(){
   markToolOpened('siblings');
   const wrap = document.getElementById('siblingsBody');
   wrap.innerHTML = `
+    ${renderWoundConnectorBanner()}
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">اختار أقرب حاجة لعلاقتك بإخواتك:</p>
     ${SIBLINGS_BANK.map((s,i) => `
       <div class="tool-row" onclick="showSiblingDetail(${i})">
@@ -2203,6 +2209,7 @@ function showSiblingDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${s.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markFamilyApplied('siblings','${s.label}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
+    ${s.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${s.linkFn}">${s.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openSiblingsScreen()">رجوع للقائمة</button>
   `;
 }
@@ -2210,7 +2217,7 @@ function showSiblingDetail(i){
 // ---------- ٤) عائلة الأب وعائلة الأم (الأصهار) ----------
 const EXTENDED_FAMILY_BANK = [
   { emoji:"🏠", label:"حاسس إن عائلة زوجي/زوجتي بتتدخل كتير", psych:"التدخل بيتفسّر غالبًا كإهانة، لكنه أحيانًا بييجي من عادات عائلية مختلفة عن اللي اتعودت عليها، مش بالضرورة نية سيئة.", quran:"﴿وَقُولُوا لِلنَّاسِ حُسْنًا﴾ (سورة البقرة ٨٣)", action:"اتفق مع شريك حياتك على حدود واضحة، وخلّي هو/هي اللي يتكلم مع عيلته في الموضوع، مش إنت مباشرة." },
-  { emoji:"💭", label:"ولائي منقسم بين بيتي وبيت أهلي", psych:"الانتقال من «بيت أهلك» لـ«بيتك إنت» محتاج إعادة ترتيب أولويات واعية، وإلا هتفضل حاسس إنك لسه «ابن/بنت البيت» مش شريك في بيت جديد.", quran:"﴿وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً﴾ (سورة الروم ٢١) — الآية بتتكلم عن «بينكم» إنتوا الاتنين كوحدة جديدة.", action:"في أي قرار خاص ببيتك الجديد، شاور شريك حياتك الأول قبل ما تاخد رأي أهلك." },
+  { emoji:"💭", label:"ولائي منقسم بين بيتي وبيت أهلي", psych:"الانتقال من «بيت أهلك» لـ«بيتك إنت» محتاج إعادة ترتيب أولويات واعية، وإلا هتفضل حاسس إنك لسه «ابن/بنت البيت» مش شريك في بيت جديد.", quran:"﴿وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً﴾ (سورة الروم ٢١) — الآية بتتكلم عن «بينكم» إنتوا الاتنين كوحدة جديدة.", action:"في أي قرار خاص ببيتك الجديد، شاور شريك حياتك الأول قبل ما تاخد رأي أهلك.", linkFn:"openSpouseScreen()", linkLabel:"شوف أداة علاقتك بشريك حياتك ←" },
   { emoji:"😔", label:"بحس بضغط في المناسبات العائلية", psych:"المناسبات بتجمّع كل التوترات القديمة في مكان واحد، فبتبقى أصعب من أي لقاء عادي.", hadith:"«من كان يؤمن بالله واليوم الآخر فليكرم ضيفه» (متفق عليه) — والكرم بيشمل حسن المعاملة مش بس الطعام.", action:"حدّد قبل المناسبة موضوع واحد أو اتنين ممكن يفتحوا توتر، واستعد إزاي هتتعامل معاهم بهدوء." },
   { emoji:"⚖️", label:"بتتم مقارنتي بأخو/أخت زوجي أو زوجتي", psych:"المقارنة من عائلة الزوج/الزوجة بتوجع أكتر من مقارنة عائلتك إنت، لأنك بتحس إنك بتثبت نفسك في بيئة مش بيئتك الأصلية.", quran:"﴿وَلَا تَتَمَنَّوْا مَا فَضَّلَ اللَّهُ بِهِ بَعْضَكُمْ عَلَىٰ بَعْضٍ﴾ (سورة النساء ٣٢)", action:"اتكلم مع شريك حياتك عن الإحساس ده بدل ما تكتمه، عشان يقدر يقف جنبك قدام عيلته." },
   { emoji:"🧊", label:"قطيعة بين عائلتي وعائلة زوجي/زوجتي", psych:"القطيعة بين العائلتين بتحط شريك الحياة في موقف صعب بين ولائه لعيلته وولائه لبيته الجديد.", hadith:"«ليس الواصل بالمكافئ، ولكن الواصل الذي إذا قُطعت رحمه وصلها» (متفق عليه)", action:"ابدأ بخطوة صغيرة رمزية (تهنئة في مناسبة، سؤال عن الصحة) بدل ما تستنى «مصالحة كاملة» فجأة." },
@@ -2248,6 +2255,7 @@ function showExtendedFamilyDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${e.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markFamilyApplied('extended_family','${e.label}'); this.textContent='✓ تم — بارك الله فيك'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
+    ${e.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${e.linkFn}">${e.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openExtendedFamilyScreen()">رجوع للقائمة</button>
   `;
 }
@@ -2299,6 +2307,18 @@ function openFamilyReport(){
     <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن العائلي بس حاليًا.</p>
   `;
   showScreen('screen-family-report');
+}
+
+function renderWoundConnectorBanner(){
+  const saved = localStorage.getItem('eihyaha_wound_result');
+  if(!saved) return '';
+  const result = JSON.parse(saved);
+  const hasPattern = (result.mom >= 2) || (result.dad >= 2);
+  if(!hasPattern) return '';
+  return `<div class="card" style="background:#F2EEE3; border:1px solid #E4DFCF; margin:14px 0;">
+    <p style="font-size:12.5px; color:var(--text); line-height:1.7; margin:0 0 8px;">نمط علاقتك بأبوك وأمك من الصغر غالبًا بيتكرر هنا من غير ما تحس — يستاهل تراجعه.</p>
+    <p style="font-size:12px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openFamilyWoundScreen()">راجع علاقتك بالأب والأم ←</p>
+  </div>`;
 }
 
 function renderSocialSummaryCard(){
@@ -3994,6 +4014,8 @@ function renderWoundResult(result){
       <p style="font-size:10.5px; color:var(--muted); margin:8px 0 0;">الجرح مش هويتك. الجرح طبقة اتحطت فوق فطرة سليمة، وممكن تتشال.</p>
     </div>
     ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center; margin-top:10px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="showScreen('screen-daftar'); setTimeout(renderHealingChallenge, 50);">ابدأ تحدي الشفاء ٣٠ يوم في مرآتك اليومية ←</div>` : ''}
+    ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="openSpouseScreen()">شوف أثر النمط ده على علاقتك بشريك حياتك ←</div>` : ''}
+    ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="openChildrenScreen()">شوف هل بتكرره مع ولادك ←</div>` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startWoundQuiz()">🔄 أعد التقييم</div>
   `;
   wrap.innerHTML = html;
@@ -4093,6 +4115,15 @@ function revealDarkTriadResult(){
     level = "علامات إنذار واضحة ومتكررة"; cardClass='l3';
     text = "العلامات دي متكررة وواضحة، وده يستحق وقفة جدية مع نفسك عن العلاقة دي. لو حسّيت إنها بتأثر عليك نفسيًا بشكل كبير، التكلم مع مختص خطوة مهمة.";
   }
+  let followUp = '';
+  if(darkTriadScore <= 9){
+    // مفيش خطر واضح أو فيه أنماط تستاهل انتباه — نوجّه لبناء العلاقة إيجابيًا حسب السياق
+    if(relCheckOrigin === 3){
+      followUp = `<div class="choice-btn" style="text-align:center;" onclick="openSpouseScreen()">كمّل ببناء علاقتك بشريك حياتك ←</div>`;
+    } else {
+      followUp = `<div class="choice-btn" style="text-align:center;" onclick="openSocialSkillsScreen()">قوّي مهارات التواصل في صداقتك ←</div>`;
+    }
+  }
   wrap.innerHTML = `
     <div class="layer-card ${cardClass}" style="margin-top:14px;">
       <p class="layer-title" style="color:var(--navy-dark);">${darkTriadPersonName ? 'بخصوص: ' + darkTriadPersonName : 'نتيجة التقييم'}</p>
@@ -4101,6 +4132,7 @@ function revealDarkTriadResult(){
     </div>
     <p style="font-size:10.5px; color:var(--muted); text-align:center; margin:8px 0;">التشخيص الإكلينيكي مش دورنا — الهدف نبقى أكتر وعي، مش نلصق لافتات على ناس حوالينا.</p>
     ${darkTriadScore > 9 ? `<div class="choice-btn" style="text-align:center; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="startReport()">جهّز تقرير مبسط قبل ما تتكلم مع مختص ←</div>` : ''}
+    ${followUp}
     <div class="choice-btn" style="text-align:center;" onclick="startDarkTriadTool()">🔄 قيّم علاقة تانية</div>
   `;
 }
