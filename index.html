@@ -2782,8 +2782,8 @@ function sendFreeText(){
       choicesWrap.className = 'choices';
       const btn1 = document.createElement('div');
       btn1.className = 'choice-btn';
-      btn1.textContent = 'شوف كل الومضات النفسية';
-      btn1.onclick = () => openFlashScreen();
+      btn1.textContent = 'شوف تفاصيل الومضة دي';
+      btn1.onclick = () => { showFlashDetail(flashId); showScreen('screen-flash'); };
       choicesWrap.appendChild(btn1);
       const btn2 = document.createElement('div');
       btn2.className = 'choice-btn';
