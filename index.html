@@ -1765,14 +1765,38 @@ function answerCircle(qIndex, oIndex){
   circleAnswers.push({ circle:q.circle, score:q.options[oIndex].score });
   renderCircleQuestion(qIndex + 1);
 }
+function getCircleHistory(){ return JSON.parse(localStorage.getItem('eihyaha_circle_history') || '[]'); }
 function revealCircleResult(){
   const scores = {};
   circleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const result = { scores, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_circle_assessment', JSON.stringify(result));
+  const history = getCircleHistory();
+  history.unshift(result);
+  localStorage.setItem('eihyaha_circle_history', JSON.stringify(history.slice(0,50)));
   renderCircleResult(result);
 }
 function getCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_circle_assessment') || 'null'); }
+function summarizeCircleResult(r){
+  const scores = r.scores;
+  const normalized = { rahm:(scores.rahm||0)/4, neighbors:(scores.neighbors||0)/2, friends:(scores.friends||0)/2, community:(scores.community||0)/2 };
+  const weakest = Object.entries(normalized).sort((a,b)=>b[1]-a[1])[0][0];
+  return `أضعف: ${CIRCLE_LABELS[weakest]}`;
+}
+function renderCircleHistorySection(){
+  const history = getCircleHistory();
+  if(history.length <= 1) return '';
+  return `
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0 12px;"></div>
+    <p style="font-size:12.5px; font-weight:700; margin-bottom:8px;">📈 تاريخ تقييماتك</p>
+    ${history.slice(0,10).map((r,i) => `
+      <div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #EDE8D8;">
+        <span style="font-size:12px; color:${i===0 ? 'var(--navy-dark)' : 'var(--muted)'}; font-weight:${i===0 ? '700' : '400'};">${summarizeCircleResult(r)}</span>
+        <span style="font-size:11px; color:var(--muted);">${new Date(r.date).toLocaleDateString('ar-EG')}</span>
+      </div>
+    `).join('')}
+  `;
+}
 function renderCircleResult(result){
   const wrap = document.getElementById('circleBody');
   const scores = result.scores;
@@ -1807,6 +1831,7 @@ function renderCircleResult(result){
     `).join('')}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${toolMap[weakest].fn}">ابدأ بـ${toolMap[weakest].label} ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="startCircleAssessment()">🔄 أعد التقييم</div>
+    ${renderCircleHistorySection()}
   `;
 }
 function renderCircleEntryPoint(){
@@ -2093,14 +2118,38 @@ function answerFamilyCircle(qIndex, oIndex){
   familyCircleAnswers.push({ circle:q.circle, score:q.options[oIndex].score });
   renderFamilyCircleQuestion(qIndex + 1);
 }
+function getFamilyCircleHistory(){ return JSON.parse(localStorage.getItem('eihyaha_family_circle_history') || '[]'); }
 function revealFamilyCircleResult(){
   const scores = {};
   familyCircleAnswers.forEach(a => { if(a.score !== null) scores[a.circle] = a.score; });
   const result = { scores, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_family_circle_assessment', JSON.stringify(result));
+  const history = getFamilyCircleHistory();
+  history.unshift(result);
+  localStorage.setItem('eihyaha_family_circle_history', JSON.stringify(history.slice(0,50)));
   renderFamilyCircleResult(result);
 }
 function getFamilyCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_family_circle_assessment') || 'null'); }
+function summarizeFamilyCircleResult(r){
+  const entries = Object.entries(r.scores);
+  if(entries.length === 0) return 'كل العلاقات غير منطبقة';
+  const weakest = entries.sort((a,b)=>b[1]-a[1])[0];
+  return weakest[1] === 2 ? `أضعف: ${FAMILY_CIRCLE_LABELS[weakest[0]]}` : 'كل العلاقات مستقرة';
+}
+function renderFamilyCircleHistorySection(){
+  const history = getFamilyCircleHistory();
+  if(history.length <= 1) return '';
+  return `
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0 12px;"></div>
+    <p style="font-size:12.5px; font-weight:700; margin-bottom:8px;">📈 تاريخ تقييماتك</p>
+    ${history.slice(0,10).map((r,i) => `
+      <div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #EDE8D8;">
+        <span style="font-size:12px; color:${i===0 ? 'var(--navy-dark)' : 'var(--muted)'}; font-weight:${i===0 ? '700' : '400'};">${summarizeFamilyCircleResult(r)}</span>
+        <span style="font-size:11px; color:var(--muted);">${new Date(r.date).toLocaleDateString('ar-EG')}</span>
+      </div>
+    `).join('')}
+  `;
+}
 function renderFamilyCircleResult(result){
   const wrap = document.getElementById('familyCircleBody');
   const entries = Object.entries(result.scores);
@@ -2111,6 +2160,7 @@ function renderFamilyCircleResult(result){
         <p class="layer-text" style="margin-top:6px;">ما فيش داعي تقلق — ركّز بس على «علاقتك بالأب والأم» و«الإخوة» لو منطبقة، هي الأساس دايمًا.</p>
       </div>
       <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startFamilyCircleAssessment()">🔄 أعد التقييم</div>
+      ${renderFamilyCircleHistorySection()}
     `;
     return;
   }
@@ -2133,6 +2183,7 @@ function renderFamilyCircleResult(result){
     `).join('')}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="startFamilyCircleAssessment()">🔄 أعد التقييم</div>
+    ${renderFamilyCircleHistorySection()}
   `;
 }
 
@@ -2207,7 +2258,7 @@ const SPOUSE_BANK = [
   { emoji:"⚖️", label:"خلاف مستمر على توزيع المسؤوليات", psych:"الخلاف على «مين بيعمل أكتر» بيتحول بسرعة لمنافسة بدل تعاون، لأن كل طرف بيقيس مجهوده هو وبينسى مجهود التاني.", quran:"﴿الرِّجَالُ قَوَّامُونَ عَلَى النِّسَاءِ﴾ (سورة النساء ٣٤) — القوامة رعاية ومسؤولية مش تهرّب من الدور.", action:"اعملوا قائمة صريحة للمسؤوليات وقسّموها بوضوح، بدل ما تفترضوا إن الطرف التاني «المفروض يعرف»." },
   { emoji:"❄️", label:"فتور المشاعر بعد سنين", psych:"الحماس الأول بيهدى طبيعي مع الوقت، لكن لو ما فيش تجديد واعي، الفتور ده بيستقر ويتحول لروتين بارد بدل محبة هادية.", quran:"﴿وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً﴾ (سورة الروم ٢١) — المودة محتاجة رعاية مستمرة، مش حاجة بتفضل زي ما هي من نفسها.", action:"جدّدوا حاجة صغيرة هذا الأسبوع — هدية بسيطة، خروجة قصيرة، أو حتى رسالة غير متوقعة." },
   { emoji:"👶", label:"مختلفين في أسلوب تربية الأولاد", psych:"كل طرف بيكرر غالبًا أسلوب أهله هو في التربية من غير ما ياخد باله، وده بيخلق تصادم مش لأن حد غلطان، لكن لأن الخلفيات مختلفة.", quran:"﴿فَانظُرْ مَاذَا تَرَى﴾ (سورة الصافات ١٠٢) — نموذج إبراهيم وإسماعيل في التشاور حتى في أصعب القرارات.", action:"اتفقوا على ٣ قواعد تربية أساسية تكونوا فيها صف واحد قدام الأولاد، حتى لو مختلفين في التفاصيل." },
-  { emoji:"💰", label:"خلاف على القرارات المالية", psych:"المال من أكتر أسباب الخلاف الزوجي شيوعًا، لأنه بيلمس الأمان والثقة مش بس الأرقام.", quran:"﴿وَأْتُوهُنَّ أُجُورَهُنَّ بِالْمَعْرُوفِ﴾ (سورة النساء ٢٥) وما في معناها من عدل مالي بين الزوجين.", action:"اتفقوا على قرار مالي واحد لازم يتاخد بالتشاور، بدل ما كل طرف يقرر لوحده ويفاجئ التاني." },
+  { emoji:"💰", label:"خلاف على القرارات المالية", psych:"المال من أكتر أسباب الخلاف الزوجي شيوعًا، لأنه بيلمس الأمان والثقة مش بس الأرقام.", quran:"﴿لِيُنفِقْ ذُو سَعَةٍ مِّن سَعَتِهِ وَمَن قُدِرَ عَلَيْهِ رِزْقُهُ فَلْيُنفِقْ مِمَّا آتَاهُ اللَّهُ ۚ لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا مَا آتَاهَا ۚ سَيَجْعَلُ اللَّهُ بَعْدَ عُسْرٍ يُسْرًا﴾ (سورة الطلاق ٧) — الإنفاق بقدر السعة مش بقدر المقارنة، والضيق المالي مؤقت مهما طال.", action:"اتفقوا على قرار مالي واحد لازم يتاخد بالتشاور، بدل ما كل طرف يقرر لوحده ويفاجئ التاني." },
 ];
 function openSpouseScreen(){
   markToolOpened('spouse');
@@ -4098,11 +4149,21 @@ function answerWound(qIndex, oIndex){
   woundAnswers.push({ type:q.type, score:q.options[oIndex].score });
   renderWoundQuestion(qIndex + 1);
 }
+function getWoundHistory(){ return JSON.parse(localStorage.getItem('eihyaha_wound_history') || '[]'); }
+function summarizeWoundResult(r){
+  const parts = [];
+  if(r.mom >= 2) parts.push('جرح الأم');
+  if(r.dad >= 2) parts.push('جرح الأب');
+  return parts.length ? parts.join(' + ') : 'فطرة سليمة غالبًا';
+}
 function revealWoundResult(){
   const momScore = woundAnswers.filter(a => a.type==='mom').reduce((s,a)=>s+a.score,0);
   const dadScore = woundAnswers.filter(a => a.type==='dad').reduce((s,a)=>s+a.score,0);
   const result = { mom:momScore, dad:dadScore, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_wound_result', JSON.stringify(result));
+  const history = getWoundHistory();
+  history.unshift(result);
+  localStorage.setItem('eihyaha_wound_history', JSON.stringify(history.slice(0,50)));
   renderWoundResult(result);
 }
 function renderWoundResult(result){
@@ -4149,8 +4210,23 @@ function renderWoundResult(result){
     ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="openChildrenScreen()">شوف هل بتكرره مع ولادك ←</div>` : ''}
     ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="startCircleAssessment()">شوف تأثيره على اختيار أصحابك (الركن الاجتماعي) ←</div>` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startWoundQuiz()">🔄 أعد التقييم</div>
+    ${renderWoundHistorySection()}
   `;
   wrap.innerHTML = html;
+}
+function renderWoundHistorySection(){
+  const history = getWoundHistory();
+  if(history.length <= 1) return '';
+  return `
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0 12px;"></div>
+    <p style="font-size:12.5px; font-weight:700; margin-bottom:8px;">📈 تاريخ تقييماتك</p>
+    ${history.slice(0,10).map((r,i) => `
+      <div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #EDE8D8;">
+        <span style="font-size:12px; color:${i===0 ? 'var(--navy-dark)' : 'var(--muted)'}; font-weight:${i===0 ? '700' : '400'};">${summarizeWoundResult(r)}</span>
+        <span style="font-size:11px; color:var(--muted);">${new Date(r.date).toLocaleDateString('ar-EG')}</span>
+      </div>
+    `).join('')}
+  `;
 }
 function openFamilyWoundScreen(){
   markToolOpened('family_wound');
