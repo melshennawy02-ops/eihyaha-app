@@ -2164,7 +2164,7 @@ function renderWorshipScreen(){
     {id:'dars', label:'حضرت خطبة أو درس ديني', icon:'📚'},
   ];
   body.innerHTML = `
-    <div class="card">
+    <div class="card" style="background:linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url('https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
       <p class="card-title" style="margin-bottom:4px;">صلوات اليوم</p>
       <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">دوس على الصلاة عشان تنقّل بين: منفرد ← جماعة ← قضاء ← إلغاء</p>
       ${prayers.map(p => `
@@ -2175,7 +2175,7 @@ function renderWorshipScreen(){
       `).join('')}
     </div>
 
-    <div class="card">
+    <div class="card" style="background:linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url('https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
       <p class="card-title" style="margin-bottom:10px;">القرآن</p>
       <div style="display:flex; align-items:center; gap:10px;">
         <p style="font-size:15px; margin:0; flex:1;">كام صفحة قرأت النهاردة؟</p>
@@ -2183,7 +2183,7 @@ function renderWorshipScreen(){
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="background:linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url('https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
       <p class="card-title" style="margin-bottom:10px;">الأذكار</p>
       <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
         <div onclick="toggleWorshipBool('azkarSubh')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; ${w.azkarSubh ? 'background:var(--gold);' : ''}">${w.azkarSubh ? '✓' : ''}</div>
@@ -2195,7 +2195,7 @@ function renderWorshipScreen(){
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="background:linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url('https://images.unsplash.com/photo-1506564461966-4107c88f6d29?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
       <p class="card-title" style="margin-bottom:10px;">عبادات إضافية</p>
       ${extras.map(e => `
         <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
@@ -2538,7 +2538,7 @@ function openTawbaScreen(){
       <p class="layer-title" style="color:var(--gold);">📖 ${adam.prophetTitle}</p>
       <p class="layer-text" style="margin-top:8px; color:#fff;">${adam.prophet}</p>
     </div>
-    <div class="card" style="background:var(--navy-dark);">
+    <div class="card" style="background:linear-gradient(rgba(7,43,40,.88), rgba(7,43,40,.88)), url('https://images.unsplash.com/photo-1506564461966-4107c88f6d29?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
       <p style="color:var(--gold); font-size:15px; font-weight:700; margin:0 0 4px;">اعترافك بينك وبين ربك</p>
       <p style="color:#9FB3AE; font-size:12px; margin:0 0 8px;">🔒 اللي بتكتبه هنا خاص بينك وبين ربك ومحفوظ في حسابك بس — محدش تاني بيشوفه.</p>
       <textarea id="tawbaInput" placeholder="اكتب اللي حاسس إنك عايز تعترف بيه وترجع فيه لله..." style="min-height:70px; background:rgba(255,255,255,.05); color:#fff; border-color:var(--gold);"></textarea>
