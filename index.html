@@ -2753,6 +2753,10 @@ function renderSelfKnowContent(dominant){
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
 
+    <div id="mbtiSection">${renderMbtiEntryPoint()}</div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
       <span style="font-size:14px;">✍️</span>
       <p style="font-size:14px; font-weight:700; margin:0;">حاجة عن نفسك مش فاهمها؟ اكتبها</p>
@@ -2803,6 +2807,114 @@ function showSelfDimensionDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:6px;">${d.question}</p>
     </div>
     <div class="choice-btn" style="text-align:center; margin-bottom:10px;" onclick="${d.linkTool}">${d.linkLabel}</div>
+  `;
+}
+
+// ================= نمط شخصيتك بالتفصيل (MBTI) — طبقة أعمق جوه اعرف نفسك =================
+const MBTI_QUESTIONS = [
+  { q:"بعد يوم طويل ومتعب، إيه اللي بيشحن طاقتك أكتر؟", a:{label:"أخرج مع ناس أو أتكلم مع حد", axis:"E"}, b:{label:"أقعد لوحدي وأهدى", axis:"I"} },
+  { q:"في تجمع كبير مع ناس مش بتعرفهم، إحساسك إيه؟", a:{label:"متحمس أتعرف على ناس جديدة", axis:"E"}, b:{label:"بدوّر على زاوية هادية", axis:"I"} },
+  { q:"لما تتعلم حاجة جديدة، بتفضل:", a:{label:"خطوات عملية واضحة ومحددة", axis:"S"}, b:{label:"فهم الفكرة العامة والاحتمالات", axis:"N"} },
+  { q:"بتنجذب أكتر لـ:", a:{label:"الواقع والتفاصيل الملموسة", axis:"S"}, b:{label:"الأفكار والاحتمالات المستقبلية", axis:"N"} },
+  { q:"لما تاخد قرار مهم، بتعتمد أكتر على:", a:{label:"المنطق والتحليل الموضوعي", axis:"T"}, b:{label:"إحساسك وتأثير القرار على الناس", axis:"F"} },
+  { q:"لو صاحبك غلط في شغله، بتقوله:", a:{label:"الحقيقة بصراحة حتى لو هتوجعه", axis:"T"}, b:{label:"بأسلوب لطيف يراعي مشاعره", axis:"F"} },
+  { q:"أسلوبك في التخطيط:", a:{label:"بحب جدول واضح ومنظم", axis:"J"}, b:{label:"بحب المرونة والعفوية", axis:"P"} },
+  { q:"قبل السفر:", a:{label:"بجهز كل حاجة بدري ومرتبة", axis:"J"}, b:{label:"بحضّر آخر لحظة وباستمتع بالعفوية", axis:"P"} },
+];
+
+const MBTI_TYPES = {
+  INTJ: { name:"المهندس الاستراتيجي", desc:"بيحب التخطيط طويل المدى والاستقلالية الفكرية، وبيشوف الصورة الكبيرة قبل التفاصيل.", relationships:"غالبًا بيرتاح مع شريك بيحترم مساحته الفكرية ومش محتاج تفاعل اجتماعي دائم.", careers:"هندسة، تخطيط استراتيجي، بحث علمي، إدارة مشاريع معقدة.", sports:"رياضات فردية تحتاج تركيز واستراتيجية زي السباحة أو الجري لمسافات طويلة." },
+  INTP: { name:"المفكر المحلل", desc:"فضولي فكريًا، بيحب يفهم الأنظمة والأفكار المعقدة من جذورها.", relationships:"غالبًا بيرتاح مع ناس بتحب نقاشات عميقة ومش بتضغط عليه اجتماعيًا.", careers:"برمجة، تحليل بيانات، بحث علمي، فلسفة.", sports:"رياضات فردية تحليلية زي التسلق أو السباحة." },
+  INFJ: { name:"المستشار المثالي", desc:"حساس تجاه الآخرين، وعنده رؤية واضحة لقيمه ومبادئه.", relationships:"غالبًا بيبحث عن ارتباط عميق وصادق، مش سطحي أو عابر.", careers:"إرشاد نفسي، تعليم، كتابة، عمل خيري.", sports:"يوجا، مشي في الطبيعة، رياضات هادئة تساعد على التأمل." },
+  INFP: { name:"الحالم المثالي", desc:"حساس جدًا، وبيبحث عن معنى وأصالة في كل حاجة بيعملها.", relationships:"محتاج شريك يفهم عمقه العاطفي ويقدّر خصوصيته.", careers:"كتابة، فن، تصميم، إرشاد.", sports:"رياضات فردية تعبيرية زي الرقص أو اليوجا أو السباحة." },
+  ISTJ: { name:"المسؤول الموثوق", desc:"منظم، وملتزم بالقواعد والواجبات بشكل واضح.", relationships:"غالبًا بيرتاح مع شريك مستقر وواضح، وبيقدّر الالتزام.", careers:"محاسبة، إدارة، قانون، عمل حكومي.", sports:"رياضات منظمة بقواعد واضحة زي كرة القدم أو الجيم المنظم." },
+  ISFJ: { name:"الحامي الدافئ", desc:"مخلص، وبيحب يخدم الناس اللي بيحبهم بهدوء من غير ضجة.", relationships:"مخلص جدًا لمن يحب، وغالبًا بيدي أكتر مما ياخد.", careers:"تمريض، تعليم، خدمة اجتماعية، إدارة مكتبية.", sports:"رياضات جماعية هادئة زي المشي الجماعي أو اليوجا." },
+  ISTP: { name:"الحرفي العملي", desc:"عملي جدًا، وبيحب يفهم إزاي الأشياء بتشتغل من الداخل.", relationships:"بيحب الاستقلالية جوه العلاقة، ومش بيرتاح مع الضغط العاطفي الزايد.", careers:"هندسة ميكانيكية، تقنية، حرف يدوية، طيران.", sports:"رياضات فيها إثارة وتحدي جسدي زي الدراجات أو رياضات المغامرة." },
+  ISFP: { name:"الفنان الحر", desc:"حساس جماليًا، وبيحب يعيش اللحظة من غير قيود كتير.", relationships:"بيحب علاقة هادية بلا ضغط، تحترم حريته الشخصية.", careers:"فن، تصميم، طبخ، تصوير.", sports:"رياضات فردية حرة زي التسلق أو السباحة أو الرقص." },
+  ENTJ: { name:"القائد الحازم", desc:"طموح جدًا، وبيحب يقود المجموعة ويوصل لنتائج ملموسة.", relationships:"غالبًا بيرتاح مع شريك طموح وقوي الشخصية، ومش بيحب السلبية.", careers:"إدارة تنفيذية، ريادة أعمال، قانون، استشارات.", sports:"رياضات تنافسية جماعية زي كرة القدم أو كرة السلة." },
+  ENTP: { name:"المناظر المبدع", desc:"بيحب النقاش والأفكار الجديدة، وبيمل بسرعة من الروتين.", relationships:"محتاج شريك يتحداه فكريًا ومتجدد معاه باستمرار.", careers:"ريادة أعمال، تسويق، محاماة، إعلام.", sports:"رياضات فيها تنوع وإثارة زي الفنون القتالية." },
+  ENFJ: { name:"الملهم الاجتماعي", desc:"كاريزمي، وبيحب يساعد الناس اللي حواليه يطوروا نفسهم.", relationships:"دافئ جدًا، وبيدي أولوية كبيرة لسعادة شريكه.", careers:"تدريب، تعليم، موارد بشرية، عمل اجتماعي.", sports:"رياضات جماعية تفاعلية زي الكرة الطائرة أو الرقص الجماعي." },
+  ENFP: { name:"المستكشف الحماسي", desc:"متحمس جدًا، وبيحب التجارب الجديدة والناس المتنوعة.", relationships:"محتاج شريك متحمس زيه ومش بيمل من الروتين بسرعة.", careers:"إعلام، تسويق إبداعي، تمثيل، عمل حر.", sports:"رياضات متنوعة ومغامرة زي الرحلات الجماعية." },
+  ESTJ: { name:"المنظم الفعّال", desc:"عملي، وبيحب النظام والقيادة الواضحة في كل حاجة.", relationships:"بيقدّر الوضوح والالتزام الصريح في العلاقة.", careers:"إدارة، جيش، قانون، أعمال.", sports:"رياضات منظمة تنافسية زي كرة القدم أو الجري المنظم." },
+  ESFJ: { name:"الداعم الاجتماعي", desc:"دافئ جدًا، وبيحب يعتني بمن حوله ويحافظ على الترابط.", relationships:"مخلص جدًا، وبيحب الاستقرار العائلي والاجتماعي.", careers:"تمريض، تعليم، ضيافة، خدمة عملاء.", sports:"رياضات جماعية اجتماعية زي الكرة الطائرة أو النادي الرياضي." },
+  ESTP: { name:"المغامر العملي", desc:"نشيط جدًا، وبيحب الإثارة والتفاعل الفوري مع اللحظة.", relationships:"محتاج شريك نشيط ومرن، ومش بيرتاح مع الروتين.", careers:"مبيعات، رياضة احترافية، ريادة أعمال، طوارئ.", sports:"رياضات إثارة عالية زي كرة القدم أو الرياضات القتالية." },
+  ESFP: { name:"المؤدي المرح", desc:"اجتماعي جدًا، وبيحب يستمتع باللحظة من غير تعقيد.", relationships:"دافئ ومرح، وبيحب علاقة مليانة حياة ونشاط.", careers:"فنون أدائية، ضيافة، مبيعات، إعلام.", sports:"رياضات جماعية ممتعة زي الرقص أو السباحة الجماعية." },
+};
+
+let mbtiAnswers = [];
+function startMbtiTest(){
+  mbtiAnswers = [];
+  renderMbtiQuestion(0);
+}
+function renderMbtiQuestion(index){
+  const wrap = document.getElementById('mbtiSection');
+  if(index >= MBTI_QUESTIONS.length){ revealMbtiResult(); return; }
+  const q = MBTI_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${MBTI_QUESTIONS.length} — نمط شخصيتك بالتفصيل</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div class="choice-btn" style="margin:0; text-align:right;" onclick="answerMbti(${index}, 'a')">${q.a.label}</div>
+      <div class="choice-btn" style="margin:0; text-align:right;" onclick="answerMbti(${index}, 'b')">${q.b.label}</div>
+    </div>
+  `;
+}
+function answerMbti(qIndex, choice){
+  mbtiAnswers.push(MBTI_QUESTIONS[qIndex][choice].axis);
+  renderMbtiQuestion(qIndex + 1);
+}
+function revealMbtiResult(){
+  const pairs = [['E','I'], ['S','N'], ['T','F'], ['J','P']];
+  let type = '';
+  pairs.forEach(([x,y]) => {
+    const countX = mbtiAnswers.filter(a => a === x).length;
+    const countY = mbtiAnswers.filter(a => a === y).length;
+    type += countX >= countY ? x : y;
+  });
+  localStorage.setItem('eihyaha_mbti_type', type);
+  renderMbtiResult(type);
+}
+function renderMbtiResult(type){
+  const t = MBTI_TYPES[type];
+  const wrap = document.getElementById('mbtiSection');
+  wrap.innerHTML = `
+    <div class="layer-card l3" style="text-align:center; padding:18px 16px;">
+      <p style="font-size:11px; color:var(--muted); margin:0 0 6px;">نمط شخصيتك</p>
+      <p style="font-size:22px; font-weight:700; color:var(--navy-dark); margin:0;">${type}</p>
+      <p style="font-size:13px; color:var(--text); margin-top:4px;">${t.name}</p>
+    </div>
+    <div class="layer-card l1">
+      <p class="layer-text">${t.desc}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">💛 في العلاقات والصداقة</p>
+      <p class="layer-text" style="margin-top:6px;">${t.relationships}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">💼 مجالات عمل تناسبك</p>
+      <p class="layer-text" style="margin-top:6px;">${t.careers}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">🏃 رياضات ممكن تستمتع بيها</p>
+      <p class="layer-text" style="margin-top:6px;">${t.sports}</p>
+    </div>
+    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin:10px 0;">دي اتجاهات عامة للتأمل مبنية على نمط شخصيتك، مش قواعد ثابتة أو توصيات نهائية — قراراتك الحقيقية لازم تاخد في الاعتبار ظروفك وميولك الفعلية.</p>
+    <div class="choice-btn" style="text-align:center;" onclick="startMbtiTest()">🔄 أعد الاختبار</div>
+  `;
+}
+function renderMbtiEntryPoint(){
+  const savedType = localStorage.getItem('eihyaha_mbti_type');
+  if(savedType){
+    setTimeout(() => renderMbtiResult(savedType), 0);
+    return '';
+  }
+  return `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+      <span style="font-size:14px;">🧩</span>
+      <p style="font-size:14px; font-weight:700; margin:0;">عايز تعرف نمط شخصيتك بالتفصيل؟</p>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">اختبار ٨ أسئلة سريع يوريك نمط شخصيتك من ١٦ نمط، وإزاي ده ممكن يفيدك في علاقاتك ومجال شغلك.</p>
+    <div class="choice-btn" style="text-align:center;" onclick="startMbtiTest()">ابدأ اختبار نمط الشخصية 🧩</div>
   `;
 }
 
