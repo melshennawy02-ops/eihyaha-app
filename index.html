@@ -322,6 +322,9 @@
       </div>
       <div id="stickyChooserWrap"></div>
       <div id="stickyNotesList" style="margin-top:10px;"></div>
+
+      <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
+      <div id="healingChallengeSection"></div>
     </div>
   </div>
 
@@ -397,6 +400,27 @@
       <div id="selfKnowContent" style="display:none;"></div>
     </div>
   </div>
+
+  <!-- ===================== SCREEN: FAMILY WOUND (علاقتك بأبوك وأمك) ===================== -->
+  <div class="screen" id="screen-family-wound">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(3)">→</div>
+      <h1>علاقتك بأبوك وأمك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="familyWoundBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: RELATIONSHIP CHECK (قيّم علاقتك) ===================== -->
+  <div class="screen" id="screen-relcheck">
+    <div class="topbar">
+      <div class="backbtn" onclick="goBackFromRelCheck()">→</div>
+      <h1 id="h1-relcheck">قيّم علاقتك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="relCheckBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -1226,8 +1250,8 @@ function hideSafety(){ document.getElementById('safetyOverlay').classList.remove
 const PILLARS = [
   {id:1, title:"الركن الروحاني", icon:"🕌", ready:true, tag:"قربك من الله .. راحة لقلبك", grad:"linear-gradient(135deg, #7A5A1C, #C9A24B)", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:2, title:"الركن الشخصي", icon:"🧠", ready:true, tag:"اكتشف نفسك .. وكن أفضل نسخة منها", grad:"linear-gradient(135deg, #0B3D3A, #145048)", img:"https://images.unsplash.com/photo-1617791160536-598cf32026fb?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:3, title:"الركن العائلي", icon:"👪", ready:false, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:false, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:3, title:"الركن العائلي", icon:"👪", ready:true, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:true, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:5, title:"الركن المهني", icon:"💼", ready:false, tag:"طموح أكبر .. إنجازات أعمق", grad:"linear-gradient(135deg, #4A2E6B, #6B4696)", img:"https://images.unsplash.com/photo-1752223638233-4c9545333f89?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:6, title:"الركن المادي", icon:"💰", ready:false, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:7, title:"الركن الصحي", icon:"🩺", ready:false, tag:"جسدك أمانة .. فاعتنِ به", grad:"linear-gradient(135deg, #0F3D2E, #1D6B52)", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=900&auto=format&fit=crop"},
@@ -1520,6 +1544,31 @@ function goToPillar(id){
         </div>
       `).join('')}
     `;
+  } else if(id === 3){
+    // الركن العائلي — الأدوات المتاحة بخلفيات صور
+    const familyTools = [
+      { onclick:"openFamilyWoundScreen()", icon:"🗝️", title:"علاقتك بأبوك وأمك", sub:"جرح الأم وجرح الأب .. من الاختيار الخفي", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(60,25,10,.72)" },
+      { onclick:"openRelationshipCheckScreen(3, 'زوجك أو زوجتك')", icon:"🎭", title:"قيّم شريك حياتك", sub:"علامات المنافق والمثلث المظلم في الزواج", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(40,20,15,.72)" },
+    ];
+    body.innerHTML = familyTools.map(t => `
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+        <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
+        <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
+        <div class="arrow" style="color:#fff;">‹</div>
+      </div>
+    `).join('') + `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:6px;">أدوات تانية للركن العائلي (التربية، الإخوة) قيد الإعداد وهتتضاف قريبًا.</p>`;
+  } else if(id === 4){
+    // الركن الاجتماعي — الأدوات المتاحة بخلفيات صور
+    const socialTools = [
+      { onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم صحبتك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
+    ];
+    body.innerHTML = socialTools.map(t => `
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+        <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
+        <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
+        <div class="arrow" style="color:#fff;">‹</div>
+      </div>
+    `).join('') + `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:6px;">أدوات تانية للركن الاجتماعي (الجيران، زملاء الشغل) قيد الإعداد وهتتضاف قريبًا.</p>`;
   } else {
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
@@ -2813,25 +2862,6 @@ function renderSelfKnowContent(dominant){
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
 
-    <div id="woundSection">${renderWoundEntryPoint()}</div>
-
-    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
-
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-      <span style="font-size:14px;">🎭</span>
-      <p style="font-size:14px; font-weight:700; margin:0;">قيّم علاقتك — علامات المنافق والمثلث المظلم</p>
-    </div>
-    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">صاحب، شريك حياة، حتى زميل شغل — قيّم أي علاقة بمقياس نبوي بسيط: هل الكلام بيتطابق مع الفعل؟</p>
-    <div id="darkTriadSection">
-      <div class="choice-btn" style="text-align:center;" onclick="startDarkTriadTool()">ابدأ التقييم 🎭</div>
-    </div>
-
-    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
-
-    <div id="healingChallengeSection">${renderHealingEntryPoint()}</div>
-
-    <div style="height:1px; background:var(--gold); opacity:.3; margin:22px 0 18px;"></div>
-
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 14px;">
       <span style="font-size:14px;">✍️</span>
       <p style="font-size:14px; font-weight:700; margin:0;">حاجة عن نفسك مش فاهمها؟ اكتبها</p>
@@ -3051,7 +3081,7 @@ function startWoundQuiz(){
   renderWoundQuestion(0);
 }
 function renderWoundQuestion(index){
-  const wrap = document.getElementById('woundSection');
+  const wrap = document.getElementById('familyWoundBody');
   if(index >= WOUND_QUESTIONS.length){ revealWoundResult(); return; }
   const q = WOUND_QUESTIONS[index];
   wrap.innerHTML = `
@@ -3075,7 +3105,7 @@ function revealWoundResult(){
   renderWoundResult(result);
 }
 function renderWoundResult(result){
-  const wrap = document.getElementById('woundSection');
+  const wrap = document.getElementById('familyWoundBody');
   const showMom = result.mom >= 2;
   const showDad = result.dad >= 2;
   let html = '';
@@ -3117,20 +3147,22 @@ function renderWoundResult(result){
   `;
   wrap.innerHTML = html;
 }
-function renderWoundEntryPoint(){
+function openFamilyWoundScreen(){
+  const wrap = document.getElementById('familyWoundBody');
   const saved = localStorage.getItem('eihyaha_wound_result');
   if(saved){
-    setTimeout(() => renderWoundResult(JSON.parse(saved)), 0);
-    return '';
+    renderWoundResult(JSON.parse(saved));
+  } else {
+    wrap.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; margin:14px 0 10px;">
+        <span style="font-size:14px;">🗝️</span>
+        <p style="font-size:14px; font-weight:700; margin:0;">الاختيار الخفي: جرح الأم وجرح الأب</p>
+      </div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">ليه بتكرر نفس نوع العلاقات اللي بتوجعك؟ ٦ أسئلة تكشفلك أثر علاقتك بأبوك وأمك على اختيارك لأصحابك وشريك حياتك.</p>
+      <div class="choice-btn" style="text-align:center;" onclick="startWoundQuiz()">ابدأ رحلة الاختيار الخفي 🗝️</div>
+    `;
   }
-  return `
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-      <span style="font-size:14px;">🗝️</span>
-      <p style="font-size:14px; font-weight:700; margin:0;">الاختيار الخفي: جرح الأم وجرح الأب</p>
-    </div>
-    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">ليه بتكرر نفس نوع العلاقات اللي بتوجعك؟ ٦ أسئلة تكشفلك أثر جروح الطفولة على اختيارك لأصحابك وشريك حياتك.</p>
-    <div class="choice-btn" style="text-align:center;" onclick="startWoundQuiz()">ابدأ رحلة الاختيار الخفي 🗝️</div>
-  `;
+  showScreen('screen-family-wound');
 }
 
 // ================= قيّم علاقتك — علامات المنافق والمثلث المظلم =================
@@ -3150,11 +3182,22 @@ const DARK_TRIAD_OPTIONS = [
   { label:"بيحصل كتير وبشكل متكرر", score:2 },
 ];
 let darkTriadIndex = 0, darkTriadScore = 0, darkTriadPersonName = '';
+let relCheckOrigin = 4, relCheckContext = 'الشخص ده';
+function openRelationshipCheckScreen(originPillarId, contextLabel){
+  relCheckOrigin = originPillarId;
+  relCheckContext = contextLabel || 'الشخص ده';
+  document.getElementById('h1-relcheck').textContent = originPillarId === 3 ? 'قيّم شريك حياتك' : 'قيّم صحبتك';
+  startDarkTriadTool();
+  showScreen('screen-relcheck');
+}
+function goBackFromRelCheck(){
+  goToPillar(relCheckOrigin);
+}
 function startDarkTriadTool(){
-  const wrap = document.getElementById('darkTriadSection');
+  const wrap = document.getElementById('relCheckBody');
   wrap.innerHTML = `
-    <p style="font-size:12px; color:var(--muted); margin-bottom:8px; line-height:1.7;">فكّر في شخص معيّن (صاحب، شريك حياة...) وانت بتجاوب. ملاحظة: الهدف إنك تراقب النمط، مش إنك تطلق تشخيص نهائي — ده مش دورك ولا دورنا.</p>
-    <input type="text" id="darkTriadName" placeholder="اسم الشخص (اختياري)..." style="margin-bottom:10px;">
+    <p style="font-size:12px; color:var(--muted); margin:14px 0 8px; line-height:1.7;">فكّر في ${relCheckContext} وانت بتجاوب. ملاحظة: الهدف إنك تراقب النمط، مش إنك تطلق تشخيص نهائي — ده مش دورك ولا دورنا.</p>
+    <input type="text" id="darkTriadName" placeholder="اسمه/اسمها (اختياري)..." style="margin-bottom:10px;">
     <div class="choice-btn" style="text-align:center;" onclick="beginDarkTriadQuiz()">ابدأ التقييم</div>
   `;
 }
@@ -3164,10 +3207,10 @@ function beginDarkTriadQuiz(){
   renderDarkTriadQuestion();
 }
 function renderDarkTriadQuestion(){
-  const wrap = document.getElementById('darkTriadSection');
+  const wrap = document.getElementById('relCheckBody');
   if(darkTriadIndex >= DARK_TRIAD_QUESTIONS.length){ revealDarkTriadResult(); return; }
   wrap.innerHTML = `
-    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${darkTriadIndex+1} من ${DARK_TRIAD_QUESTIONS.length}</p>
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${darkTriadIndex+1} من ${DARK_TRIAD_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${DARK_TRIAD_QUESTIONS[darkTriadIndex]}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
       ${DARK_TRIAD_OPTIONS.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerDarkTriad(${i})">${o.label}</div>`).join('')}
@@ -3180,7 +3223,7 @@ function answerDarkTriad(oIndex){
   renderDarkTriadQuestion();
 }
 function revealDarkTriadResult(){
-  const wrap = document.getElementById('darkTriadSection');
+  const wrap = document.getElementById('relCheckBody');
   let level, text, cardClass;
   if(darkTriadScore <= 4){
     level = "مفيش مؤشرات قوية دلوقتي"; cardClass='l1';
@@ -3193,7 +3236,7 @@ function revealDarkTriadResult(){
     text = "العلامات دي متكررة وواضحة، وده يستحق وقفة جدية مع نفسك عن العلاقة دي. لو حسّيت إنها بتأثر عليك نفسيًا بشكل كبير، التكلم مع مختص خطوة مهمة.";
   }
   wrap.innerHTML = `
-    <div class="layer-card ${cardClass}">
+    <div class="layer-card ${cardClass}" style="margin-top:14px;">
       <p class="layer-title" style="color:var(--navy-dark);">${darkTriadPersonName ? 'بخصوص: ' + darkTriadPersonName : 'نتيجة التقييم'}</p>
       <p class="layer-text" style="margin-top:6px; font-weight:700;">${level}</p>
       <p class="layer-text" style="margin-top:6px;">${text}</p>
@@ -3246,7 +3289,9 @@ const HEALING_30_DAYS = [
 ];
 function renderHealingEntryPoint(){
   const progress = getHealingProgress();
-  return `
+  const wrap = document.getElementById('healingChallengeSection');
+  if(!wrap) return;
+  wrap.innerHTML = `
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
       <span style="font-size:14px;">📆</span>
       <p style="font-size:14px; font-weight:700; margin:0;">تحدي الشفاء — ٣٠ يوم</p>
@@ -4820,6 +4865,7 @@ renderStickyNotes('homeStickyNotesList', 3);
 renderHomeTasksPreview();
 renderHomeDailyFlash();
 renderHomeSpiritualTouch();
+renderHealingEntryPoint();
 
 // بوابة تسجيل دخول إجبارية — بتظهر في كل مرة يتفتح فيها التطبيق، بصرف النظر
 // عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
