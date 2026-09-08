@@ -3166,6 +3166,7 @@ function renderWoundResult(result){
       <p class="layer-text" style="margin-top:6px;">التسمية مش اتهام، هي تشخيص. جرب دلوقتي تكمّل الجملة: «أنا لاحظت إني بميل لـ...» — والخطوة اللي بعدها المحاسبة من غير جلد للذات، وبعدين مسامحة الأبوين: «أنا فاهم إنكم اتصرفتوا من مكان جرحكم إنتوا، وأنا مش هسيب جرحكم يبقى جرحي طول عمري».</p>
       <p style="font-size:10.5px; color:var(--muted); margin:8px 0 0;">الجرح مش هويتك. الجرح طبقة اتحطت فوق فطرة سليمة، وممكن تتشال.</p>
     </div>
+    ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center; margin-top:10px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="showScreen('screen-daftar'); setTimeout(renderHealingChallenge, 50);">ابدأ تحدي الشفاء ٣٠ يوم في مرآتك اليومية ←</div>` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startWoundQuiz()">🔄 أعد التقييم</div>
   `;
   wrap.innerHTML = html;
@@ -3265,6 +3266,7 @@ function revealDarkTriadResult(){
       <p class="layer-text" style="margin-top:6px;">${text}</p>
     </div>
     <p style="font-size:10.5px; color:var(--muted); text-align:center; margin:8px 0;">التشخيص الإكلينيكي مش دورنا — الهدف نبقى أكتر وعي، مش نلصق لافتات على ناس حوالينا.</p>
+    ${darkTriadScore > 9 ? `<div class="choice-btn" style="text-align:center; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="startReport()">جهّز تقرير مبسط قبل ما تتكلم مع مختص ←</div>` : ''}
     <div class="choice-btn" style="text-align:center;" onclick="startDarkTriadTool()">🔄 قيّم علاقة تانية</div>
   `;
 }
@@ -3398,6 +3400,7 @@ async function analyzeSelfKnowText(){
   renderJournalHistory();
 
   const matchedId = matchFreeText(text);
+  const woundKey = matchWoundFreeText(text);
   const result = document.getElementById('selfKnowAnalysisResult');
   if(matchedId){
     const p = MERAT_PATTERNS.find(x => x.id === matchedId);
@@ -3406,7 +3409,9 @@ async function analyzeSelfKnowText(){
         <p class="layer-title" style="color:var(--navy-dark);">أقرب نمط لكلامك</p>
         <p class="layer-text" style="margin-top:8px;">${p.psych}</p>
       </div>
-      <div class="choice-btn" style="text-align:center;" onclick="openMeratPattern('${matchedId}')">شوف التحليل الكامل في مرآة العقل ←</div>`;
+      <div class="choice-btn" style="text-align:center;" onclick="openMeratPattern('${matchedId}')">شوف التحليل الكامل في مرآة العقل ←</div>${buildWoundSuggestionHtml(woundKey)}`;
+  } else if(woundKey){
+    result.innerHTML = `<div style="margin-top:14px; text-align:center;">${buildWoundSuggestionHtml(woundKey)}</div>`;
   } else {
     result.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية — جرب "احكيلي" لمساحة حوار أعمق حول اللي كتبته.</p>`;
   }
@@ -3708,6 +3713,69 @@ function matchFreeText(text){
     if(scores[id] > bestScore){ bestScore = scores[id]; bestId = id; }
   }
   return bestScore > 0 ? bestId : null;
+}
+
+// ================= بنك كلمات "الاختيار الخفي" — جرح الأم/الأب وعلامات المنافق =================
+// مستخرج من عبارات كتاب "الاختيار الخفي" (كوتش محمد الشناوي) نفسها، بنظام وزن
+// (مش عدّ بسيط) عشان العبارة الأدل على الجرح تاخد ثقل أعلى من كلمة عامة.
+const WOUND_FREE_TEXT_BANK = {
+  mom_wound: [
+    { phrase:"بحس إني لازم أستاهل الحب", weight:3 },
+    { phrase:"محبوب لمجرد إني موجود", weight:3 },
+    { phrase:"خايف حد يسيبني", weight:2 },
+    { phrase:"خايفة حد يسيبني", weight:2 },
+    { phrase:"خايف من الهجر", weight:2 },
+    { phrase:"مش قادر أثق في حد يحبني", weight:2 },
+    { phrase:"بجري وراه عشان يحبني", weight:2 },
+    { phrase:"بجري وراها عشان تحبني", weight:2 },
+    { phrase:"صعب أطلب مساعدة", weight:2 },
+    { phrase:"مش محتاج حد", weight:1 },
+    { phrase:"بتعلق بسرعة", weight:1 },
+    { phrase:"بحب حد بارد معايا", weight:1 },
+    { phrase:"بلاحق صاحبي", weight:1 },
+  ],
+  dad_wound: [
+    { phrase:"بحس إني لازم أثبت نفسي", weight:3 },
+    { phrase:"حاسس إني مش كفاية", weight:3 },
+    { phrase:"لازم أنجز عشان يحترموني", weight:2 },
+    { phrase:"بدور على تقدير محدش بيديهولي", weight:2 },
+    { phrase:"بكره أي حد يوجهني", weight:2 },
+    { phrase:"بتمرد على أي سلطة", weight:2 },
+    { phrase:"بيستفزني النقد", weight:1 },
+    { phrase:"بترفض النصيحة", weight:1 },
+    { phrase:"مفيش حد فخور بيا", weight:2 },
+  ],
+  relcheck_signs: [
+    { phrase:"بيوعدني ومايوفيش", weight:3 },
+    { phrase:"خانني", weight:3 },
+    { phrase:"قدام الناس شخص وفي الخفا شخص تاني", weight:3 },
+    { phrase:"بيكدب عليا", weight:2 },
+    { phrase:"بيقلب عليا الموقف", weight:2 },
+    { phrase:"بيقلل من إنجازاتي", weight:2 },
+    { phrase:"بيستخدم المديح عشان يتحكم فيا", weight:2 },
+    { phrase:"بحس بذنب مش فاهم مصدره", weight:2 },
+  ],
+};
+function matchWoundFreeText(text){
+  const scores = {};
+  for(const key in WOUND_FREE_TEXT_BANK){
+    scores[key] = WOUND_FREE_TEXT_BANK[key].reduce((s,item) => s + (text.includes(item.phrase) ? item.weight : 0), 0);
+  }
+  let bestKey = null, bestScore = 0;
+  for(const key in scores){
+    if(scores[key] > bestScore){ bestScore = scores[key]; bestKey = key; }
+  }
+  return bestScore >= 2 ? bestKey : null; // حد أدنى ٢ عشان نتجنب تطابق كلمة عرضية وحيدة الوزن
+}
+function buildWoundSuggestionHtml(key){
+  if(key === 'mom_wound' || key === 'dad_wound'){
+    const label = key === 'mom_wound' ? 'جرح الأم' : 'جرح الأب';
+    return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openFamilyWoundScreen()">كلامك قريب من ${label} — شوف «علاقتك بأبوك وأمك» في الركن العائلي ←</div>`;
+  }
+  if(key === 'relcheck_signs'){
+    return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openRelationshipCheckScreen(2, 'الشخص ده')">كلامك فيه علامات تستاهل تقييم علاقة — جرب أداة «قيّم علاقتك» ←</div>`;
+  }
+  return '';
 }
 
 // مطابقة احتياطية على بنك الومضات المئة — بيدوّر على أي كلمة من عنوان الومضة موجودة في كلام المستخدم
@@ -4472,8 +4540,10 @@ async function saveMoodWithNote(){
     const matchedId = matchFreeText(note);
     if(matchedId){
       const p = MERAT_PATTERNS.find(x => x.id === matchedId);
-      matchSuggestion = `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`;
+      matchSuggestion += `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`;
     }
+    const woundKey = matchWoundFreeText(note);
+    if(woundKey) matchSuggestion += buildWoundSuggestionHtml(woundKey);
   }
   feedback.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:8px 0;">${ok ? '✅ اتسجل في مرآتك اليومية' : '⚠️ اتسجل محليًا بس (مشكلة في الاتصال)'}</p>${matchSuggestion}`;
 }
@@ -4496,11 +4566,16 @@ async function saveJournal(){
 
   const matchWrap = document.getElementById('journalMatchResult');
   if(text.trim()){
-    const matchedId = matchFreeText(text.trim());
-    matchWrap.innerHTML = matchedId
-      ? (() => { const p = MERAT_PATTERNS.find(x => x.id === matchedId);
-          return `<div class="choice-btn" style="margin-top:10px; text-align:center;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`; })()
-      : '';
+    const trimmed = text.trim();
+    const matchedId = matchFreeText(trimmed);
+    const woundKey = matchWoundFreeText(trimmed);
+    let html = '';
+    if(matchedId){
+      const p = MERAT_PATTERNS.find(x => x.id === matchedId);
+      html += `<div class="choice-btn" style="margin-top:10px; text-align:center;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`;
+    }
+    if(woundKey) html += `<div style="margin-top:8px; text-align:center;">${buildWoundSuggestionHtml(woundKey)}</div>`;
+    matchWrap.innerHTML = html;
   } else {
     matchWrap.innerHTML = '';
   }
