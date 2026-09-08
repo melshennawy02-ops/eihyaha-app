@@ -1312,6 +1312,20 @@ function goHome(){
 }
 
 // ---------- لوحة ملخص سريعة للركن الروحاني (محلية وفورية، من غير انتظار Firestore) ----------
+function computeWorshipStreak(){
+  const all = JSON.parse(localStorage.getItem('eihyaha_worship') || '{}');
+  const now = new Date();
+  let streak = 0;
+  for(let i = 0; i < 365; i++){
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = formatDateKey(d);
+    const day = all[key];
+    if(day && prayerScoreForDay(day) >= 4){ streak++; } else { break; }
+  }
+  return streak;
+}
+
 function computeLocalWorshipConsistency(days, offset){
   offset = offset || 0;
   const all = JSON.parse(localStorage.getItem('eihyaha_worship') || '{}');
@@ -1360,6 +1374,19 @@ function renderSpiritualDashboard(){
       </div>`;
   }
 
+  // ---------- تعزيز إيجابي لو فيه استمرارية عالية (عكس التنبيه، احتفال مش تصحيح) ----------
+  const streak = computeWorshipStreak();
+  if(streak >= 3){
+    const streakMsgs = { 3:"٣ أيام متتالية بانتظام عالي 🎉", 7:"أسبوع كامل بانتظام عالي! ما شاء الله 🌟", 14:"أسبوعين متواصلين — استمرارية حقيقية 💪", 30:"شهر كامل! ده إنجاز يستاهل نفتخر بيه 🕌" };
+    const milestone = [30,14,7,3].find(m => streak >= m);
+    alertHtml += `
+      <div class="card" style="background:var(--navy-dark); margin-bottom:10px;">
+        <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0;">${streakMsgs[milestone] || (streak + ' يوم متتالي بانتظام عالي 🎉')}</p>
+      </div>`;
+  }
+
+  const appliedCount = getTotalAppliedCount();
+
   let html = alertHtml + `<div class="card" style="background:linear-gradient(rgba(8,30,26,.82), rgba(8,30,26,.82)), url('https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:18px 16px;">`;
   if(consistency !== null){
     html += `
@@ -1375,6 +1402,9 @@ function renderSpiritualDashboard(){
   }
   if(quizState && stateMessages[quizState]){
     html += `<p style="font-size:13.5px; color:#fff; line-height:1.7; margin:0 0 12px; font-weight:600;">${stateMessages[quizState]}</p>`;
+  }
+  if(appliedCount > 0){
+    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة عملية لحد دلوقتي</p>`;
   }
   html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSpiritualReport()">📊 شوف تقريرك الروحاني الكامل ←</p>`;
   html += `</div>`;
@@ -2046,6 +2076,9 @@ function showClosenessDetail(i){
 }
 
 function getClosenessAppliedLog(){ return JSON.parse(localStorage.getItem('eihyaha_closeness_applied') || '[]'); }
+function getTotalAppliedCount(){
+  return getAsmaAppliedLog().length + getProphetAppliedLog().length + getClosenessAppliedLog().length;
+}
 function markClosenessApplied(label){
   const log = getClosenessAppliedLog();
   log.unshift({ label, date: new Date().toISOString() });
@@ -2233,6 +2266,10 @@ async function openSpiritualReport(){
       <div class="card" style="text-align:center; margin:0;">
         <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/98</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">أسماء الله قريتها</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${getTotalAppliedCount()}</p>
+        <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عملية طبّقتها فعليًا (مش قراءة بس)</p>
       </div>
     </div>
 
