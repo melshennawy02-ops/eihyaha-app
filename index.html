@@ -3312,6 +3312,8 @@ const HEALING_30_DAYS = [
 ];
 function renderHealingEntryPoint(){
   const progress = getHealingProgress();
+  const totalHealingDays = HEALING_30_DAYS.reduce((s,w) => s + w.days.length, 0);
+  const isComplete = progress.length >= totalHealingDays;
   const wrap = document.getElementById('healingChallengeSection');
   if(!wrap) return;
   wrap.innerHTML = `
@@ -3319,8 +3321,8 @@ function renderHealingEntryPoint(){
       <span style="font-size:14px;">📆</span>
       <p style="font-size:14px; font-weight:700; margin:0;">تحدي الشفاء — ٣٠ يوم</p>
     </div>
-    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">${progress.length > 0 ? `كمّل رحلتك — أنجزت ${progress.length} من ٣٠ لحد دلوقتي.` : "خطة عملية يوم بيوم لترجمة الوعي لتغيير حقيقي، مبنية على أبواب كتاب «الاختيار الخفي»."}</p>
-    <div class="choice-btn" style="text-align:center;" onclick="renderHealingChallenge()">${progress.length > 0 ? 'كمّل التحدي 📆' : 'ابدأ تحدي الـ٣٠ يوم 📆'}</div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">${isComplete ? `🎉 خلّصت الرحلة كاملة (${progress.length}/${totalHealingDays}) — تقدر ترجع تراجع أي يوم وقتما حبيت.` : progress.length > 0 ? `كمّل رحلتك — أنجزت ${progress.length} من ${totalHealingDays} لحد دلوقتي.` : "خطة عملية يوم بيوم لترجمة الوعي لتغيير حقيقي، مبنية على أبواب كتاب «الاختيار الخفي»."}</p>
+    <div class="choice-btn" style="text-align:center;" onclick="renderHealingChallenge()">${isComplete ? 'راجع رحلتك 📆' : progress.length > 0 ? 'كمّل التحدي 📆' : 'ابدأ تحدي الـ٣٠ يوم 📆'}</div>
   `;
 }
 function getHealingProgress(){ return JSON.parse(localStorage.getItem('eihyaha_healing30_progress') || '[]'); }
@@ -3334,6 +3336,7 @@ function toggleHealingDay(dayNum){
 function renderHealingChallenge(){
   const wrap = document.getElementById('healingChallengeSection');
   const progress = getHealingProgress();
+  const totalHealingDays = HEALING_30_DAYS.reduce((s,w) => s + w.days.length, 0);
   let dayCounter = 0;
   const weeksHtml = HEALING_30_DAYS.map(w => {
     const daysHtml = w.days.map(text => {
@@ -3354,12 +3357,18 @@ function renderHealingChallenge(){
         <div style="margin-top:6px;">${daysHtml}</div>
       </div>`;
   }).join('');
+  const celebrationHtml = progress.length >= totalHealingDays ? `
+    <div class="layer-card l3" style="text-align:center; margin-bottom:14px;">
+      <p style="font-size:15px; font-weight:700; color:var(--navy-dark); margin:0 0 6px;">🎉 ما شاء الله — خلّصت الرحلة كاملة!</p>
+      <p class="layer-text">قطعت الـ٣٠ يوم كلهم من التسمية للمسامحة للاختيار الواعي. الشفاء مش نقطة نهاية، هو مسار بترجع فيه لورا أحيانًا لكن بتفضل ماشي — رجّع نظرة على أي يوم وقتما حبيت.</p>
+    </div>` : '';
   wrap.innerHTML = `
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
       <span style="font-size:14px;">📆</span>
       <p style="font-size:14px; font-weight:700; margin:0;">تحدي الشفاء — ٣٠ يوم</p>
     </div>
-    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">خطة عملية يوم بيوم، مبنية على أبواب كتاب «الاختيار الخفي». أنجزت ${progress.length} من ٣٠.</p>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.7;">خطة عملية يوم بيوم، مبنية على أبواب كتاب «الاختيار الخفي». أنجزت ${progress.length} من ${totalHealingDays}.</p>
+    ${celebrationHtml}
     ${weeksHtml}
   `;
 }
@@ -3443,6 +3452,7 @@ function renderPersonalDashboard(){
   const selfState = localStorage.getItem('eihyaha_self_know_state');
   const moodStreak = computeMoodStreak();
   const appliedCount = getTotalPersonalAppliedCount();
+  const healingCount = getHealingProgress().length;
 
   const stateMessages = {
     lost: "آخر مرة قيّمت معرفتك بنفسك حسّيت إنك تايه — تحب ترجع تكمل «اعرف نفسك»؟",
@@ -3450,7 +3460,7 @@ function renderPersonalDashboard(){
     clear: "عندك أساس واضح في معرفتك بنفسك — استمر تعمّقها.",
   };
 
-  let hasAnyData = selfState || moodStreak > 0 || appliedCount > 0;
+  let hasAnyData = selfState || moodStreak > 0 || appliedCount > 0 || healingCount > 0;
   if(!hasAnyData){
     return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
       <p style="font-size:12px; color:var(--muted); margin:0;">لسه معندناش بيانات كفاية عنك هنا — ابدأ بـ"اعرف نفسك" وهنبني صورتك هنا تدريجيًا.</p>
@@ -3469,6 +3479,10 @@ function renderPersonalDashboard(){
   }
   if(appliedCount > 0){
     html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة عملية لحد دلوقتي</p>`;
+  }
+  if(healingCount > 0){
+    const totalHealingDays = HEALING_30_DAYS.reduce((s,w) => s + w.days.length, 0);
+    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px; cursor:pointer;" onclick="showScreen('screen-daftar'); setTimeout(renderHealingChallenge, 50);">📆 قطعت <b style="color:var(--gold);">${healingCount}</b> من ${totalHealingDays} في تحدي الشفاء ←</p>`;
   }
   html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openPersonalReport()">📊 شوف تقريرك الشخصي الكامل ←</p>`;
   html += `</div>`;
