@@ -482,6 +482,16 @@
     <div style="padding:0 16px;" id="circleBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: FAMILY CIRCLE ASSESSMENT (أضعف علاقة عائلية) ===================== -->
+  <div class="screen" id="screen-family-circle">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(3)">→</div>
+      <h1>أضعف علاقة عائلية عندك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="familyCircleBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: SILAT AL-RAHM (صلة الرحم) ===================== -->
   <div class="screen" id="screen-rahm">
     <div class="topbar">
@@ -2029,22 +2039,139 @@ const LIVING_ENV_INSIGHT = {
   friends: "عيشتك مع أصدقاء بتخليك في احتكاك يومي مع نفس أنماط الصداقة اللي بنتكلم عنها في الركن الاجتماعي.",
   other: "وضعك المعيشي الحالي له طبيعته الخاصة — يستاهل تلاحظ إزاي بيأثر على مزاجك واستقرارك يوم بيوم.",
 };
+// ---------- ٠) أضعف علاقة عائلية عندك (تشخيص موحّد، زي دايرتك الاجتماعية بالظبط) ----------
+const FAMILY_CIRCLE_QUESTIONS = [
+  { circle:'spouse', q:"لو متجوز/ة، علاقتك بشريك حياتك دلوقتي حاسس فيها بإيه؟", options:[
+    { label:"سكن ومودة حقيقية", score:0 },
+    { label:"مقبولة بس فيها فتور أو خلافات متكررة", score:2 },
+    { label:"مش منطبق عليا دلوقتي", score:null },
+  ]},
+  { circle:'children', q:"لو عندك أولاد، علاقتك بيهم إزاي غالبًا؟", options:[
+    { label:"قريبة، وبيسمعوني وباسمعهم", score:0 },
+    { label:"فيها صراخ أو بعد متكرر", score:2 },
+    { label:"مش منطبق عليا دلوقتي", score:null },
+  ]},
+  { circle:'siblings', q:"علاقتك بإخواتك دلوقتي؟", options:[
+    { label:"متواصلين بانتظام ومرتاحين مع بعض", score:0 },
+    { label:"فاترة أو فيها مقارنة/غيرة قديمة", score:2 },
+    { label:"مش منطبق عليا (وحيد/ة)", score:null },
+  ]},
+  { circle:'extended_family', q:"علاقتك بعائلة زوجك/زوجتك أو التوازن بين العائلتين؟", options:[
+    { label:"متوازنة ومريحة", score:0 },
+    { label:"فيها توتر أو تدخل متكرر", score:2 },
+    { label:"مش منطبق عليا دلوقتي", score:null },
+  ]},
+];
+const FAMILY_CIRCLE_LABELS = { spouse:"شريك الحياة", children:"الأولاد", siblings:"الإخوة", extended_family:"عائلة الطرفين" };
+const FAMILY_CIRCLE_TOOL_MAP = {
+  spouse: { fn:"openSpouseScreen()", label:"علاقتك بشريك حياتك" },
+  children: { fn:"openChildrenScreen()", label:"الأولاد والتعامل معهم" },
+  siblings: { fn:"openSiblingsScreen()", label:"الإخوة" },
+  extended_family: { fn:"openExtendedFamilyScreen()", label:"عائلة الأب وعائلة الأم" },
+};
+let familyCircleAnswers = [];
+function startFamilyCircleAssessment(){
+  markToolOpened('family_circle');
+  familyCircleAnswers = [];
+  renderFamilyCircleQuestion(0);
+  showScreen('screen-family-circle');
+}
+function renderFamilyCircleQuestion(index){
+  const wrap = document.getElementById('familyCircleBody');
+  if(index >= FAMILY_CIRCLE_QUESTIONS.length){ revealFamilyCircleResult(); return; }
+  const q = FAMILY_CIRCLE_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${FAMILY_CIRCLE_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFamilyCircle(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerFamilyCircle(qIndex, oIndex){
+  const q = FAMILY_CIRCLE_QUESTIONS[qIndex];
+  familyCircleAnswers.push({ circle:q.circle, score:q.options[oIndex].score });
+  renderFamilyCircleQuestion(qIndex + 1);
+}
+function revealFamilyCircleResult(){
+  const scores = {};
+  familyCircleAnswers.forEach(a => { if(a.score !== null) scores[a.circle] = a.score; });
+  const result = { scores, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_family_circle_assessment', JSON.stringify(result));
+  renderFamilyCircleResult(result);
+}
+function getFamilyCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_family_circle_assessment') || 'null'); }
+function renderFamilyCircleResult(result){
+  const wrap = document.getElementById('familyCircleBody');
+  const entries = Object.entries(result.scores);
+  if(entries.length === 0){
+    wrap.innerHTML = `
+      <div class="layer-card l1" style="margin-top:14px;">
+        <p class="layer-title" style="color:var(--navy-dark);">🌱 كل العلاقات دي مش منطبقة عليك دلوقتي</p>
+        <p class="layer-text" style="margin-top:6px;">ما فيش داعي تقلق — ركّز بس على «علاقتك بالأب والأم» و«الإخوة» لو منطبقة، هي الأساس دايمًا.</p>
+      </div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startFamilyCircleAssessment()">🔄 أعد التقييم</div>
+    `;
+    return;
+  }
+  const weakest = entries.sort((a,b) => b[1]-a[1])[0][0];
+  const tool = FAMILY_CIRCLE_TOOL_MAP[weakest];
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">🗺️ أضعف علاقة عائلية عندك دلوقتي</p>
+      <p class="layer-text" style="margin-top:6px;">دي مش حكم نهائي، لكن نقطة تركيز منطقية: <b>${FAMILY_CIRCLE_LABELS[weakest]}</b></p>
+    </div>
+    ${entries.sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+          <span>${FAMILY_CIRCLE_LABELS[circle]}</span><span style="color:var(--muted);">${val === 2 ? 'محتاجة شغل' : 'مستقرة'}</span>
+        </div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;">
+          <div style="width:${(val/2)*100}%; height:100%; background:${circle===weakest ? 'var(--gold)' : '#C9BFA0'}; border-radius:3px;"></div>
+        </div>
+      </div>
+    `).join('')}
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="startFamilyCircleAssessment()">🔄 أعد التقييم</div>
+  `;
+}
+
 function renderFamilyEnvironmentCard(){
   const profile = getLocalProfile();
+  const familyCircle = getFamilyCircleAssessment();
+  const appliedCount = getFamilyAppliedCount();
+  let html = '';
+
   if(!profile.maritalStatus && !profile.livingWith){
-    return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
+    html += `<div class="card" style="background:var(--sand); margin-bottom:10px;">
       <p style="font-size:12px; color:var(--muted); margin:0 0 8px; line-height:1.7;">لو ضفت حالتك الاجتماعية ووضعك المعيشي في "حسابي"، هنقدر نديك تحليل أدق هنا لبيئتك المحيطة وتأثيرها على مشاعرك وسلوكك.</p>
       <div class="choice-btn" style="text-align:center; margin:0;" onclick="openAccountScreen()">أضف بياناتك ←</div>
     </div>`;
+  } else {
+    const parts = [];
+    if(profile.maritalStatus && MARITAL_ENV_INSIGHT[profile.maritalStatus]) parts.push(MARITAL_ENV_INSIGHT[profile.maritalStatus]);
+    if(profile.livingWith && LIVING_ENV_INSIGHT[profile.livingWith]) parts.push(LIVING_ENV_INSIGHT[profile.livingWith]);
+    html += `<div class="card" style="background:var(--sand); margin-bottom:10px;">
+      <p style="font-size:12.5px; color:var(--gold); font-weight:700; margin:0 0 8px;">🏠 بيئتك المحيطة</p>
+      ${parts.map(p => `<p style="font-size:12.5px; color:var(--text); line-height:1.7; margin:0 0 8px;">${p}</p>`).join('')}
+      <p style="font-size:11px; color:var(--muted); margin:4px 0 0; cursor:pointer;" onclick="openAccountScreen()">تعديل بياناتك ←</p>
+    </div>`;
   }
-  const parts = [];
-  if(profile.maritalStatus && MARITAL_ENV_INSIGHT[profile.maritalStatus]) parts.push(MARITAL_ENV_INSIGHT[profile.maritalStatus]);
-  if(profile.livingWith && LIVING_ENV_INSIGHT[profile.livingWith]) parts.push(LIVING_ENV_INSIGHT[profile.livingWith]);
-  return `<div class="card" style="background:linear-gradient(rgba(60,25,10,.85), rgba(60,25,10,.85)), url('https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:16px;">
-    <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 8px;">🏠 بيئتك المحيطة</p>
-    ${parts.map(p => `<p style="font-size:13px; color:#fff; line-height:1.7; margin:0 0 8px;">${p}</p>`).join('')}
-    <p style="font-size:11px; color:rgba(255,255,255,.7); margin:4px 0 0; cursor:pointer;" onclick="openAccountScreen()">تعديل بياناتك ←</p>
-  </div>`;
+
+  html += `<div class="card" style="background:linear-gradient(rgba(60,25,10,.85), rgba(60,25,10,.85)), url('https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:16px;">`;
+  if(familyCircle){
+    const entries = Object.entries(familyCircle.scores);
+    if(entries.length > 0){
+      const weakest = entries.sort((a,b)=>b[1]-a[1])[0][0];
+      html += `<p style="font-size:13px; color:#fff; margin:0 0 8px; cursor:pointer;" onclick="renderFamilyCircleResult(getFamilyCircleAssessment()); showScreen('screen-family-circle');">🗺️ أضعف علاقة عائلية عندك: <b style="color:var(--gold);">${FAMILY_CIRCLE_LABELS[weakest]}</b> ←</p>`;
+    }
+  } else {
+    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 8px; cursor:pointer;" onclick="startFamilyCircleAssessment()">🗺️ عايز تعرف أضعف علاقة عائلية عندك؟ ابدأ تقييم سريع ←</p>`;
+  }
+  if(appliedCount > 0) html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 8px;">✅ طبّقت <b style="color:var(--gold);">${appliedCount}</b> خطوة عائلية</p>`;
+  html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openFamilyReport()">📊 شوف تقريرك العائلي الكامل ←</p>`;
+  html += `</div>`;
+  return html;
 }
 
 // ---------- تتبع عام: هل جرّب المستخدم أداة معيّنة قبل كده؟ (لعلامة "ابدأ من هنا") ----------
@@ -2304,6 +2431,10 @@ function openFamilyReport(){
         <p class="card-title" style="margin-bottom:10px;">توزيع خطواتك حسب الدايرة</p>
         ${Object.entries(byCategory).map(([cat,count]) => `<p style="font-size:12.5px; margin:0 0 6px;">${categoryLabels[cat]||cat}: <b>${count}</b></p>`).join('')}
       </div>` : ''}
+    <div class="card" style="cursor:pointer;" onclick="getFamilyCircleAssessment() ? (renderFamilyCircleResult(getFamilyCircleAssessment()), showScreen('screen-family-circle')) : startFamilyCircleAssessment()">
+      <p class="card-title" style="margin-bottom:4px;">🗺️ أضعف علاقة عائلية عندك</p>
+      <p style="font-size:12px; color:var(--muted); margin:0;">${getFamilyCircleAssessment() ? 'شوف نتيجتك تاني ←' : 'لسه ما عملتش التقييم ده — ابدأه دلوقتي ←'}</p>
+    </div>
     <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن العائلي بس حاليًا.</p>
   `;
   showScreen('screen-family-report');
@@ -4016,6 +4147,7 @@ function renderWoundResult(result){
     ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center; margin-top:10px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="showScreen('screen-daftar'); setTimeout(renderHealingChallenge, 50);">ابدأ تحدي الشفاء ٣٠ يوم في مرآتك اليومية ←</div>` : ''}
     ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="openSpouseScreen()">شوف أثر النمط ده على علاقتك بشريك حياتك ←</div>` : ''}
     ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="openChildrenScreen()">شوف هل بتكرره مع ولادك ←</div>` : ''}
+    ${(showMom || showDad) ? `<div class="choice-btn" style="text-align:center;" onclick="startCircleAssessment()">شوف تأثيره على اختيار أصحابك (الركن الاجتماعي) ←</div>` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startWoundQuiz()">🔄 أعد التقييم</div>
   `;
   wrap.innerHTML = html;
