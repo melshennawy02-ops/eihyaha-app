@@ -1551,8 +1551,10 @@ function goToPillar(id){
       { onclick:"openFamilyWoundScreen()", icon:"🗝️", title:"علاقتك بأبوك وأمك", sub:"جرح الأم وجرح الأب .. من الاختيار الخفي", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(60,25,10,.72)" },
       { onclick:"openRelationshipCheckScreen(3, 'زوجك أو زوجتك')", icon:"🎭", title:"قيّم شريك حياتك", sub:"علامات المنافق والمثلث المظلم في الزواج", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(40,20,15,.72)" },
     ];
-    body.innerHTML = familyTools.map(t => `
-      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+    const isNewToFamily = !localStorage.getItem('eihyaha_wound_result');
+    body.innerHTML = familyTools.map((t,idx) => `
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===0 && isNewToFamily ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
+        ${idx===0 && isNewToFamily ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -1563,8 +1565,10 @@ function goToPillar(id){
     const socialTools = [
       { onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم صحبتك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
     ];
-    body.innerHTML = socialTools.map(t => `
-      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:none;" onclick="${t.onclick}">
+    const isNewToSocial = !localStorage.getItem('eihyaha_relcheck_used_4');
+    body.innerHTML = socialTools.map((t,idx) => `
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===0 && isNewToSocial ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
+        ${idx===0 && isNewToSocial ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -3211,6 +3215,7 @@ function openRelationshipCheckScreen(originPillarId, contextLabel){
   relCheckOrigin = originPillarId;
   relCheckContext = contextLabel || 'الشخص ده';
   document.getElementById('h1-relcheck').textContent = originPillarId === 3 ? 'قيّم شريك حياتك' : 'قيّم صحبتك';
+  localStorage.setItem('eihyaha_relcheck_used_' + originPillarId, '1');
   startDarkTriadTool();
   showScreen('screen-relcheck');
 }
