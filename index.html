@@ -123,6 +123,13 @@
   .safety-btn{width:100%; padding:12px; border-radius:12px; border:none; font-size:17px; font-weight:700; margin-bottom:8px; cursor:pointer;}
   .safety-btn.call{background:var(--danger); color:#fff;}
   .safety-btn.trust{background:var(--sand); color:var(--text);}
+  @media print{
+    body *{visibility:hidden;}
+    #printableReport, #printableReport *{visibility:visible;}
+    #printableReport{position:absolute; top:0; right:0; left:0; width:100%; padding:20px; background:#fff !important;}
+    #printableReport .card{background:#fff !important; border:1px solid #ccc !important; box-shadow:none !important;}
+    #printableReport p{color:#000 !important;}
+  }
 </style>
 </head>
 <body>
@@ -3783,30 +3790,96 @@ function revealTabiei(i){
 function startReport(){
   const body = document.getElementById('reportBody');
   body.innerHTML = `
+    <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.7;">هنجمع بياناتك الأساسية + سجلك المحفوظ عندنا (المزاج، القلق، الطاقة، النوم) في تقرير واحد واضح تقدر تطبعه أو تحفظه PDF قبل ما تزور المتخصص.</p>
     <label class="flabel">متى بدأت المشكلة؟</label>
     <input type="text" id="rep1" placeholder="مثال: من شهرين تقريبًا">
     <label class="flabel">ما الأعراض الرئيسية؟</label>
     <textarea id="rep2" placeholder="اكتب الأعراض اللي حاسس بيها"></textarea>
     <label class="flabel">كيف تؤثر على نومك وشغلك؟</label>
     <textarea id="rep3" placeholder="مثال: بقيت باصحى بالليل كتير"></textarea>
-    <button class="btn-primary" onclick="generateReport()">إنشاء التقرير</button>
+    <button class="btn-primary" onclick="generateReport()">إنشاء التقرير الكامل</button>
     <div id="reportOutput"></div>
   `;
   showScreen('screen-report');
 }
-function generateReport(){
+
+// حساب متوسطات القلق/الطاقة/النوم وتوزيع المزاج من السجل المحلي المخزّن فعليًا
+function computeReportStats(){
+  const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  const dailyEntries = local.filter(e => e.anxiety !== undefined); // مرآتي اليومية
+  const moodEntries = local.filter(e => e.type === 'mood');
+
+  let stats = { daysTracked: dailyEntries.length, avgAnxiety:null, avgEnergy:null, avgSleep:null, moodCounts:{}, recentNotes:[] };
+  if(dailyEntries.length > 0){
+    stats.avgAnxiety = (dailyEntries.reduce((s,e) => s + Number(e.anxiety||0), 0) / dailyEntries.length).toFixed(1);
+    stats.avgEnergy = (dailyEntries.reduce((s,e) => s + Number(e.energy||0), 0) / dailyEntries.length).toFixed(1);
+    stats.avgSleep = (dailyEntries.reduce((s,e) => s + Number(e.sleep||0), 0) / dailyEntries.length).toFixed(1);
+    stats.recentNotes = dailyEntries.filter(e => e.text).slice(0,3).map(e => ({ date:e.date, text:e.text }));
+  }
+  moodEntries.forEach(e => { const label = e.subLabel || e.moodLabel; stats.moodCounts[label] = (stats.moodCounts[label]||0) + 1; });
+  return stats;
+}
+
+async function generateReport(){
   const r1 = document.getElementById('rep1').value || "—";
   const r2 = document.getElementById('rep2').value || "—";
   const r3 = document.getElementById('rep3').value || "—";
   if(checkSafety(r2) || checkSafety(r3)){ showSafety(); return; }
-  document.getElementById('reportOutput').innerHTML = `
-    <div class="card" style="margin-top:16px; background:var(--navy-dark); color:#fff;">
-      <p class="card-title" style="color:var(--gold);">تقريرك جاهز</p>
-      <p class="card-sub" style="color:#DCE6E4;">بداية المشكلة: ${r1}</p>
-      <p class="card-sub" style="color:#DCE6E4;">الأعراض: ${r2}</p>
-      <p class="card-sub" style="color:#DCE6E4;">التأثير: ${r3}</p>
+
+  const output = document.getElementById('reportOutput');
+  output.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; padding:14px 0;">جاري تجميع سجلك المحفوظ...</p>`;
+
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const profile = await firestoreGetDoc('users', getUserId()).catch(() => null);
+  const stats = computeReportStats();
+  const today = new Date().toLocaleDateString('ar-EG');
+
+  const moodSummary = Object.entries(stats.moodCounts).sort((a,b) => b[1]-a[1]).slice(0,3)
+    .map(([label,count]) => `${label} (${count} مرة)`).join('، ') || 'لا يوجد تسجيل مزاج كافٍ بعد';
+
+  output.innerHTML = `
+    <div id="printableReport">
+      <div style="text-align:center; border-bottom:2px solid var(--gold); padding-bottom:12px; margin-bottom:16px;">
+        <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0;">إحياها باستمتاع</p>
+        <p style="font-size:17px; font-weight:700; margin:4px 0 0;">تقرير تحضيري لزيارة المتخصص</p>
+        <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">تاريخ التقرير: ${today}</p>
+      </div>
+
+      <p class="card-title" style="margin-bottom:8px;">بيانات أساسية</p>
+      <div class="card" style="margin-bottom:14px;">
+        <p style="font-size:13px; margin:0 0 4px;"><b>الاسم:</b> ${(profile && profile.fullName) || (auth && auth.username) || '—'}</p>
+        <p style="font-size:13px; margin:0 0 4px;"><b>العمر:</b> ${(profile && profile.age) || 'غير محدد'}</p>
+        <p style="font-size:13px; margin:0;"><b>النوع:</b> ${profile && profile.gender === 'male' ? 'ذكر' : profile && profile.gender === 'female' ? 'أنثى' : 'غير محدد'}</p>
+      </div>
+
+      <p class="card-title" style="margin-bottom:8px;">وصف الحالة (من كلام المستخدم)</p>
+      <div class="card" style="margin-bottom:14px;">
+        <p style="font-size:13px; margin:0 0 6px;"><b>بداية المشكلة:</b> ${r1}</p>
+        <p style="font-size:13px; margin:0 0 6px;"><b>الأعراض الرئيسية:</b> ${r2}</p>
+        <p style="font-size:13px; margin:0;"><b>التأثير على النوم والشغل:</b> ${r3}</p>
+      </div>
+
+      <p class="card-title" style="margin-bottom:8px;">السجل المحفوظ في التطبيق</p>
+      <div class="card" style="margin-bottom:14px;">
+        <p style="font-size:13px; margin:0 0 6px;"><b>عدد أيام المتابعة المسجّلة:</b> ${stats.daysTracked} يوم</p>
+        ${stats.avgAnxiety !== null ? `
+          <p style="font-size:13px; margin:0 0 6px;"><b>متوسط مستوى القلق:</b> ${stats.avgAnxiety}/10</p>
+          <p style="font-size:13px; margin:0 0 6px;"><b>متوسط مستوى الطاقة:</b> ${stats.avgEnergy}/10</p>
+          <p style="font-size:13px; margin:0 0 6px;"><b>متوسط ساعات النوم:</b> ${stats.avgSleep} ساعة</p>
+        ` : `<p style="font-size:12px; color:var(--muted); margin:0 0 6px;">لسه مفيش تسجيل كافٍ لمرآتك اليومية.</p>`}
+        <p style="font-size:13px; margin:0;"><b>المزاج الأكثر تكرارًا:</b> ${moodSummary}</p>
+      </div>
+
+      ${stats.recentNotes.length > 0 ? `
+        <p class="card-title" style="margin-bottom:8px;">آخر ملاحظات مسجّلة من المستخدم</p>
+        <div class="card" style="margin-bottom:14px;">
+          ${stats.recentNotes.map(n => `<p style="font-size:12.5px; margin:0 0 8px; line-height:1.6;">— <span style="color:var(--muted); font-size:11px;">(${n.date})</span> ${n.text}</p>`).join('')}
+        </div>
+      ` : ''}
+
+      <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:10px;">هذا التقرير أداة تحضيرية للمساعدة في التواصل مع المتخصص، وليس تشخيصًا طبيًا.</p>
     </div>
-    <p style="font-size:13px; color:var(--muted); margin-top:8px;">يمكنك مشاركة هذا التقرير مع المتخصص عند الزيارة.</p>
+    <button class="btn-primary" style="margin-top:14px;" onclick="window.print()">🖨️ اطبع أو احفظ PDF</button>
   `;
 }
 
