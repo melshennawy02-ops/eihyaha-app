@@ -1360,23 +1360,23 @@ function renderSpiritualDashboard(){
       </div>`;
   }
 
-  let html = alertHtml + `<div class="card" style="background:var(--sand); margin-bottom:14px;">`;
+  let html = alertHtml + `<div class="card" style="background:linear-gradient(rgba(8,30,26,.82), rgba(8,30,26,.82)), url('https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:18px 16px;">`;
   if(consistency !== null){
     html += `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-        <p style="font-size:12px; color:var(--muted); margin:0;">انتظامك آخر ٧ أيام (على الجهاز ده)</p>
-        <p style="font-size:16px; font-weight:700; color:var(--navy-dark); margin:0;">${consistency}٪</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <p style="font-size:14px; color:rgba(255,255,255,.9); margin:0; font-weight:600;">انتظامك آخر ٧ أيام (على الجهاز ده)</p>
+        <p style="font-size:26px; font-weight:700; color:var(--gold); margin:0;">${consistency}٪</p>
       </div>
-      <p style="font-size:10.5px; color:var(--gold); margin:0 0 8px; cursor:pointer;" onclick="openWorshipInsights()">شوف مؤشرك الكامل (٣٠ يوم من كل بياناتك) ←</p>`;
+      <p style="font-size:12px; color:var(--gold); margin:0 0 12px; cursor:pointer; font-weight:600;" onclick="openWorshipInsights()">شوف مؤشرك الكامل (٣٠ يوم من كل بياناتك) ←</p>`;
   }
   if(tawbaLog.length > 0){
     const daysSince = Math.floor((Date.now() - new Date(tawbaLog[0].date)) / 86400000);
-    html += `<p style="font-size:11.5px; color:var(--muted); margin:0 0 8px;">آخر مرة سجّلت فيها توبتك لله: ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم فات'}</p>`;
+    html += `<p style="font-size:13px; color:rgba(255,255,255,.9); margin:0 0 10px;">آخر مرة سجّلت فيها توبتك لله: ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم فات'}</p>`;
   }
   if(quizState && stateMessages[quizState]){
-    html += `<p style="font-size:12px; color:var(--text); line-height:1.6; margin:0 0 8px;">${stateMessages[quizState]}</p>`;
+    html += `<p style="font-size:13.5px; color:#fff; line-height:1.7; margin:0 0 12px; font-weight:600;">${stateMessages[quizState]}</p>`;
   }
-  html += `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSpiritualReport()">📊 شوف تقريرك الروحاني الكامل ←</p>`;
+  html += `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0; cursor:pointer;" onclick="openSpiritualReport()">📊 شوف تقريرك الروحاني الكامل ←</p>`;
   html += `</div>`;
   return html;
 }
