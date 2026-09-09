@@ -534,6 +534,46 @@
     <div style="padding:0 16px;" id="socialReportBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: COWORKERS HUB (زملاء العمل) ===================== -->
+  <div class="screen" id="screen-coworkers">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(4)">→</div>
+      <h1>زملاء العمل</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="coworkersBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: COWORKER EXCHANGE BALANCE (ميزان التبادل) ===================== -->
+  <div class="screen" id="screen-coworker-exchange">
+    <div class="topbar">
+      <div class="backbtn" onclick="openCoworkersScreen()">→</div>
+      <h1>مين المستنزف ومين الداعم؟</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="coworkerExchangeBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: COWORKER BOUNDARIES (حدودك مع الزملاء) ===================== -->
+  <div class="screen" id="screen-coworker-boundaries">
+    <div class="topbar">
+      <div class="backbtn" onclick="openCoworkersScreen()">→</div>
+      <h1>حدودك مع الزملاء</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="coworkerBoundariesBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: COWORKER BURNOUT (هل بيئة عملك بتستنزفك؟) ===================== -->
+  <div class="screen" id="screen-coworker-burnout">
+    <div class="topbar">
+      <div class="backbtn" onclick="openCoworkersScreen()">→</div>
+      <h1>هل بيئة عملك بتستنزفك؟</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="coworkerBurnoutBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -1816,7 +1856,7 @@ function renderCircleResult(result){
     rahm: { fn:"openRahmScreen()", label:"صلة الرحم" },
     neighbors: { fn:"openNeighborScreen()", label:"حقوق الجار والمجتمع" },
     friends: { fn:"openRelationshipCheckScreen(4, 'صاحبك')", label:"قيّم صحبتك" },
-    community: { fn:"openSocialSkillsScreen()", label:"مهارات التواصل والحدود" },
+    community: { fn:"openCoworkersScreen()", label:"زملاء العمل بالتفصيل" },
   };
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
@@ -1986,6 +2026,223 @@ function showSocialSkillDetail(i){
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('skill','${s.label}'); this.textContent='✓ تم — أحسنت';  this.onclick=null;">علّمها إنك طبّقتها ✅</div>
     </div>
     <button class="btn-ghost" onclick="openSocialSkillsScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٥) زملاء العمل — أدوات تفصيلية ----------
+function openCoworkersScreen(){
+  markToolOpened('coworkers');
+  const wrap = document.getElementById('coworkersBody');
+  const exchangeDone = !!getCoworkerExchangeResult();
+  const burnoutDone = !!getCoworkerBurnoutResult();
+  const tools = [
+    { emoji:"⚖️", label:"مين المستنزف ومين الداعم؟", sub:"ميزان التبادل في علاقتك بزمايلك", onclick:"startCoworkerExchange()", done:exchangeDone },
+    { emoji:"🧱", label:"حدودك مع الزملاء", sub:"مواقف شائعة وإزاي تتعامل معاها بحزم وهدوء", onclick:"openCoworkerBoundariesScreen()" },
+    { emoji:"🎭", label:"اقرأ اللعبة", sub:"كشف السياسة المكتبية وأنماط التلاعب", onclick:"openRelationshipCheckScreen(4, 'زميلك في الشغل', 'اقرأ اللعبة: زميلك في الشغل', 'openCoworkersScreen')" },
+    { emoji:"🔋", label:"هل بيئة عملك بتستنزفك؟", sub:"تقييم سريع لعلامات الاحتراق الوظيفي", onclick:"startCoworkerBurnout()", done:burnoutDone },
+  ];
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">علاقتك بزمايلك بتاخد جزء كبير من يومك — الأدوات دي تساعدك تفهم طبيعتها وتتعامل معاها بوعي بدل رد الفعل.</p>
+    ${tools.map(t => `
+      <div class="tool-row" onclick="${t.onclick}">
+        <div class="icon-circle" style="font-size:18px;">${t.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${t.label}${t.done ? ' <span style="color:var(--gold); font-size:11px;">✓ اتعمل قبل كده</span>' : ''}</div><div class="card-sub">${t.sub}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-coworkers');
+}
+
+// --- ٥.١) ميزان التبادل مع الزملاء ---
+const COWORKER_EXCHANGE_QUESTIONS = [
+  { q:"لما زميلك محتاج مساعدة في شغله، بتلاقي نفسك:", options:[
+    { label:"بساعده، وهو برضه بيساعدني وقت احتياجي", type:"balanced" },
+    { label:"بساعده دايمًا حتى لو نادرًا ما بيرد الجميل", type:"give" },
+    { label:"بحسبها كويس، وأحيانًا باستخدم مساعدتي كورقة ضغط", type:"take" },
+  ]},
+  { q:"لو أخدت فكرة أو مجهود منك، بيحصل إيه غالبًا؟", options:[
+    { label:"بيديني الفضل قدام الكل", type:"balanced" },
+    { label:"باسكت وما باخدش حقي عشان مابعملش مشكلة", type:"give" },
+    { label:"بيادعي إنها فكرته هو من غير ما ياخد إذني", type:"toxic" },
+  ]},
+  { q:"في الاجتماعات، حد بياخد وقتك أو مجهودك من غير امتنان؟", options:[
+    { label:"نادرًا، والتقدير غالبًا متبادل", type:"balanced" },
+    { label:"كتير، وباسكت عليه عشان الهدوء", type:"give" },
+    { label:"ممكن أنا اللي بعمل كده أحيانًا من غير ما أقصد", type:"take" },
+  ]},
+  { q:"زميلك بيهتم بيك كإنسان مش بس كموظف؟", options:[
+    { label:"آه، فيه اهتمام متبادل", type:"balanced" },
+    { label:"أنا اللي بسأل وبهتم، هو نادرًا", type:"give" },
+    { label:"بيسأل بس عشان ياخد معلومة يستخدمها", type:"toxic" },
+  ]},
+  { q:"لو رفضت طلب من زميلك، بيحصل إيه؟", options:[
+    { label:"بيتفهم ويحترم رفضي من غير مشكلة", type:"balanced" },
+    { label:"بحس بذنب وبوافق غالبًا حتى لو مش عايز", type:"give" },
+    { label:"بيضغط عليّ أو يحاول يحرجني قدام التانيين", type:"toxic" },
+  ]},
+];
+let coworkerExchangeAnswers = [];
+function startCoworkerExchange(){
+  markToolOpened('coworker_exchange');
+  coworkerExchangeAnswers = [];
+  renderCoworkerExchangeQuestion(0);
+  showScreen('screen-coworker-exchange');
+}
+function renderCoworkerExchangeQuestion(index){
+  const wrap = document.getElementById('coworkerExchangeBody');
+  if(index >= COWORKER_EXCHANGE_QUESTIONS.length){ revealCoworkerExchangeResult(); return; }
+  const q = COWORKER_EXCHANGE_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${COWORKER_EXCHANGE_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCoworkerExchange(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerCoworkerExchange(qIndex, oIndex){
+  coworkerExchangeAnswers.push(COWORKER_EXCHANGE_QUESTIONS[qIndex].options[oIndex].type);
+  renderCoworkerExchangeQuestion(qIndex + 1);
+}
+function getCoworkerExchangeResult(){ return JSON.parse(localStorage.getItem('eihyaha_coworker_exchange') || 'null'); }
+function revealCoworkerExchangeResult(){
+  const tally = { balanced:0, give:0, take:0, toxic:0 };
+  coworkerExchangeAnswers.forEach(t => tally[t]++);
+  let category = 'balanced';
+  if(tally.toxic >= 2) category = 'toxic';
+  else if(tally.give > tally.balanced && tally.give >= tally.take) category = 'give';
+  else if(tally.take > tally.balanced) category = 'take';
+  const CATS = {
+    balanced: { title:"علاقة متوازنة ✅", cardClass:'l1', text:"الأخذ والعطاء في علاقتك بزمايلك متوازن نسبيًا — استمر تراقب الميزان ده، لأنه سهل يميل بمرور الوقت من غير ما تاخد بالك." },
+    give: { title:"أنت المُعطي الدائم ⚠️", cardClass:'l2', text:"غالبًا إنت اللي بتدي أكتر مما بتاخد في علاقتك بزمايلك. ده مش عيب فيك، لكنه استنزاف تراكمي — جرب توازن الميزان بخطوة واحدة صغيرة الأسبوع ده بدل ما تستمر تدي بلا حدود." },
+    take: { title:"في مؤشر إنك بتاخد أكتر ⚠️", cardClass:'l2', text:"إجاباتك فيها إشارة إنك أحيانًا بتاخد من مجهود أو وقت زمايلك أكتر مما بترد. يستاهل وقفة صادقة مع نفسك — مش عشان تحاسب نفسك، لكن عشان العلاقة تفضل صحية." },
+    toxic: { title:"علامات علاقة مستنزفة 🚫", cardClass:'l3', text:"في أكتر من علامة على إن العلاقة دي بياخد فيها حد فضلك أو مجهودك بدون احترام. يستاهل تفكر إزاي تحمي نفسك — سواء بحدود أوضح أو بتوثيق مجهودك." },
+  };
+  const c = CATS[category];
+  const historyEntry = { category, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_coworker_exchange', JSON.stringify(historyEntry));
+  const wrap = document.getElementById('coworkerExchangeBody');
+  wrap.innerHTML = `
+    <div class="layer-card ${c.cardClass}" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${c.title}</p>
+      <p class="layer-text" style="margin-top:8px;">${c.text}</p>
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openCoworkerBoundariesScreen()">جرب أداة «حدودك مع الزملاء» ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="startCoworkerExchange()">🔄 أعد التقييم</div>
+    <button class="btn-ghost" onclick="openCoworkersScreen()">رجوع لزملاء العمل</button>
+  `;
+}
+
+// --- ٥.٢) حدودك مع الزملاء ---
+const COWORKER_BOUNDARY_BANK = [
+  { emoji:"📥", label:"زميلي بيحمّلني شغله باستمرار", psych:"لما توافق تلقائيًا على أي طلب، بتعلّم اللي حواليك إن حدودك مفتوحة على طول — والمشكلة مش في اللي بيطلب، المشكلة إنك مابتقولش لأ من الأساس.", quran:"﴿لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا﴾ (سورة البقرة ٢٨٦)", action:"جرّب رد بسيط ومباشر: «معنديش وقت أكمّلها النهاردة، بس أقدر أساعدك تبدأها بكرة» — رفض بأدب من غير تبرير طويل." },
+  { emoji:"🗣️", label:"بخاف أقول رأيي التاني في الاجتماعات", psych:"الخوف من الرأي المخالف غالبًا مصدره خوف قديم من الرفض أو النقد — لكن سكوتك المستمر بيضيّع قيمة حقيقية كنت ممكن تضيفها.", quran:"﴿وَقُولُوا لِلنَّاسِ حُسْنًا﴾ (سورة البقرة ٨٣) — الوضوح بأدب مش تعارض، هو مشاركة حقيقية.", action:"اختار اجتماع واحد قريب وقول رأيك في نقطة واحدة بس، بجملة قصيرة وهادئة." },
+  { emoji:"🏆", label:"زميلي بياخد فضل مجهودي قدام المدير", psych:"لو سكتّ المرة دي، هتتكرر تاني — مش لأنه بالضرورة إنسان سيئ، لكن لأن محدش وضحله إن ده مش مقبول.", quran:"﴿وَلَا تَبْخَسُوا النَّاسَ أَشْيَاءَهُمْ﴾ (سورة الأعراف ٨٥) — حقك في مجهودك مش تفصيلة صغيرة.", action:"وضّح بهدوء ومن غير اتهام مباشر: «حابب أوضح إني أنا اللي شغلت على النقطة دي من الأول»، وثبّت مجهودك كتابيًا (إيميل/رسالة) في المرة الجاية من البداية." },
+  { emoji:"📱", label:"صعب أفصل بين وقت شغلي ووقت راحتي بسبب رسايل الزمايل بره الدوام", psych:"غياب الحد الزمني الواضح بيخلي مخك في حالة استعداد دايمة، وده بيستهلك طاقتك النفسية حتى وانت مش شغال فعليًا.", quran:"﴿وَجَعَلْنَا نَوْمَكُمْ سُبَاتًا﴾ (سورة النبأ ٩) — الراحة حق مش رفاهية.", action:"حدد وقت واضح تقفل فيه الإشعارات المتعلقة بالشغل، وابلغ زمايلك بيه بجملة بسيطة زي: «بعد الساعة كذا برد الصبح»." },
+];
+function openCoworkerBoundariesScreen(){
+  markToolOpened('coworker_boundaries');
+  const wrap = document.getElementById('coworkerBoundariesBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${COWORKER_BOUNDARY_BANK.map((b,i) => `
+      <div class="tool-row" onclick="showCoworkerBoundaryDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${b.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${b.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-coworker-boundaries');
+}
+function showCoworkerBoundaryDetail(i){
+  const b = COWORKER_BOUNDARY_BANK[i];
+  const wrap = document.getElementById('coworkerBoundariesBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p>
+      <p class="layer-text" style="margin-top:8px;">${b.psych}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p>
+      <p class="layer-text" style="margin-top:8px;">${b.quran}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${b.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markSocialApplied('coworker_boundary','${b.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openCoworkerBoundariesScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// --- ٥.٣) هل بيئة عملك بتستنزفك؟ ---
+const COWORKER_BURNOUT_QUESTIONS = [
+  { q:"في آخر شهر، حاسس إنك مستهلك جسديًا ونفسيًا بسبب الشغل؟", options:[
+    { label:"نادرًا", score:0 }, { label:"أحيانًا", score:1 }, { label:"باستمرار", score:2 },
+  ]},
+  { q:"بتيجي الشغل بإحساس فتور أو عدم اهتمام غير معتاد بيك؟", options:[
+    { label:"لأ، لسه متحمس غالبًا", score:0 }, { label:"بدأ يحصل من فترة", score:1 }, { label:"آه، بشكل شبه يومي", score:2 },
+  ]},
+  { q:"إحساسك إن مجهودك في الشغل بيتقدّر؟", options:[
+    { label:"آه، حاسس إنه متقدَّر", score:0 }, { label:"مش دايمًا", score:1 }, { label:"حاسس إنه غير مرئي خالص", score:2 },
+  ]},
+  { q:"بتاخد وقت كافي بره ضغط الشغل (نوم، راحة، أهل)؟", options:[
+    { label:"آه، بحافظ عليه", score:0 }, { label:"بحاول بس مش دايمًا بينجح", score:1 }, { label:"لأ، الشغل بياخد كل حاجة", score:2 },
+  ]},
+  { q:"بتلاقي نفسك عصبي أو متوتر مع ناس مش ليهم دعوة بالشغل (بيتك مثلًا) بسبب ضغط الشغل؟", options:[
+    { label:"نادرًا", score:0 }, { label:"أحيانًا", score:1 }, { label:"كتير", score:2 },
+  ]},
+];
+let coworkerBurnoutAnswers = [];
+function startCoworkerBurnout(){
+  markToolOpened('coworker_burnout');
+  coworkerBurnoutAnswers = [];
+  renderCoworkerBurnoutQuestion(0);
+  showScreen('screen-coworker-burnout');
+}
+function renderCoworkerBurnoutQuestion(index){
+  const wrap = document.getElementById('coworkerBurnoutBody');
+  if(index >= COWORKER_BURNOUT_QUESTIONS.length){ revealCoworkerBurnoutResult(); return; }
+  const q = COWORKER_BURNOUT_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${COWORKER_BURNOUT_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCoworkerBurnout(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerCoworkerBurnout(qIndex, oIndex){
+  coworkerBurnoutAnswers.push(COWORKER_BURNOUT_QUESTIONS[qIndex].options[oIndex].score);
+  renderCoworkerBurnoutQuestion(qIndex + 1);
+}
+function getCoworkerBurnoutResult(){ return JSON.parse(localStorage.getItem('eihyaha_coworker_burnout') || 'null'); }
+function revealCoworkerBurnoutResult(){
+  const score = coworkerBurnoutAnswers.reduce((a,b) => a+b, 0);
+  let level, text, cardClass;
+  if(score <= 3){
+    level = "مستوى استنزاف منخفض"; cardClass='l1';
+    text = "بيئة عملك حاليًا مش بتستنزفك بشكل كبير. استمر تراقب التوازن ده، خصوصًا وقت ضغط المشاريع.";
+  } else if(score <= 6){
+    level = "مستوى استنزاف متوسط"; cardClass='l2';
+    text = "في علامات بداية احتراق وظيفي — لسه ممكن تتعامل معاها دلوقتي قبل ما تتراكم. جرب تحدد حد واضح بين وقت الشغل ووقت راحتك.";
+  } else {
+    level = "مستوى استنزاف مرتفع"; cardClass='l3';
+    text = "العلامات دي متكررة وواضحة، وده مؤشر جدي على احتراق وظيفي. الجزء ده هيتكامل قريبًا مع الركن الصحي لمتابعة أعمق، ولو حاسس إنه بيأثر على صحتك النفسية أو الجسدية، التكلم مع مختص خطوة مهمة.";
+  }
+  const historyEntry = { score, level, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_coworker_burnout', JSON.stringify(historyEntry));
+  const wrap = document.getElementById('coworkerBurnoutBody');
+  wrap.innerHTML = `
+    <div class="layer-card ${cardClass}" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${level}</p>
+      <p class="layer-text" style="margin-top:8px;">${text}</p>
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openCoworkerBoundariesScreen()">جرب أداة «حدودك مع الزملاء» ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="startCoworkerBurnout()">🔄 أعد التقييم</div>
+    <button class="btn-ghost" onclick="openCoworkersScreen()">رجوع لزملاء العمل</button>
   `;
 }
 
@@ -2669,6 +2926,7 @@ function goToPillar(id){
       { key:"relcheck_4", onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم صحبتك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
       { key:"neighbor", onclick:"openNeighborScreen()", icon:"🏘️", title:"حقوق الجار والمجتمع", sub:"وصايا نبوية في التعامل مع المحيط", img:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,35,10,.72)" },
       { key:"social_skills", onclick:"openSocialSkillsScreen()", icon:"🧩", title:"مهارات التواصل والحدود", sub:"الرفض بأدب، الحدود، وحل الخلاف", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,20,45,.72)" },
+      { key:"coworkers", onclick:"openCoworkersScreen()", icon:"💼", title:"زملاء العمل بالتفصيل", sub:"ميزان التبادل، الحدود، وكشف السياسة المكتبية", img:"https://images.unsplash.com/photo-1522071820081-009f0129c71c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,45,.72)" },
       { key:"social_report", onclick:"openSocialReport()", icon:"📊", title:"تقريرك الاجتماعي", sub:"كل خطواتك في الركن ده في مكان واحد", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,25,35,.75)" },
     ];
     const socialStartIdx = firstUntriedIndex(socialTools);
@@ -2679,7 +2937,7 @@ function goToPillar(id){
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
       </div>
-    `).join('') + `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:6px;">أدوات تانية للركن الاجتماعي (زملاء الشغل بالتفصيل) قيد الإعداد وهتتضاف قريبًا.</p>`;
+    `).join('');
   } else {
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
@@ -4357,21 +4615,23 @@ const DARK_TRIAD_OPTIONS = [
   { label:"بيحصل كتير وبشكل متكرر", score:2 },
 ];
 let darkTriadIndex = 0, darkTriadScore = 0, darkTriadPersonName = '';
-let relCheckOrigin = 4, relCheckContext = 'الشخص ده';
+let relCheckOrigin = 4, relCheckContext = 'الشخص ده', relCheckBackFn = null;
 function openDaftarScreen(){
   markToolOpened('daftar');
   showScreen('screen-daftar');
 }
-function openRelationshipCheckScreen(originPillarId, contextLabel){
+function openRelationshipCheckScreen(originPillarId, contextLabel, titleOverride, backFn){
   markToolOpened('relcheck_' + originPillarId);
   relCheckOrigin = originPillarId;
   relCheckContext = contextLabel || 'الشخص ده';
-  document.getElementById('h1-relcheck').textContent = originPillarId === 3 ? 'قيّم شريك حياتك' : 'قيّم صحبتك';
+  relCheckBackFn = backFn || null;
+  document.getElementById('h1-relcheck').textContent = titleOverride || (originPillarId === 3 ? 'قيّم شريك حياتك' : 'قيّم صحبتك');
   localStorage.setItem('eihyaha_relcheck_used_' + originPillarId, '1');
   startDarkTriadTool();
   showScreen('screen-relcheck');
 }
 function goBackFromRelCheck(){
+  if(relCheckBackFn){ window[relCheckBackFn](); return; }
   goToPillar(relCheckOrigin);
 }
 function startDarkTriadTool(){
