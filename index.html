@@ -786,6 +786,42 @@ async function firestoreGetDoc(collection, docId){
   }catch(err){ return null; }
 }
 
+// ================= مزامنة "ملخصات" الركن الاجتماعي فقط مع Firestore =================
+// قرار متعمد: التفاصيل الكاملة (كل إجابة سؤال بسؤال) فضلة محلية بس (localStorage) لأنها
+// بتتغيّر كتير وحجمها أكبر. اللي بيتزامن مع Firestore هو "خلاصة" كل أداة بس (نتيجة + تاريخ)،
+// عشان لو المستخدم غيّر جهازه ميحسش إنه فقد كل حاجة، من غير ما نكبّر استهلاك القراءة/الكتابة
+// والمساحة على الخطة المجانية (Spark) مع زيادة عدد المستخدمين.
+function isLoggedIn(){
+  return !!JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+}
+function buildSocialSummaryFields(){
+  const circle = getCircleAssessment();
+  const exchange = getCoworkerExchangeResult();
+  const burnout = getCoworkerBurnoutResult();
+  const appliedLog = getSocialAppliedLog();
+  const fields = { updated_at: new Date().toISOString(), applied_count: appliedLog.length };
+  if(circle) fields.circle = JSON.stringify(circle);
+  if(exchange) fields.coworker_exchange = JSON.stringify(exchange);
+  if(burnout) fields.coworker_burnout = JSON.stringify(burnout);
+  if(appliedLog.length) fields.last_applied = JSON.stringify(appliedLog[0]);
+  return fields;
+}
+// بتترفع بعد أي نتيجة جديدة — مفيش انتظار (fire-and-forget) عشان ماتأخرش واجهة المستخدم
+function syncSocialSummaryToCloud(){
+  if(!isLoggedIn()) return; // معرف الجهاز المؤقت (guest) مش بيفيد في المزامنة عبر الأجهزة أصلًا
+  firestoreSetDoc('social_summary', getUserId(), buildSocialSummaryFields());
+}
+// بتتنفذ مرة واحدة بس عند الدخول للتطبيق (enterApp) — لو الجهاز جديد ومفيش بيانات محلية،
+// بترجع آخر ملخص محفوظ بدل ما تسيب المستخدم حاسس إنه بدأ من الصفر
+async function syncSocialSummaryFromCloud(){
+  if(!isLoggedIn()) return;
+  const remote = await firestoreGetDoc('social_summary', getUserId());
+  if(!remote) return;
+  if(remote.circle && !getCircleAssessment()) localStorage.setItem('eihyaha_circle_assessment', remote.circle);
+  if(remote.coworker_exchange && !getCoworkerExchangeResult()) localStorage.setItem('eihyaha_coworker_exchange', remote.coworker_exchange);
+  if(remote.coworker_burnout && !getCoworkerBurnoutResult()) localStorage.setItem('eihyaha_coworker_burnout', remote.coworker_burnout);
+}
+
 // ================= تسجيل الدخول ببصمة الإصبع (WebAuthn) =================
 // ملاحظة صادقة: بتشتغل بس لو المتصفح/الجهاز بيدعم WebAuthn فعليًا (متصفح Chrome
 // حقيقي غالبًا نعم، لكن جوه APK مغلّف بـWebView بسيط زي بتاعنا الحالي مش مضمونة —
@@ -1011,6 +1047,7 @@ function showAuthError(msg){
 async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
   await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
+  await syncSocialSummaryFromCloud(); // مرة واحدة بس هنا، مش مع كل شاشة
   renderHome();
   if(!localStorage.getItem('eihyaha_onboarding_seen')){
     showOnboarding();
@@ -1818,6 +1855,7 @@ function revealCircleResult(){
   const history = getCircleHistory();
   history.unshift(result);
   localStorage.setItem('eihyaha_circle_history', JSON.stringify(history.slice(0,50)));
+  syncSocialSummaryToCloud();
   renderCircleResult(result);
 }
 function getCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_circle_assessment') || 'null'); }
@@ -2122,6 +2160,7 @@ function revealCoworkerExchangeResult(){
   const c = CATS[category];
   const historyEntry = { category, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_coworker_exchange', JSON.stringify(historyEntry));
+  syncSocialSummaryToCloud();
   const wrap = document.getElementById('coworkerExchangeBody');
   wrap.innerHTML = `
     <div class="layer-card ${c.cardClass}" style="margin-top:14px;">
@@ -2234,6 +2273,7 @@ function revealCoworkerBurnoutResult(){
   }
   const historyEntry = { score, level, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_coworker_burnout', JSON.stringify(historyEntry));
+  syncSocialSummaryToCloud();
   const wrap = document.getElementById('coworkerBurnoutBody');
   wrap.innerHTML = `
     <div class="layer-card ${cardClass}" style="margin-top:14px;">
@@ -2299,6 +2339,7 @@ function markSocialApplied(category, label){
   log.unshift({ category, label, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_social_applied', JSON.stringify(log.slice(0,300)));
   scheduleFollowUp('social', label);
+  syncSocialSummaryToCloud();
 }
 function getSocialAppliedCount(){ return getSocialAppliedLog().length; }
 
@@ -4681,6 +4722,7 @@ function revealDarkTriadResult(){
   const history = getRelCheckHistory();
   history.unshift(historyEntry);
   localStorage.setItem('eihyaha_relcheck_history', JSON.stringify(history.slice(0,50)));
+  if(relCheckOrigin === 4) syncSocialSummaryToCloud();
   let followUp = '';
   if(darkTriadScore <= 9){
     // مفيش خطر واضح أو فيه أنماط تستاهل انتباه — نوجّه لبناء العلاقة إيجابيًا حسب السياق
