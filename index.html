@@ -180,6 +180,8 @@
         <div style="width:34px; height:2px; background:var(--gold); position:relative;"></div>
       </div>
 
+      <div id="followUpCardWrap"></div>
+
       <div style="display:flex; align-items:center; gap:8px; margin:6px 0 14px;">
         <span style="font-size:17px;">🌿</span>
         <p style="font-size:12px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
@@ -1546,6 +1548,8 @@ function applyLanguage(){
 }
 
 function renderHome(){
+  const followUpWrap = document.getElementById('followUpCardWrap');
+  if(followUpWrap) followUpWrap.innerHTML = renderFollowUpCard();
   const grid = document.getElementById('pillarsGrid');
   grid.innerHTML = PILLARS.map(p => {
     const bg = p.img
@@ -1830,6 +1834,7 @@ function renderCircleResult(result){
       </div>
     `).join('')}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${toolMap[weakest].fn}">ابدأ بـ${toolMap[weakest].label} ←</div>
+    ${weakest === 'friends' ? `<div class="choice-btn" style="text-align:center;" onclick="openFamilyWoundScreen()">جرب ترجع لجذر الموضوع: علاقتك بالأب والأم (العائلي) ←</div>` : ''}
     <div class="choice-btn" style="text-align:center;" onclick="startCircleAssessment()">🔄 أعد التقييم</div>
     ${renderCircleHistorySection()}
   `;
@@ -1984,12 +1989,59 @@ function showSocialSkillDetail(i){
   `;
 }
 
+// ============================================================
+// حلقة متابعة الأثر — بعد ٣ أيام من "طبّقتها"، نسأل: نفعت ولا لأ؟
+// ============================================================
+function getFollowUps(){ return JSON.parse(localStorage.getItem('eihyaha_followups') || '[]'); }
+function scheduleFollowUp(pillar, label){
+  const followUps = getFollowUps();
+  followUps.push({
+    id: Date.now() + Math.random(),
+    pillar, // 'family' أو 'social'
+    label,
+    dueDate: new Date(Date.now() + 3*86400000).toISOString(),
+    status: 'pending', // pending | worked | trying | didnt_work
+  });
+  localStorage.setItem('eihyaha_followups', JSON.stringify(followUps.slice(-200)));
+}
+function getDueFollowUp(){
+  const now = new Date();
+  const due = getFollowUps().filter(f => f.status === 'pending' && new Date(f.dueDate) <= now);
+  return due.length ? due[0] : null;
+}
+function resolveFollowUp(id, outcome){
+  const followUps = getFollowUps();
+  const f = followUps.find(x => x.id === id);
+  if(f){ f.status = outcome; f.resolvedDate = new Date().toISOString(); }
+  localStorage.setItem('eihyaha_followups', JSON.stringify(followUps));
+  renderHome();
+}
+function getResolvedFollowUpCount(pillar, outcome){
+  return getFollowUps().filter(f => f.pillar === pillar && f.status === outcome).length;
+}
+function renderFollowUpCard(){
+  const due = getDueFollowUp();
+  if(!due) return '';
+  return `
+    <div class="card" style="background:var(--navy-dark); margin-bottom:20px;">
+      <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 8px;">🔄 من ٣ أيام قلت إنك هتجرب:</p>
+      <p style="font-size:14px; color:#fff; margin:0 0 12px; line-height:1.6;">${due.label}</p>
+      <p style="font-size:12.5px; color:rgba(255,255,255,.85); margin:0 0 10px;">نفعت معاك؟</p>
+      <div style="display:flex; gap:6px;">
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; font-size:12px; padding:8px 4px;" onclick="resolveFollowUp(${due.id}, 'worked')">👍 فرقت</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; font-size:12px; padding:8px 4px;" onclick="resolveFollowUp(${due.id}, 'trying')">🔄 لسه بجرب</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0; font-size:12px; padding:8px 4px;" onclick="resolveFollowUp(${due.id}, 'didnt_work')">👎 مافرقتش</div>
+      </div>
+    </div>`;
+}
+
 // ---------- تتبع عام لكل خطوات الركن الاجتماعي المطبّقة ----------
 function getSocialAppliedLog(){ return JSON.parse(localStorage.getItem('eihyaha_social_applied') || '[]'); }
 function markSocialApplied(category, label){
   const log = getSocialAppliedLog();
   log.unshift({ category, label, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_social_applied', JSON.stringify(log.slice(0,300)));
+  scheduleFollowUp('social', label);
 }
 function getSocialAppliedCount(){ return getSocialAppliedLog().length; }
 
@@ -2000,7 +2052,7 @@ function openSocialReport(){
   const log = getSocialAppliedLog();
   const rahmCount = getRahmContactCount();
   const circleResult = getCircleAssessment();
-  const relcheckDone = isToolOpened('relcheck_4');
+  const relcheckCount = getRelCheckHistory().filter(h => h.origin === 4).length;
 
   let summary = "";
   if(log.length === 0 && !circleResult){
@@ -2023,14 +2075,21 @@ function openSocialReport(){
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة تواصلت مع رحم</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckDone ? '✓' : '—'}</p>
-        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">قيّمت صحبتك</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckCount}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة قيّمت صحبتك</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
         <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${log.length}</p>
         <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة اجتماعية طبّقتها فعليًا</p>
       </div>
     </div>
+    ${getResolvedFollowUpCount('social','worked') + getResolvedFollowUpCount('social','didnt_work') + getResolvedFollowUpCount('social','trying') > 0 ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:8px;">🔄 هل الخطوات دي فعلًا فرقت؟</p>
+        <p style="font-size:12.5px; margin:0 0 4px;">👍 فرقت: <b>${getResolvedFollowUpCount('social','worked')}</b></p>
+        <p style="font-size:12.5px; margin:0 0 4px;">🔄 لسه بتجرب: <b>${getResolvedFollowUpCount('social','trying')}</b></p>
+        <p style="font-size:12.5px; margin:0;">👎 مافرقتش: <b>${getResolvedFollowUpCount('social','didnt_work')}</b></p>
+      </div>` : ''}
     ${circleResult ? `
       <div class="card">
         <p class="card-title" style="margin-bottom:6px;">خريطة دايرتك الاجتماعية</p>
@@ -2063,6 +2122,15 @@ const LIVING_ENV_INSIGHT = {
   spouse_only: "المساحة بينك وبين شريك حياتك من غير أطراف تانية بتخليكم مرآة مباشرة لبعض — كل نمط عندك بيتكشف بسرعة قدامه.",
   friends: "عيشتك مع أصدقاء بتخليك في احتكاك يومي مع نفس أنماط الصداقة اللي بنتكلم عنها في الركن الاجتماعي.",
   other: "وضعك المعيشي الحالي له طبيعته الخاصة — يستاهل تلاحظ إزاي بيأثر على مزاجك واستقرارك يوم بيوم.",
+};
+// نفس القيم، لكن بزاوية اجتماعية (تأثير وضع المعيشة على دايرة الأصحاب والمجتمع، مش العائلة)
+const LIVING_SOCIAL_INSIGHT = {
+  alone: "عيشتك لوحدك معناها إن دايرة الأصحاب والمجتمع مش رفاهية بالنسبالك، هي بديل حقيقي عن الاحتكاك اليومي اللي بيحصل تلقائي لو كنت عايش مع حد.",
+  family: "احتكاكك اليومي مع أهلك ممكن يخليك تأجل الاستثمار في صحابك أو جيرانك، لأن الاحتياج للقرب متغطي جزئيًا من البيت.",
+  spouse_kids: "بيتك وأولادك بياخدوا وقت وطاقة كبيرة، فسهل جدًا تتجاهل دايرة الأصحاب والمجتمع من غير ما تحس — لحد ما تحس بعزلة مفاجئة.",
+  spouse_only: "من غير أولاد أو أهل في البيت، دايرة الأصحاب والمجتمع بتبقى أهم مصدر تنوّع اجتماعي في حياتك اليومية.",
+  friends: "عيشتك مع أصدقاء بتديك احتكاك يومي جاهز، لكن يستاهل تسأل نفسك: علاقتك بيهم فعلًا صحية، ولا مجرد سكن مشترك؟",
+  other: "وضعك المعيشي له تأثير مباشر على مدى احتكاكك اليومي بالناس — يستاهل تلاحظه.",
 };
 // ---------- ٠) أضعف علاقة عائلية عندك (تشخيص موحّد، زي دايرتك الاجتماعية بالظبط) ----------
 const FAMILY_CIRCLE_QUESTIONS = [
@@ -2248,6 +2316,7 @@ function markFamilyApplied(category, label){
   const log = getFamilyAppliedLog();
   log.unshift({ category, label, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_family_applied', JSON.stringify(log.slice(0,300)));
+  scheduleFollowUp('family', label);
 }
 function getFamilyAppliedCount(){ return getFamilyAppliedLog().length; }
 
@@ -2444,7 +2513,7 @@ function openFamilyReport(){
   const body = document.getElementById('familyReportBody');
   const log = getFamilyAppliedLog();
   const woundDone = !!localStorage.getItem('eihyaha_wound_result');
-  const relcheckDone = isToolOpened('relcheck_3');
+  const relcheckCount = getRelCheckHistory().filter(h => h.origin === 3).length;
   const byCategory = {};
   log.forEach(l => { byCategory[l.category] = (byCategory[l.category]||0) + 1; });
   const categoryLabels = { spouse:"شريك الحياة", children:"الأولاد", siblings:"الإخوة", extended_family:"عائلة الطرفين" };
@@ -2469,14 +2538,21 @@ function openFamilyReport(){
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">حللت جرح الأبوين</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckDone ? '✓' : '—'}</p>
-        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">قيّمت شريك حياتك</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckCount}</p>
+        <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة قيّمت شريك حياتك</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
         <p style="font-size:26px; font-weight:700; margin:0; color:var(--gold);">${log.length}</p>
         <p style="font-size:11px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عائلية طبّقتها فعليًا</p>
       </div>
     </div>
+    ${getResolvedFollowUpCount('family','worked') + getResolvedFollowUpCount('family','didnt_work') + getResolvedFollowUpCount('family','trying') > 0 ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:8px;">🔄 هل الخطوات دي فعلًا فرقت؟</p>
+        <p style="font-size:12.5px; margin:0 0 4px;">👍 فرقت: <b>${getResolvedFollowUpCount('family','worked')}</b></p>
+        <p style="font-size:12.5px; margin:0 0 4px;">🔄 لسه بتجرب: <b>${getResolvedFollowUpCount('family','trying')}</b></p>
+        <p style="font-size:12.5px; margin:0;">👎 مافرقتش: <b>${getResolvedFollowUpCount('family','didnt_work')}</b></p>
+      </div>` : ''}
     ${Object.keys(byCategory).length > 0 ? `
       <div class="card">
         <p class="card-title" style="margin-bottom:10px;">توزيع خطواتك حسب الدايرة</p>
@@ -2507,12 +2583,18 @@ function renderSocialSummaryCard(){
   const circleResult = getCircleAssessment();
   const rahmCount = getRahmContactCount();
   const appliedCount = getSocialAppliedCount();
+  const profile = getLocalProfile();
   if(!circleResult && appliedCount === 0){
+    const livingNote = (profile.livingWith && LIVING_SOCIAL_INSIGHT[profile.livingWith]) ? `<p style="font-size:12px; color:var(--text); margin:0 0 8px; line-height:1.7;">🏠 ${LIVING_SOCIAL_INSIGHT[profile.livingWith]}</p>` : '';
     return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
+      ${livingNote}
       <p style="font-size:12px; color:var(--muted); margin:0;">ابدأ بـ"دايرتك الاجتماعية" عشان نبني صورتك هنا تدريجيًا.</p>
     </div>`;
   }
   let html = `<div class="card" style="background:linear-gradient(rgba(10,35,50,.85), rgba(10,35,50,.85)), url('https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:16px;">`;
+  if(profile.livingWith && LIVING_SOCIAL_INSIGHT[profile.livingWith]){
+    html += `<p style="font-size:12.5px; color:rgba(255,255,255,.9); line-height:1.7; margin:0 0 10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.15);">🏠 ${LIVING_SOCIAL_INSIGHT[profile.livingWith]}</p>`;
+  }
   if(circleResult){
     const scores = circleResult.scores;
     const normalized = { rahm:(scores.rahm||0)/4, neighbors:(scores.neighbors||0)/2, friends:(scores.friends||0)/2, community:(scores.community||0)/2 };
@@ -4310,6 +4392,7 @@ function answerDarkTriad(oIndex){
   darkTriadIndex++;
   renderDarkTriadQuestion();
 }
+function getRelCheckHistory(){ return JSON.parse(localStorage.getItem('eihyaha_relcheck_history') || '[]'); }
 function revealDarkTriadResult(){
   const wrap = document.getElementById('relCheckBody');
   let level, text, cardClass;
@@ -4323,6 +4406,10 @@ function revealDarkTriadResult(){
     level = "علامات إنذار واضحة ومتكررة"; cardClass='l3';
     text = "العلامات دي متكررة وواضحة، وده يستحق وقفة جدية مع نفسك عن العلاقة دي. لو حسّيت إنها بتأثر عليك نفسيًا بشكل كبير، التكلم مع مختص خطوة مهمة.";
   }
+  const historyEntry = { origin:relCheckOrigin, name:darkTriadPersonName || null, score:darkTriadScore, level, date:new Date().toISOString() };
+  const history = getRelCheckHistory();
+  history.unshift(historyEntry);
+  localStorage.setItem('eihyaha_relcheck_history', JSON.stringify(history.slice(0,50)));
   let followUp = '';
   if(darkTriadScore <= 9){
     // مفيش خطر واضح أو فيه أنماط تستاهل انتباه — نوجّه لبناء العلاقة إيجابيًا حسب السياق
@@ -4342,6 +4429,21 @@ function revealDarkTriadResult(){
     ${darkTriadScore > 9 ? `<div class="choice-btn" style="text-align:center; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="startReport()">جهّز تقرير مبسط قبل ما تتكلم مع مختص ←</div>` : ''}
     ${followUp}
     <div class="choice-btn" style="text-align:center;" onclick="startDarkTriadTool()">🔄 قيّم علاقة تانية</div>
+    ${renderRelCheckHistorySection()}
+  `;
+}
+function renderRelCheckHistorySection(){
+  const history = getRelCheckHistory().filter(h => h.origin === relCheckOrigin);
+  if(history.length <= 1) return '';
+  return `
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0 12px;"></div>
+    <p style="font-size:12.5px; font-weight:700; margin-bottom:8px;">📈 تقييماتك السابقة ${relCheckOrigin === 3 ? '(شريك الحياة)' : '(الأصحاب)'}</p>
+    ${history.slice(0,10).map((h,i) => `
+      <div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #EDE8D8;">
+        <span style="font-size:12px; color:${i===0 ? 'var(--navy-dark)' : 'var(--muted)'}; font-weight:${i===0 ? '700' : '400'};">${h.name ? h.name + ' — ' : ''}${h.level}</span>
+        <span style="font-size:11px; color:var(--muted);">${new Date(h.date).toLocaleDateString('ar-EG')}</span>
+      </div>
+    `).join('')}
   `;
 }
 
@@ -4874,6 +4976,62 @@ const WOUND_FREE_TEXT_BANK = {
     { phrase:"بيستخدم المديح عشان يتحكم فيا", weight:2 },
     { phrase:"بحس بذنب مش فاهم مصدره", weight:2 },
   ],
+  rahm: [
+    { phrase:"قاطعت قريبي", weight:3 },
+    { phrase:"قاطعت خالي", weight:3 },
+    { phrase:"قاطعت عمي", weight:3 },
+    { phrase:"مش بكلم عمي", weight:2 },
+    { phrase:"مش بكلم خالي", weight:2 },
+    { phrase:"زعلان من حد في العيلة الكبيرة", weight:2 },
+    { phrase:"مش بزور أهلي كتير", weight:1 },
+  ],
+  neighbor: [
+    { phrase:"مشكلة مع الجيران", weight:3 },
+    { phrase:"جاري بيضايقني", weight:3 },
+    { phrase:"جارتي بتضايقني", weight:3 },
+    { phrase:"مش عارف جيراني", weight:2 },
+  ],
+  social_skills: [
+    { phrase:"صعب أرفض", weight:3 },
+    { phrase:"صعب أقول لأ", weight:3 },
+    { phrase:"بنفجر وقت الخلاف", weight:2 },
+    { phrase:"بصمت وماباقولش رأيي", weight:2 },
+    { phrase:"محدش بيحترم حدودي", weight:3 },
+    { phrase:"بلبس قناع قدام الناس", weight:2 },
+  ],
+  spouse: [
+    { phrase:"مشاكل مع جوزي", weight:3 },
+    { phrase:"مشاكل مع مراتي", weight:3 },
+    { phrase:"فتور بيني وبين شريك حياتي", weight:2 },
+    { phrase:"بنتخانق كتير أنا وجوزي", weight:2 },
+    { phrase:"بنتخانق كتير أنا ومراتي", weight:2 },
+    { phrase:"جوزي مش قدّرني", weight:2 },
+    { phrase:"مراتي مش قدراني", weight:2 },
+  ],
+  children: [
+    { phrase:"بصرخ في ولادي", weight:3 },
+    { phrase:"مش عارف أتعامل مع ابني", weight:2 },
+    { phrase:"مش عارفة أتعامل مع ابني", weight:2 },
+    { phrase:"بقارن بين ولادي", weight:2 },
+    { phrase:"مش لاقي وقت لولادي", weight:1 },
+  ],
+  siblings: [
+    { phrase:"غيران من أخويا", weight:2 },
+    { phrase:"غيرانة من أختي", weight:2 },
+    { phrase:"مقاطع أخويا", weight:3 },
+    { phrase:"مقاطعة أختي", weight:3 },
+  ],
+  extended_family: [
+    { phrase:"حماتي بتتدخل", weight:3 },
+    { phrase:"أهل جوزي بيضايقوني", weight:2 },
+    { phrase:"أهل مراتي بيتدخلوا", weight:2 },
+  ],
+  circle_social: [
+    { phrase:"حاسس إني لوحدي", weight:2 },
+    { phrase:"حاسة إني لوحدي", weight:2 },
+    { phrase:"مفيش صحاب حواليا", weight:2 },
+    { phrase:"مش حاسس بانتماء", weight:2 },
+  ],
 };
 function matchWoundFreeText(text){
   const scores = {};
@@ -4887,14 +5045,22 @@ function matchWoundFreeText(text){
   return bestScore >= 2 ? bestKey : null; // حد أدنى ٢ عشان نتجنب تطابق كلمة عرضية وحيدة الوزن
 }
 function buildWoundSuggestionHtml(key){
-  if(key === 'mom_wound' || key === 'dad_wound'){
-    const label = key === 'mom_wound' ? 'جرح الأم' : 'جرح الأب';
-    return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openFamilyWoundScreen()">كلامك قريب من ${label} — شوف «علاقتك بالأب والأم» في الركن العائلي ←</div>`;
-  }
-  if(key === 'relcheck_signs'){
-    return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="openRelationshipCheckScreen(2, 'الشخص ده')">كلامك فيه علامات تستاهل تقييم علاقة — جرب أداة «قيّم علاقتك» ←</div>`;
-  }
-  return '';
+  const map = {
+    mom_wound: { fn:"openFamilyWoundScreen()", text:"كلامك قريب من جرح الأم — شوف «علاقتك بالأب والأم» في الركن العائلي ←" },
+    dad_wound: { fn:"openFamilyWoundScreen()", text:"كلامك قريب من جرح الأب — شوف «علاقتك بالأب والأم» في الركن العائلي ←" },
+    relcheck_signs: { fn:"openRelationshipCheckScreen(2, 'الشخص ده')", text:"كلامك فيه علامات تستاهل تقييم علاقة — جرب أداة «قيّم علاقتك» ←" },
+    rahm: { fn:"openRahmScreen()", text:"كلامك عن قرابة محتاجة وصل — شوف «صلة الرحم» في الركن الاجتماعي ←" },
+    neighbor: { fn:"openNeighborScreen()", text:"كلامك عن موقف مع الجيران — شوف «حقوق الجار والمجتمع» ←" },
+    social_skills: { fn:"openSocialSkillsScreen()", text:"كلامك يشير لمهارة تواصل محتاجة شغل — شوف «مهارات التواصل والحدود» ←" },
+    spouse: { fn:"openSpouseScreen()", text:"كلامك عن علاقتك بشريك حياتك — شوف أداة «علاقتك بشريك حياتك» ←" },
+    children: { fn:"openChildrenScreen()", text:"كلامك عن التعامل مع ولادك — شوف أداة «الأولاد والتعامل معهم» ←" },
+    siblings: { fn:"openSiblingsScreen()", text:"كلامك عن علاقتك بإخواتك — شوف أداة «الإخوة» ←" },
+    extended_family: { fn:"openExtendedFamilyScreen()", text:"كلامك عن عائلة الطرفين — شوف أداة «عائلة الأب وعائلة الأم» ←" },
+    circle_social: { fn:"startCircleAssessment()", text:"كلامك عن إحساس بالعزلة — جرب تقييم «دايرتك الاجتماعية» ←" },
+  };
+  const item = map[key];
+  if(!item) return '';
+  return `<div class="choice-btn" style="margin-top:8px; display:inline-block;" onclick="${item.fn}">${item.text}</div>`;
 }
 
 // مطابقة احتياطية على بنك الومضات المئة — بيدوّر على أي كلمة من عنوان الومضة موجودة في كلام المستخدم
