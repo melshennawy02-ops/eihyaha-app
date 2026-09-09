@@ -4552,6 +4552,81 @@ function renderMbtiEntryPoint(){
 
 // ================= الاختيار الخفي: جرح الأم وجرح الأب =================
 // مبني على كتاب "الاختيار الخفي" — كوتش محمد الشناوي
+// ================= محرك الربط: قصص الأنبياء + أسماء الله + بوصلة التسليم =================
+// مكوّن واحد قابل لإعادة الاستخدام في أي أداة بالركن العائلي/الاجتماعي — بياخد نص حر أو
+// نمط محدد ويرجع أقرب ربط من الجدول (نسخة أولى تجريبية على أداة جرح الأم وجرح الأب،
+// وهتتعمم على باقي الأدوات بعد المراجعة)
+const PROPHET_LINK_TABLE = [
+  { id:'drain_giving', keywords:['بديه أكتر','بستهلك','مبردش','مبياخدش الجميل','بدي بلا حدود'], prophet:'يوسف عليه السلام', lesson:"استمر في العطاء والصبر مع إخوته رغم كيدهم، بلا انتقام ولا توقف عن الخير.", divineName:'الحليم / الشكور', tawbaDirection:"الاستغفار من الرضا بترك حقك المشروع باسم «حسن الخلق» لما ده بيتحول لاستنزاف مستمر." },
+  { id:'credit_stolen', keywords:['ياخد فضلي','مجهودي','بينسب لنفسه','التنمر في الشغل'], prophet:'يوسف عليه السلام', lesson:"تعرّض للكيد من إخوته، لكن الله مكّن له في وقته المناسب من غير ما يفقد ثقته في العدل الإلهي.", divineName:'الرزّاق / العدل', tawbaDirection:"الاستغفار من ترك توضيح حقك خوفًا من الناس، مع ثقتك إن الله وحده يتولى أمرك." },
+  { id:'fear_rejection', keywords:['خايف ارفض','مبقدرش اقول لا','حدودي ضعيفة','بوافق واحس بالذنب'], prophet:'موسى عليه السلام', lesson:"واجه فرعون بوضوح وثبات كامل، وربنا وصّاه: «فقولا له قولًا لينًا» — الثبات مع اللين.", divineName:'القوي / المتين', tawbaDirection:"الاستغفار من تقديم رضا الناس على راحتك المشروعة." },
+  { id:'burnout', keywords:['مستهلك','منهك','مش قادر انام','مفيش وقت لراحتي','احتراق وظيفي'], prophet:'يعقوب عليه السلام', lesson:"حزن طويل على يوسف، لكن ظل صابرًا («فصبر جميل») بلا استسلام كامل لليأس أو إهمال نفسه.", divineName:'اللطيف / الرحيم', tawbaDirection:"الاستغفار من التقصير في حق نفسك وجسدك اللي هو أمانة عندك." },
+  { id:'hypocrite_signs', keywords:['بيجاملني وبيتكلم عني','كلامه مايطابقش فعله','مش قادر اثق فيه'], prophet:'يوسف عليه السلام', lesson:"قدر يميّز بين إخوته الصادقين والكاذبين من غيرما يفقد رحمته أو يعمم على الكل.", divineName:'الحكيم / الخبير', tawbaDirection:"الاستغفار من سوء الظن الدائم أو الغفلة عن علامات واضحة — والاتزان بينهم." },
+  { id:'rahm_cutoff', keywords:['مقاطع أهلي','مش بكلم أقاربي','زعلان من قرايبي من زمان'], prophet:null, lesson:"الأصل النبوي: «من وصل وصله الله ومن قطع قطعه الله» — الوصل مش شرطه ردّ الفعل من الطرف التاني.", divineName:'الرحمن / الودود', tawbaDirection:"الاستغفار من تقديم العتاب القديم أو الانشغال على حق الرحم." },
+  { id:'neighbor_neglect', keywords:['مش بهتم بجيراني','مش عارف جيراني','مقاطع جيراني'], prophet:'لوط عليه السلام', lesson:"دافع عن ضيوفه وجيرانه رغم الخطر المحدق به، لأن حق الجوار عنده مقدّم.", divineName:'السلام / الحفيظ', tawbaDirection:"الاستغفار من اللامبالاة تجاه من هو أقرب إليك مكانًا." },
+  { id:'jarh_alom', keywords:['غياب أمي','حب أمي مشروط','أمي ناقدة','محتاج حنان'], prophet:'موسى عليه السلام', lesson:"أمه ألقته في اليم بأمر الله بثقة كاملة رغم الألم — نموذج للتسليم وسط أصعب لحظة أمومة.", divineName:'الودود / اللطيف', tawbaDirection:"الاستغفار من جعل قبول الناس مصدر قيمتك بدل قبول الله لك كما أنت." },
+  { id:'jarh_alab', keywords:['غياب أبويا','أبويا ناقد','أبويا قاسي','محتاج اثبت نفسي'], prophet:'إبراهيم عليه السلام', lesson:"استمر في الرفق والدعاء لأبيه رغم عناده وعدم استجابته، وسلّم الأمر لله في النهاية.", divineName:'الحليم / الرؤوف', tawbaDirection:"الاستغفار من جعل رضا الأب (أو غيابه) مقياسًا لقيمتك عند الله." },
+  { id:'marriage_distance', keywords:['بعد بيني وبين شريك حياتي','فقدنا المودة','بس مشاكل بيننا'], prophet:'آدم عليه السلام', lesson:"أصل الزواج «خُلقت لتسكن إليها» — سكن ومودة قبل أي تفاصيل خلافية.", divineName:'الودود / السلام', tawbaDirection:"الاستغفار من إهمال حق شريكك في المودة والرحمة وسط انشغالات الحياة." },
+  { id:'kids_pressure', keywords:['ضاغط على ولادي','متوقع منهم كتير','خايف يفشلوا'], prophet:'نوح عليه السلام', lesson:"بذل كل جهد ممكن مع ابنه، لكن سلّم النتيجة النهائية لله ولم يحمّل نفسه فوق طاقتها.", divineName:'الحكيم / الرحيم', tawbaDirection:"الاستغفار من نسيان أن الهداية بيد الله لا بجهدك وحدك." },
+  { id:'siblings_grudge', keywords:['زعلان من اخويا','حاسد اخواتي','مقاطع اخواتي من زمان'], prophet:'يوسف عليه السلام', lesson:"أعمق قصة قرآنية في الغيرة والقطيعة — وانتهت بالصفح: «لا تثريب عليكم اليوم».", divineName:'الغفور / التواب', tawbaDirection:"الاستغفار من التمسك بضغينة قديمة رغم قدرتك على الصفح." },
+  { id:'inlaws_tension', keywords:['أهل جوزي','أهل مراتي','مشاكل مع الأصهار'], prophet:'أيوب عليه السلام', lesson:"صبر على أذى طويل من حوله بلا تسخط، وكانت النهاية فرجًا ورحمة.", divineName:'الصبور / الحليم', tawbaDirection:"الاستغفار من سوء الظن أو التوتر المسبق قبل حدوث مشكلة فعلية." },
+  { id:'social_isolation', keywords:['بعزل نفسي','مش بخرج حد','مفيش دايرة اجتماعية'], prophet:'يونس عليه السلام', lesson:"انعزل في بطن الحوت، ثم كانت العودة بـ«لا إله إلا أنت» — الخروج من العزلة بالرجوع لا بالاستمرار فيها.", divineName:'الرقيب / القريب', tawbaDirection:"الاستغفار من اختيار العزلة هروبًا بدل مواجهة المشكلة الحقيقية." },
+];
+const PROPHET_LINK_TABLE_POSITIVE = [
+  { id:'balanced_giving', keywords:['بديله وباخد حقي','متوازن معاه'], prophet:'يوسف عليه السلام', lesson:"بعد التمكين، أعطى إخوته العفو وفي نفس الوقت رتّب أموره بحكمة ووضوح.", divineName:'العدل / الكريم', encourageMsg:"إنت بتعيش نفس توازن يوسف عليه السلام: قلب سليم من غير ما تسيب حقك." },
+  { id:'healthy_boundary', keywords:['بقول لا بأدب','بحترم حدودي'], prophet:'موسى عليه السلام', lesson:"واجه فرعون بوضوح تام من غير عدوانية ولا خوف.", divineName:'القوي / الحليم', encourageMsg:"الوضوح اللي بتتكلم بيه ده نفس ثبات موسى عليه السلام أمام أصعب موقف." },
+  { id:'self_care', keywords:['بحافظ على وقت راحتي','بنام كويس رغم الشغل'], prophet:'يونس عليه السلام', lesson:"بعد الخروج من بطن الحوت، رجع لعافية جسده ونفسه كخطوة إيمانية.", divineName:'اللطيف / الرحيم', encourageMsg:"رعايتك لجسدك ونفسك مش كسل، دي نفس الرحمة اللي رعى بيها الله يونس عليه السلام." },
+  { id:'wise_trust', keywords:['بحسن الظن وواعي في نفس الوقت'], prophet:'يوسف عليه السلام', lesson:"قدر يميّز بين إخوته الصادقين وغير الصادقين من غير ما يفقد رحمته.", divineName:'الحكيم / اللطيف', encourageMsg:"الاتزان ده بين الثقة والانتباه هو بالظبط حكمة يوسف عليه السلام." },
+  { id:'rahm_kept', keywords:['بحافظ على صلة رحمي','بكلم أقاربي بانتظام'], prophet:null, lesson:"«من وصل وصله الله» — كل اتصال بسيط بيوصلك برحمة الله.", divineName:'الرحمن / الودود', encourageMsg:"كل اتصال بسيط بتعمله بيوصلك برحمة الله، زي ما وصل الله كل واصل لرحمه." },
+  { id:'neighbor_care', keywords:['بهتم بجيراني','بساعد جيراني'], prophet:'لوط عليه السلام', lesson:"دافع عن ضيوفه وجيرانه بلا تردد.", divineName:'السلام / الحفيظ', encourageMsg:"اهتمامك بجارك امتداد لنفس القيمة اللي دافع عنها لوط عليه السلام." },
+  { id:'positive_parent_love', keywords:['بحب أهلي من غير شرط','متصالح مع أبويا وأمي'], prophet:'إبراهيم عليه السلام', lesson:"استمر في البر والدعاء لأبيه رغم عدم التبادل الكامل من الطرف التاني.", divineName:'الودود / الرؤوف', encourageMsg:"قدرتك تحب من غير ما تنتظر مقابل هي نفس رحمة إبراهيم عليه السلام مع أبيه." },
+  { id:'marriage_closeness', keywords:['علاقتي بشريك حياتي فيها مودة وسكن'], prophet:'آدم عليه السلام', lesson:"أصل الزواج سكن ومودة قبل أي تفاصيل.", divineName:'الودود / السلام', encourageMsg:"بتعيش أصل الآية «وجعل بينكما مودة ورحمة» — استمر عليه." },
+  { id:'kids_trust', keywords:['بسلم نتيجة تربية ولادي لله','بذلت المجهود المطلوب مع ولادي'], prophet:'نوح عليه السلام', lesson:"بذل كل الجهد الممكن مع تسليم كامل للنتيجة لله.", divineName:'الحكيم / الرحيم', encourageMsg:"بذلك للجهد مع تسليمك للنتيجة هو بالظبط منهج نوح عليه السلام." },
+  { id:'siblings_forgive', keywords:['سامحت اخواتي','مبقتش حامل ضغينة لإخوتي'], prophet:'يوسف عليه السلام', lesson:"«لا تثريب عليكم اليوم» لإخوته بعد كل اللي عملوه.", divineName:'الغفور / التواب', encourageMsg:"سماحك ده أعلى درجة وصلها يوسف عليه السلام مع من ظلموه." },
+  { id:'social_reconnect', keywords:['بحاول اتواصل بدل ما اعزل نفسي'], prophet:'يونس عليه السلام', lesson:"خرج من عزلته بالدعاء والرجوع لا بالاستمرار في الهروب.", divineName:'الرقيب / القريب', encourageMsg:"خطوتك للتواصل بدل الانسحاب هي نفس رجوع يونس عليه السلام من عزلته." },
+];
+function matchProphetLink(text, positive){
+  const table = positive ? PROPHET_LINK_TABLE_POSITIVE : PROPHET_LINK_TABLE;
+  const norm = (text || '').trim();
+  if(!norm) return null;
+  let best = null, bestScore = 0;
+  table.forEach(entry => {
+    let score = 0;
+    entry.keywords.forEach(k => { if(norm.includes(k)) score++; });
+    if(score > bestScore){ bestScore = score; best = entry; }
+  });
+  return bestScore > 0 ? best : null;
+}
+function getProphetLinkById(id, positive){
+  const table = positive ? PROPHET_LINK_TABLE_POSITIVE : PROPHET_LINK_TABLE;
+  return table.find(e => e.id === id) || null;
+}
+function renderProphetLinkCard(entry, positive){
+  if(!entry) return '';
+  if(positive){
+    return `
+      <div class="layer-card l1" style="border-color:var(--gold);">
+        <p class="layer-title" style="color:var(--navy-dark);">✨ ${entry.prophet || 'الهدي النبوي'}</p>
+        <p class="layer-text" style="margin-top:6px;">${entry.lesson}</p>
+        <p class="layer-text" style="margin-top:8px; font-weight:700;">${entry.encourageMsg}</p>
+        <p style="font-size:11px; color:var(--muted); margin-top:8px;">اسم الله اللي يناسب حالتك دلوقتي: ${entry.divineName}</p>
+      </div>`;
+  }
+  return `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">📖 ${entry.prophet || 'الهدي النبوي'}</p>
+      <p class="layer-text" style="margin-top:6px;">${entry.lesson}</p>
+    </div>
+    <div class="layer-card l1">
+      <p class="layer-title" style="color:var(--navy-dark);">اسم الله اللي يناسب حالتك دلوقتي</p>
+      <p class="layer-text" style="margin-top:6px;">${entry.divineName}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">🤲 اتجاه الاستغفار</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${entry.tawbaDirection}</p>
+    </div>`;
+}
+
 const WOUND_QUESTIONS = [
   { type:'mom', q:"لما كنت بتحتاج حضن أو كلمة حنان من أمك وانت صغير، كان بيحصل إيه غالبًا؟", options:[
     { label:"كانت موجودة ومحتضناني بسهولة", score:0 },
@@ -4616,8 +4691,25 @@ function renderWoundQuestion(index){
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
       ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWound(${index}, ${i})">${o.label}</div>`).join('')}
+      <div class="choice-btn" style="margin:0; text-align:right; border-style:dashed; opacity:.85;" onclick="showWoundFreeText(${index})">✍️ إجابتي مختلفة عن دي — سيبني أوصفها بكلامي</div>
     </div>
   `;
+}
+function showWoundFreeText(qIndex){
+  const wrap = document.getElementById('familyWoundBody');
+  wrap.innerHTML += `
+    <div style="margin-top:10px;">
+      <textarea id="woundFreeTextInput" rows="3" style="width:100%; box-sizing:border-box; border-radius:10px; border:1px solid #ccc; padding:10px; font-family:inherit; font-size:13px;" placeholder="اكتب اللي حصل بكلامك انت..."></textarea>
+      <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="submitWoundFreeText(${qIndex})">تأكيد الإجابة</div>
+    </div>
+  `;
+}
+function submitWoundFreeText(qIndex){
+  const el = document.getElementById('woundFreeTextInput');
+  const text = el ? el.value.trim() : '';
+  const q = WOUND_QUESTIONS[qIndex];
+  woundAnswers.push({ type:q.type, score:1, freeText: text || null });
+  renderWoundQuestion(qIndex + 1);
 }
 function answerWound(qIndex, oIndex){
   const q = WOUND_QUESTIONS[qIndex];
@@ -4634,15 +4726,16 @@ function summarizeWoundResult(r){
 function revealWoundResult(){
   const momScore = woundAnswers.filter(a => a.type==='mom').reduce((s,a)=>s+a.score,0);
   const dadScore = woundAnswers.filter(a => a.type==='dad').reduce((s,a)=>s+a.score,0);
+  const freeText = woundAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
   const result = { mom:momScore, dad:dadScore, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_wound_result', JSON.stringify(result));
   const history = getWoundHistory();
   history.unshift(result);
   localStorage.setItem('eihyaha_wound_history', JSON.stringify(history.slice(0,50)));
   syncFamilySummaryToCloud();
-  renderWoundResult(result);
+  renderWoundResult(result, freeText);
 }
-function renderWoundResult(result){
+function renderWoundResult(result, freeText){
   const wrap = document.getElementById('familyWoundBody');
   const showMom = result.mom >= 2;
   const showDad = result.dad >= 2;
@@ -4653,6 +4746,7 @@ function renderWoundResult(result){
         <p class="layer-title" style="color:var(--navy-dark);">🌱 فطرتك في المنطقة دي سليمة إلى حد كبير</p>
         <p class="layer-text" style="margin-top:6px;">إجاباتك بتقول إن علاقتك بأبويك كانت مصدر أمان غالبًا، مش جرح. «لا تبديل لخلق الله» — استمر تراقب نفسك، ده مش معناه إنك في مأمن دايمًا من التكرار في علاقاتك.</p>
       </div>`;
+    html += renderProphetLinkCard(getProphetLinkById('positive_parent_love', true), true);
   }
   [['mom', showMom], ['dad', showDad]].forEach(([key, show]) => {
     if(!show) return;
@@ -4674,7 +4768,15 @@ function renderWoundResult(result){
         <p class="layer-title" style="color:var(--navy-dark);">نمط الارتباط الأقرب لك</p>
         <p class="layer-text" style="margin-top:6px;">${c.attachment}</p>
       </div>`;
+    html += renderProphetLinkCard(getProphetLinkById(key === 'mom' ? 'jarh_alom' : 'jarh_alab', false), false);
   });
+  const freeMatch = freeText ? matchProphetLink(freeText, false) : null;
+  if(freeMatch && freeMatch.id !== 'jarh_alom' && freeMatch.id !== 'jarh_alab'){
+    html += `
+      <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>
+      ${renderProphetLinkCard(freeMatch, false)}
+    `;
+  }
   html += `
     <div class="layer-card l2" style="margin-top:10px; background:#E6F0EE; border-color:#C7DED9;">
       <p class="layer-title" style="color:var(--navy-dark);">✨ خطوة الشفاء الأولى</p>
