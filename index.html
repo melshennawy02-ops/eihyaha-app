@@ -3074,6 +3074,7 @@ function markAsmaApplied(name){
   const log = getAsmaAppliedLog();
   log.unshift({ name, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_asma_applied', JSON.stringify(log.slice(0,300)));
+  scheduleFollowUp('spiritual', `تطبيق اسم الله «${name}»`);
 }
 
 function openAsmaByName(name){
@@ -3316,6 +3317,7 @@ function markClosenessApplied(label){
   const log = getClosenessAppliedLog();
   log.unshift({ label, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_closeness_applied', JSON.stringify(log.slice(0,300)));
+  scheduleFollowUp('spiritual', label);
 }
 
 // ---------- 2) متابعة عباداتك: تتبع يومي للصلاة والقرآن والأذكار ----------
@@ -3506,6 +3508,13 @@ async function openSpiritualReport(){
         <p style="font-size:13px; color:rgba(255,255,255,.85); margin:4px 0 0;">✅ خطوة عملية طبّقتها فعليًا (مش قراءة بس)</p>
       </div>
     </div>
+    ${getResolvedFollowUpCount('spiritual','worked') + getResolvedFollowUpCount('spiritual','didnt_work') + getResolvedFollowUpCount('spiritual','trying') > 0 ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:8px;">🔄 هل الخطوات دي فعلًا فرقت؟</p>
+        <p style="font-size:14px; margin:0 0 4px;">👍 فرقت: <b>${getResolvedFollowUpCount('spiritual','worked')}</b></p>
+        <p style="font-size:14px; margin:0 0 4px;">🔄 لسه بتجرب: <b>${getResolvedFollowUpCount('spiritual','trying')}</b></p>
+        <p style="font-size:14px; margin:0;">👎 مافرقتش: <b>${getResolvedFollowUpCount('spiritual','didnt_work')}</b></p>
+      </div>` : ''}
 
     ${quizState ? `
       <div class="card">
@@ -3647,6 +3656,8 @@ function markProphetApplied(id){
   const log = getProphetAppliedLog();
   log.unshift({ id, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_prophet_applied', JSON.stringify(log.slice(0,300)));
+  const p = MERAT_PATTERNS.find(x => x.id === id);
+  scheduleFollowUp('spiritual', p ? p.prophetTitle : 'خطوة من قصص الأنبياء');
 }
 
 function renderProphetsList(){
@@ -4601,6 +4612,8 @@ function markMeratApplied(id){
   const log = getMeratAppliedLog();
   log.unshift({ id, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_merat_applied', JSON.stringify(log.slice(0,300)));
+  const p = MERAT_PATTERNS.find(x => x.id === id);
+  scheduleFollowUp('personal', p ? p.title : 'خطوة من مرآة العقل');
 }
 function getTotalPersonalAppliedCount(){
   return getMeratAppliedLog().length + getHealingProgress().length;
@@ -4759,6 +4772,13 @@ async function openPersonalReport(){
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">📆 تقدمك في تحدي الشفاء</p>
       </div>` : ''}
     </div>
+    ${getResolvedFollowUpCount('personal','worked') + getResolvedFollowUpCount('personal','didnt_work') + getResolvedFollowUpCount('personal','trying') > 0 ? `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:8px;">🔄 هل الخطوات دي فعلًا فرقت؟</p>
+        <p style="font-size:12.5px; margin:0 0 4px;">👍 فرقت: <b>${getResolvedFollowUpCount('personal','worked')}</b></p>
+        <p style="font-size:12.5px; margin:0 0 4px;">🔄 لسه بتجرب: <b>${getResolvedFollowUpCount('personal','trying')}</b></p>
+        <p style="font-size:12.5px; margin:0;">👎 مافرقتش: <b>${getResolvedFollowUpCount('personal','didnt_work')}</b></p>
+      </div>` : ''}
     ${selfState ? `
       <div class="card">
         <p class="card-title" style="margin-bottom:6px;">معرفتك بنفسك</p>
