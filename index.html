@@ -474,11 +474,11 @@
     <div style="padding:0 16px;" id="familyReportBody"></div>
   </div>
 
-  <!-- ===================== SCREEN: SOCIAL CIRCLE ASSESSMENT (دايرتك الاجتماعية) ===================== -->
+  <!-- ===================== SCREEN: SOCIAL CIRCLE ASSESSMENT (دائرتك الإجتماعية) ===================== -->
   <div class="screen" id="screen-circle">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(4)">→</div>
-      <h1>دايرتك الاجتماعية</h1>
+      <h1>دائرتك الإجتماعية</h1>
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="circleBody"></div>
@@ -822,6 +822,77 @@ async function syncSocialSummaryFromCloud(){
   if(remote.coworker_burnout && !getCoworkerBurnoutResult()) localStorage.setItem('eihyaha_coworker_burnout', remote.coworker_burnout);
 }
 
+// ================= نفس أسلوب المزامنة، معمّم على باقي الأركان (عائلي / روحاني / شخصي) =================
+// دالتين عامتين تستخدمهم كل الأركان، بدل ما نكرر نفس الكود لكل ركن
+function pushPillarSummary(collectionName, fieldsObj){
+  if(!isLoggedIn()) return; // زي ما اتفقنا: الضيف (uid مؤقت) مش بيتزامن، لأنه مالوش قيمة عبر الأجهزة
+  firestoreSetDoc(collectionName, getUserId(), fieldsObj);
+}
+async function pullPillarSummary(collectionName, restoreFn){
+  if(!isLoggedIn()) return;
+  const remote = await firestoreGetDoc(collectionName, getUserId());
+  if(remote) restoreFn(remote);
+}
+
+// ---------- الركن العائلي ----------
+function buildFamilySummaryFields(){
+  const fields = { updated_at: new Date().toISOString(), applied_count: getFamilyAppliedCount() };
+  const familyCircle = getFamilyCircleAssessment();
+  if(familyCircle) fields.family_circle = JSON.stringify(familyCircle);
+  const woundHistory = getWoundHistory();
+  if(woundHistory.length) fields.wound_result = JSON.stringify(woundHistory[0]);
+  const healing = getHealingProgress();
+  if(healing.length) fields.healing30_progress = JSON.stringify(healing);
+  return fields;
+}
+function syncFamilySummaryToCloud(){ pushPillarSummary('family_summary', buildFamilySummaryFields()); }
+async function syncFamilySummaryFromCloud(){
+  await pullPillarSummary('family_summary', (remote) => {
+    if(remote.family_circle && !getFamilyCircleAssessment()) localStorage.setItem('eihyaha_family_circle_assessment', remote.family_circle);
+    if(remote.wound_result && !getWoundHistory().length) localStorage.setItem('eihyaha_wound_history', JSON.stringify([JSON.parse(remote.wound_result)]));
+    if(remote.healing30_progress && !getHealingProgress().length) localStorage.setItem('eihyaha_healing30_progress', remote.healing30_progress);
+  });
+}
+
+// ---------- الركن الروحاني ----------
+// ملاحظة: عدادات "اتقرى/اتطبّق" هنا مشتقة من تفاصيل محلية (مين قرا إيه بالظبط)، فمينفعش
+// نعيد بناء التفاصيل من رقم بس لو الجهاز جديد — العدد بيترفع للتقرير فقط، مش للاسترجاع الكامل.
+function buildSpiritualSummaryFields(){
+  const fields = { updated_at: new Date().toISOString() };
+  const whoIsAllah = localStorage.getItem('eihyaha_who_is_allah_state');
+  if(whoIsAllah) fields.who_is_allah_state = whoIsAllah;
+  fields.asma_read_count = Object.keys(getReadAsma()).length;
+  fields.asma_applied_count = getAsmaAppliedLog().length;
+  fields.closeness_applied_count = getClosenessAppliedLog().length;
+  fields.prophets_read_count = Object.keys(getReadProphets()).length;
+  fields.prophet_applied_count = getProphetAppliedLog().length;
+  fields.tawba_count = getTawbaCount();
+  return fields;
+}
+function syncSpiritualSummaryToCloud(){ pushPillarSummary('spiritual_summary', buildSpiritualSummaryFields()); }
+async function syncSpiritualSummaryFromCloud(){
+  await pullPillarSummary('spiritual_summary', (remote) => {
+    if(remote.who_is_allah_state && !localStorage.getItem('eihyaha_who_is_allah_state')) localStorage.setItem('eihyaha_who_is_allah_state', remote.who_is_allah_state);
+  });
+}
+
+// ---------- الركن الشخصي ----------
+function buildPersonalSummaryFields(){
+  const fields = { updated_at: new Date().toISOString(), merat_applied_count: getMeratAppliedLog().length };
+  const selfKnow = localStorage.getItem('eihyaha_self_know_state');
+  if(selfKnow) fields.self_know_state = selfKnow;
+  const mbti = localStorage.getItem('eihyaha_mbti_type');
+  if(mbti) fields.mbti_type = mbti;
+  return fields;
+}
+function syncPersonalSummaryToCloud(){ pushPillarSummary('personal_summary', buildPersonalSummaryFields()); }
+async function syncPersonalSummaryFromCloud(){
+  await pullPillarSummary('personal_summary', (remote) => {
+    if(remote.self_know_state && !localStorage.getItem('eihyaha_self_know_state')) localStorage.setItem('eihyaha_self_know_state', remote.self_know_state);
+    if(remote.mbti_type && !localStorage.getItem('eihyaha_mbti_type')) localStorage.setItem('eihyaha_mbti_type', remote.mbti_type);
+  });
+}
+
 // ================= تسجيل الدخول ببصمة الإصبع (WebAuthn) =================
 // ملاحظة صادقة: بتشتغل بس لو المتصفح/الجهاز بيدعم WebAuthn فعليًا (متصفح Chrome
 // حقيقي غالبًا نعم، لكن جوه APK مغلّف بـWebView بسيط زي بتاعنا الحالي مش مضمونة —
@@ -1048,6 +1119,9 @@ async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
   await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
   await syncSocialSummaryFromCloud(); // مرة واحدة بس هنا، مش مع كل شاشة
+  await syncFamilySummaryFromCloud();
+  await syncSpiritualSummaryFromCloud();
+  await syncPersonalSummaryFromCloud();
   renderHome();
   if(!localStorage.getItem('eihyaha_onboarding_seen')){
     showOnboarding();
@@ -1792,7 +1866,7 @@ function renderSpiritualDashboard(){
 // الركن الاجتماعي — البنية الكاملة
 // ============================================================
 
-// ---------- ١) تقييم "دايرتك الاجتماعية" (نقطة الدخول) ----------
+// ---------- ١) تقييم "دائرتك الإجتماعية" (نقطة الدخول) ----------
 const CIRCLE_QUESTIONS = [
   { circle:'rahm', q:"امتى آخر مرة تواصلت فيها مع قريب (عم/خال/جد) بعيد عن بيت أهلك؟", options:[
     { label:"الأسبوع ده", score:0 },
@@ -1893,12 +1967,12 @@ function renderCircleResult(result){
   const toolMap = {
     rahm: { fn:"openRahmScreen()", label:"صلة الرحم" },
     neighbors: { fn:"openNeighborScreen()", label:"حقوق الجار والمجتمع" },
-    friends: { fn:"openRelationshipCheckScreen(4, 'صاحبك')", label:"قيّم صحبتك" },
+    friends: { fn:"openRelationshipCheckScreen(4, 'صاحبك')", label:"قيّم أصدقائك" },
     community: { fn:"openCoworkersScreen()", label:"زملاء العمل بالتفصيل" },
   };
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🗺️ خريطة دايرتك الاجتماعية</p>
+      <p class="layer-title" style="color:var(--navy-dark);">🗺️ خريطة دائرتك الإجتماعية</p>
       <p class="layer-text" style="margin-top:6px;">أضعف دايرة عندك دلوقتي: <b>${CIRCLE_LABELS[weakest]}</b> — مش عشان تحكم على نفسك، لكن عشان تعرف تركّز مجهودك فين.</p>
     </div>
     ${Object.entries(normalized).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
@@ -2359,7 +2433,7 @@ function openSocialReport(){
     const parts = [];
     if(rahmCount > 0) parts.push(`تواصلت مع الأرحام ${rahmCount} مرة`);
     if(log.length > 0) parts.push(`طبّقت ${log.length} خطوة اجتماعية عملية`);
-    if(circleResult) parts.push(`عندك خريطة واضحة لدايرتك الاجتماعية`);
+    if(circleResult) parts.push(`عندك خريطة واضحة لدائرتك الإجتماعية`);
     summary = parts.join(" — ") + ".";
   }
 
@@ -2390,7 +2464,7 @@ function openSocialReport(){
       </div>` : ''}
     ${circleResult ? `
       <div class="card">
-        <p class="card-title" style="margin-bottom:6px;">خريطة دايرتك الاجتماعية</p>
+        <p class="card-title" style="margin-bottom:6px;">خريطة دائرتك الإجتماعية</p>
         <p style="font-size:12.5px; color:var(--text); margin:0; cursor:pointer;" onclick="renderCircleResult(getCircleAssessment()); showScreen('screen-circle');">شوف تفاصيلها تاني ←</p>
       </div>` : ''}
     <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الاجتماعي بس حاليًا.</p>
@@ -2430,7 +2504,7 @@ const LIVING_SOCIAL_INSIGHT = {
   friends: "عيشتك مع أصدقاء بتديك احتكاك يومي جاهز، لكن يستاهل تسأل نفسك: علاقتك بيهم فعلًا صحية، ولا مجرد سكن مشترك؟",
   other: "وضعك المعيشي له تأثير مباشر على مدى احتكاكك اليومي بالناس — يستاهل تلاحظه.",
 };
-// ---------- ٠) أضعف علاقة عائلية عندك (تشخيص موحّد، زي دايرتك الاجتماعية بالظبط) ----------
+// ---------- ٠) أضعف علاقة عائلية عندك (تشخيص موحّد، زي دائرتك الإجتماعية بالظبط) ----------
 const FAMILY_CIRCLE_QUESTIONS = [
   { circle:'spouse', q:"لو متجوز/ة، علاقتك بشريك حياتك دلوقتي حاسس فيها بإيه؟", options:[
     { label:"سكن ومودة حقيقية", score:0 },
@@ -2490,6 +2564,7 @@ function revealFamilyCircleResult(){
   familyCircleAnswers.forEach(a => { if(a.score !== null) scores[a.circle] = a.score; });
   const result = { scores, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_family_circle_assessment', JSON.stringify(result));
+  syncFamilySummaryToCloud();
   const history = getFamilyCircleHistory();
   history.unshift(result);
   localStorage.setItem('eihyaha_family_circle_history', JSON.stringify(history.slice(0,50)));
@@ -2614,6 +2689,7 @@ function markFamilyApplied(category, label){
   const log = getFamilyAppliedLog();
   log.unshift({ category, label, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_family_applied', JSON.stringify(log.slice(0,300)));
+  syncFamilySummaryToCloud();
   scheduleFollowUp('family', label);
 }
 function getFamilyAppliedCount(){ return getFamilyAppliedLog().length; }
@@ -2886,7 +2962,7 @@ function renderSocialSummaryCard(){
     const livingNote = (profile.livingWith && LIVING_SOCIAL_INSIGHT[profile.livingWith]) ? `<p style="font-size:12px; color:var(--text); margin:0 0 8px; line-height:1.7;">🏠 ${LIVING_SOCIAL_INSIGHT[profile.livingWith]}</p>` : '';
     return `<div class="card" style="background:var(--sand); margin-bottom:14px;">
       ${livingNote}
-      <p style="font-size:12px; color:var(--muted); margin:0;">ابدأ بـ"دايرتك الاجتماعية" عشان نبني صورتك هنا تدريجيًا.</p>
+      <p style="font-size:12px; color:var(--muted); margin:0;">ابدأ بـ"دائرتك الإجتماعية" عشان نبني صورتك هنا تدريجيًا.</p>
     </div>`;
   }
   let html = `<div class="card" style="background:linear-gradient(rgba(10,35,50,.85), rgba(10,35,50,.85)), url('https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none; margin-bottom:14px; padding:16px;">`;
@@ -2962,9 +3038,9 @@ function goToPillar(id){
   } else if(id === 4){
     // الركن الاجتماعي — لوحة ملخص + الأدوات المتاحة بخلفيات صور
     const socialTools = [
-      { key:"circle", onclick:"startCircleAssessment()", icon:"🗺️", title:"دايرتك الاجتماعية", sub:"تقييم يحدد أضعف دايرة محتاجة شغل", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
+      { key:"circle", onclick:"startCircleAssessment()", icon:"🗺️", title:"دائرتك الإجتماعية", sub:"تقييم يحدد أضعف دايرة محتاجة شغل", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
       { key:"rahm", onclick:"openRahmScreen()", icon:"🤝", title:"صلة الرحم", sub:"الأقارب الممتدين .. من الوصل لا القطيعة", img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,50,40,.72)" },
-      { key:"relcheck_4", onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم صحبتك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
+      { key:"relcheck_4", onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم أصدقائك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
       { key:"neighbor", onclick:"openNeighborScreen()", icon:"🏘️", title:"حقوق الجار والمجتمع", sub:"وصايا نبوية في التعامل مع المحيط", img:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,35,10,.72)" },
       { key:"social_skills", onclick:"openSocialSkillsScreen()", icon:"🧩", title:"مهارات التواصل والحدود", sub:"الرفض بأدب، الحدود، وحل الخلاف", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,20,45,.72)" },
       { key:"coworkers", onclick:"openCoworkersScreen()", icon:"💼", title:"زملاء العمل بالتفصيل", sub:"ميزان التبادل، الحدود، وكشف السياسة المكتبية", img:"https://images.unsplash.com/photo-1522071820081-009f0129c71c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,45,.72)" },
@@ -3294,6 +3370,7 @@ function revealWhoIsAllah(){
   let max = -1;
   for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
   localStorage.setItem('eihyaha_who_is_allah_state', dominant);
+  syncSpiritualSummaryToCloud();
   document.getElementById('whoIsAllahQuiz').innerHTML = '';
   renderWhoIsAllahContent(dominant);
 }
@@ -3373,6 +3450,7 @@ function markAsmaApplied(name){
   const log = getAsmaAppliedLog();
   log.unshift({ name, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_asma_applied', JSON.stringify(log.slice(0,300)));
+  syncSpiritualSummaryToCloud();
   scheduleFollowUp('spiritual', `تطبيق اسم الله «${name}»`);
 }
 
@@ -3616,6 +3694,7 @@ function markClosenessApplied(label){
   const log = getClosenessAppliedLog();
   log.unshift({ label, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_closeness_applied', JSON.stringify(log.slice(0,300)));
+  syncSpiritualSummaryToCloud();
   scheduleFollowUp('spiritual', label);
 }
 
@@ -3955,6 +4034,7 @@ function markProphetApplied(id){
   const log = getProphetAppliedLog();
   log.unshift({ id, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_prophet_applied', JSON.stringify(log.slice(0,300)));
+  syncSpiritualSummaryToCloud();
   const p = MERAT_PATTERNS.find(x => x.id === id);
   scheduleFollowUp('spiritual', p ? p.prophetTitle : 'خطوة من قصص الأنبياء');
 }
@@ -4021,6 +4101,7 @@ function saveTawbaLogEntry(text, matchedIndex){
   const log = getTawbaLog();
   log.unshift({ text, matchedIndex, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_tawba_log', JSON.stringify(log.slice(0, 100)));
+  syncSpiritualSummaryToCloud();
 }
 function getTawbaCount(){
   return getTawbaLog().length;
@@ -4244,6 +4325,7 @@ function revealSelfKnow(){
   let dominant = 'vague', max = -1;
   for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
   localStorage.setItem('eihyaha_self_know_state', dominant);
+  syncPersonalSummaryToCloud();
   document.getElementById('selfKnowQuiz').innerHTML = '';
   renderSelfKnowContent(dominant);
 }
@@ -4401,6 +4483,7 @@ function revealMbtiResult(){
     type += countX >= countY ? x : y;
   });
   localStorage.setItem('eihyaha_mbti_type', type);
+  syncPersonalSummaryToCloud();
   renderMbtiResult(type);
 }
 function renderMbtiResult(type){
@@ -4556,6 +4639,7 @@ function revealWoundResult(){
   const history = getWoundHistory();
   history.unshift(result);
   localStorage.setItem('eihyaha_wound_history', JSON.stringify(history.slice(0,50)));
+  syncFamilySummaryToCloud();
   renderWoundResult(result);
 }
 function renderWoundResult(result){
@@ -4666,7 +4750,7 @@ function openRelationshipCheckScreen(originPillarId, contextLabel, titleOverride
   relCheckOrigin = originPillarId;
   relCheckContext = contextLabel || 'الشخص ده';
   relCheckBackFn = backFn || null;
-  document.getElementById('h1-relcheck').textContent = titleOverride || (originPillarId === 3 ? 'قيّم شريك حياتك' : 'قيّم صحبتك');
+  document.getElementById('h1-relcheck').textContent = titleOverride || (originPillarId === 3 ? 'قيّم شريك حياتك' : 'قيّم أصدقائك');
   localStorage.setItem('eihyaha_relcheck_used_' + originPillarId, '1');
   startDarkTriadTool();
   showScreen('screen-relcheck');
@@ -4822,6 +4906,7 @@ function toggleHealingDay(dayNum){
   if(progress.includes(dayNum)) progress = progress.filter(d => d !== dayNum);
   else progress.push(dayNum);
   localStorage.setItem('eihyaha_healing30_progress', JSON.stringify(progress));
+  syncFamilySummaryToCloud();
   renderHealingChallenge();
 }
 function renderHealingChallenge(){
@@ -4914,6 +4999,7 @@ function markMeratApplied(id){
   const log = getMeratAppliedLog();
   log.unshift({ id, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_merat_applied', JSON.stringify(log.slice(0,300)));
+  syncPersonalSummaryToCloud();
   const p = MERAT_PATTERNS.find(x => x.id === id);
   scheduleFollowUp('personal', p ? p.title : 'خطوة من مرآة العقل');
 }
@@ -5378,7 +5464,7 @@ function buildWoundSuggestionHtml(key){
     children: { fn:"openChildrenScreen()", text:"كلامك عن التعامل مع ولادك — شوف أداة «الأولاد والتعامل معهم» ←" },
     siblings: { fn:"openSiblingsScreen()", text:"كلامك عن علاقتك بإخواتك — شوف أداة «الإخوة» ←" },
     extended_family: { fn:"openExtendedFamilyScreen()", text:"كلامك عن عائلة الطرفين — شوف أداة «عائلة الأب وعائلة الأم» ←" },
-    circle_social: { fn:"startCircleAssessment()", text:"كلامك عن إحساس بالعزلة — جرب تقييم «دايرتك الاجتماعية» ←" },
+    circle_social: { fn:"startCircleAssessment()", text:"كلامك عن إحساس بالعزلة — جرب تقييم «دائرتك الإجتماعية» ←" },
   };
   const item = map[key];
   if(!item) return '';
