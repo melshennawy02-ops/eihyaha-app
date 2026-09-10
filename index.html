@@ -1982,9 +1982,17 @@ const CIRCLE_LABELS = { rahm:"صلة الرحم (الأقارب)", neighbors:"ا
 let circleAnswers = [];
 function startCircleAssessment(){
   markToolOpened('circle');
+  const saved = getCircleAssessment();
+  showScreen('screen-circle');
+  if(saved){
+    renderCircleResult(saved, '');
+  } else {
+    restartCircleAssessment();
+  }
+}
+function restartCircleAssessment(){
   circleAnswers = [];
   renderCircleQuestion(0);
-  showScreen('screen-circle');
 }
 function renderCircleQuestion(index){
   const wrap = document.getElementById('circleBody');
@@ -2081,7 +2089,7 @@ function renderCircleResult(result, freeText){
     ${(freeMatch && freeMatch.id !== (weakestLink && weakestLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${toolMap[weakest].fn}">ابدأ بـ${toolMap[weakest].label} ←</div>
     ${weakest === 'friends' ? `<div class="choice-btn" style="text-align:center;" onclick="openFamilyWoundScreen()">جرب ترجع لجذر الموضوع: علاقتك بالأب والأم (العائلي) ←</div>` : ''}
-    <div class="choice-btn" style="text-align:center;" onclick="startCircleAssessment()">🔄 أعد التقييم</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartCircleAssessment()">🔄 أعد التقييم</div>
     ${renderCircleHistorySection()}
   `;
 }
@@ -2295,10 +2303,18 @@ let coworkerExchangeAnswers = [];
 let coworkerExchangeFreeTexts = [];
 function startCoworkerExchange(){
   markToolOpened('coworker_exchange');
+  const saved = getCoworkerExchangeResult();
+  showScreen('screen-coworker-exchange');
+  if(saved){
+    renderCoworkerExchangeResultFromCategory(saved.category, '');
+  } else {
+    restartCoworkerExchange();
+  }
+}
+function restartCoworkerExchange(){
   coworkerExchangeAnswers = [];
   coworkerExchangeFreeTexts = [];
   renderCoworkerExchangeQuestion(0);
-  showScreen('screen-coworker-exchange');
 }
 function renderCoworkerExchangeQuestion(index){
   const wrap = document.getElementById('coworkerExchangeBody');
@@ -2323,26 +2339,16 @@ function answerCoworkerExchange(qIndex, oIndex){
   renderCoworkerExchangeQuestion(qIndex + 1);
 }
 function getCoworkerExchangeResult(){ return JSON.parse(localStorage.getItem('eihyaha_coworker_exchange') || 'null'); }
-function revealCoworkerExchangeResult(){
-  const tally = { balanced:0, give:0, take:0, toxic:0 };
-  coworkerExchangeAnswers.forEach(t => tally[t]++);
-  let category = 'balanced';
-  if(tally.toxic >= 2) category = 'toxic';
-  else if(tally.give > tally.balanced && tally.give >= tally.take) category = 'give';
-  else if(tally.take > tally.balanced) category = 'take';
-  const CATS = {
-    balanced: { title:"علاقة متوازنة ✅", cardClass:'l1', text:"الأخذ والعطاء في علاقتك بزمايلك متوازن نسبيًا — استمر تراقب الميزان ده، لأنه سهل يميل بمرور الوقت من غير ما تاخد بالك." },
-    give: { title:"أنت المُعطي الدائم ⚠️", cardClass:'l2', text:"غالبًا إنت اللي بتدي أكتر مما بتاخد في علاقتك بزمايلك. ده مش عيب فيك، لكنه استنزاف تراكمي — جرب توازن الميزان بخطوة واحدة صغيرة الأسبوع ده بدل ما تستمر تدي بلا حدود." },
-    take: { title:"في مؤشر إنك بتاخد أكتر ⚠️", cardClass:'l2', text:"إجاباتك فيها إشارة إنك أحيانًا بتاخد من مجهود أو وقت زمايلك أكتر مما بترد. يستاهل وقفة صادقة مع نفسك — مش عشان تحاسب نفسك، لكن عشان العلاقة تفضل صحية." },
-    toxic: { title:"علامات علاقة مستنزفة 🚫", cardClass:'l3', text:"في أكتر من علامة على إن العلاقة دي بياخد فيها حد فضلك أو مجهودك بدون احترام. يستاهل تفكر إزاي تحمي نفسك — سواء بحدود أوضح أو بتوثيق مجهودك." },
-  };
-  const c = CATS[category];
-  const historyEntry = { category, date:new Date().toISOString() };
-  localStorage.setItem('eihyaha_coworker_exchange', JSON.stringify(historyEntry));
-  syncSocialSummaryToCloud();
+const COWORKER_EXCHANGE_CATS = {
+  balanced: { title:"علاقة متوازنة ✅", cardClass:'l1', text:"الأخذ والعطاء في علاقتك بزمايلك متوازن نسبيًا — استمر تراقب الميزان ده، لأنه سهل يميل بمرور الوقت من غير ما تاخد بالك." },
+  give: { title:"أنت المُعطي الدائم ⚠️", cardClass:'l2', text:"غالبًا إنت اللي بتدي أكتر مما بتاخد في علاقتك بزمايلك. ده مش عيب فيك، لكنه استنزاف تراكمي — جرب توازن الميزان بخطوة واحدة صغيرة الأسبوع ده بدل ما تستمر تدي بلا حدود." },
+  take: { title:"في مؤشر إنك بتاخد أكتر ⚠️", cardClass:'l2', text:"إجاباتك فيها إشارة إنك أحيانًا بتاخد من مجهود أو وقت زمايلك أكتر مما بترد. يستاهل وقفة صادقة مع نفسك — مش عشان تحاسب نفسك، لكن عشان العلاقة تفضل صحية." },
+  toxic: { title:"علامات علاقة مستنزفة 🚫", cardClass:'l3', text:"في أكتر من علامة على إن العلاقة دي بياخد فيها حد فضلك أو مجهودك بدون احترام. يستاهل تفكر إزاي تحمي نفسك — سواء بحدود أوضح أو بتوثيق مجهودك." },
+};
+function renderCoworkerExchangeResultFromCategory(category, freeText){
+  const c = COWORKER_EXCHANGE_CATS[category];
   const [linkId, linkPositive] = COWORKER_EXCHANGE_PROPHET_MAP[category];
   const catLink = getProphetLinkById(linkId, linkPositive);
-  const freeText = coworkerExchangeFreeTexts.join(' ');
   const freeMatch = freeText ? matchProphetLink(freeText, false) : null;
   const wrap = document.getElementById('coworkerExchangeBody');
   wrap.innerHTML = `
@@ -2353,9 +2359,22 @@ function revealCoworkerExchangeResult(){
     ${renderProphetLinkCard(catLink, linkPositive)}
     ${(freeMatch && freeMatch.id !== (catLink && catLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openCoworkerBoundariesScreen()">جرب أداة «حدودك مع الزملاء» ←</div>
-    <div class="choice-btn" style="text-align:center;" onclick="startCoworkerExchange()">🔄 أعد التقييم</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartCoworkerExchange()">🔄 أعد التقييم</div>
     <button class="btn-ghost" onclick="openCoworkersScreen()">رجوع لزملاء العمل</button>
   `;
+}
+function revealCoworkerExchangeResult(){
+  const tally = { balanced:0, give:0, take:0, toxic:0 };
+  coworkerExchangeAnswers.forEach(t => tally[t]++);
+  let category = 'balanced';
+  if(tally.toxic >= 2) category = 'toxic';
+  else if(tally.give > tally.balanced && tally.give >= tally.take) category = 'give';
+  else if(tally.take > tally.balanced) category = 'take';
+  const historyEntry = { category, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_coworker_exchange', JSON.stringify(historyEntry));
+  syncSocialSummaryToCloud();
+  const freeText = coworkerExchangeFreeTexts.join(' ');
+  renderCoworkerExchangeResultFromCategory(category, freeText);
 }
 
 // --- ٥.٢) حدودك مع الزملاء ---
@@ -2424,10 +2443,18 @@ let coworkerBurnoutAnswers = [];
 let coworkerBurnoutFreeTexts = [];
 function startCoworkerBurnout(){
   markToolOpened('coworker_burnout');
+  const saved = getCoworkerBurnoutResult();
+  showScreen('screen-coworker-burnout');
+  if(saved){
+    renderCoworkerBurnoutResultFromScore(saved.score, '');
+  } else {
+    restartCoworkerBurnout();
+  }
+}
+function restartCoworkerBurnout(){
   coworkerBurnoutAnswers = [];
   coworkerBurnoutFreeTexts = [];
   renderCoworkerBurnoutQuestion(0);
-  showScreen('screen-coworker-burnout');
 }
 function renderCoworkerBurnoutQuestion(index){
   const wrap = document.getElementById('coworkerBurnoutBody');
@@ -2452,8 +2479,7 @@ function answerCoworkerBurnout(qIndex, oIndex){
   renderCoworkerBurnoutQuestion(qIndex + 1);
 }
 function getCoworkerBurnoutResult(){ return JSON.parse(localStorage.getItem('eihyaha_coworker_burnout') || 'null'); }
-function revealCoworkerBurnoutResult(){
-  const score = coworkerBurnoutAnswers.reduce((a,b) => a+b, 0);
+function renderCoworkerBurnoutResultFromScore(score, freeText){
   let level, text, cardClass, linkId, linkPositive;
   if(score <= 3){
     level = "مستوى استنزاف منخفض"; cardClass='l1';
@@ -2468,11 +2494,7 @@ function revealCoworkerBurnoutResult(){
     text = "العلامات دي متكررة وواضحة، وده مؤشر جدي على احتراق وظيفي. الجزء ده هيتكامل قريبًا مع الركن الصحي لمتابعة أعمق، ولو حاسس إنه بيأثر على صحتك النفسية أو الجسدية، التكلم مع مختص خطوة مهمة.";
     linkId = 'burnout'; linkPositive = false;
   }
-  const historyEntry = { score, level, date:new Date().toISOString() };
-  localStorage.setItem('eihyaha_coworker_burnout', JSON.stringify(historyEntry));
-  syncSocialSummaryToCloud();
   const catLink = getProphetLinkById(linkId, linkPositive);
-  const freeText = coworkerBurnoutFreeTexts.join(' ');
   const freeMatch = freeText ? matchProphetLink(freeText, false) : null;
   const wrap = document.getElementById('coworkerBurnoutBody');
   wrap.innerHTML = `
@@ -2483,9 +2505,17 @@ function revealCoworkerBurnoutResult(){
     ${renderProphetLinkCard(catLink, linkPositive)}
     ${(freeMatch && freeMatch.id !== (catLink && catLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openCoworkerBoundariesScreen()">جرب أداة «حدودك مع الزملاء» ←</div>
-    <div class="choice-btn" style="text-align:center;" onclick="startCoworkerBurnout()">🔄 أعد التقييم</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartCoworkerBurnout()">🔄 أعد التقييم</div>
     <button class="btn-ghost" onclick="openCoworkersScreen()">رجوع لزملاء العمل</button>
   `;
+}
+function revealCoworkerBurnoutResult(){
+  const score = coworkerBurnoutAnswers.reduce((a,b) => a+b, 0);
+  const historyEntry = { score, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_coworker_burnout', JSON.stringify(historyEntry));
+  syncSocialSummaryToCloud();
+  const freeText = coworkerBurnoutFreeTexts.join(' ');
+  renderCoworkerBurnoutResultFromScore(score, freeText);
 }
 
 
@@ -2635,9 +2665,17 @@ function startProfessionalCircleAssessment(){
   markToolOpened('professional_circle');
   professionalFamily = getEmploymentFamily();
   if(!professionalFamily){ goToPillar(5); return; }
+  const saved = getProfessionalCircleAssessment();
+  showScreen('screen-professional-circle');
+  if(saved){
+    renderProfessionalCircleResult(saved, '');
+  } else {
+    restartProfessionalCircleAssessment();
+  }
+}
+function restartProfessionalCircleAssessment(){
   professionalCircleAnswers = [];
   renderProfessionalCircleQuestion(0);
-  showScreen('screen-professional-circle');
 }
 function renderProfessionalCircleQuestion(index){
   const wrap = document.getElementById('professionalCircleBody');
@@ -2697,7 +2735,7 @@ function renderProfessionalCircleResult(result, freeText){
     ${renderProphetLinkCard(weakestLink, false)}
     ${(freeMatch && freeMatch.id !== (weakestLink && weakestLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
-    <div class="choice-btn" style="text-align:center;" onclick="startProfessionalCircleAssessment()">🔄 أعد التقييم</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartProfessionalCircleAssessment()">🔄 أعد التقييم</div>
   `;
 }
 
@@ -3142,9 +3180,17 @@ const FAMILY_CIRCLE_TOOL_MAP = {
 let familyCircleAnswers = [];
 function startFamilyCircleAssessment(){
   markToolOpened('family_circle');
+  const saved = getFamilyCircleAssessment();
+  showScreen('screen-family-circle');
+  if(saved){
+    renderFamilyCircleResult(saved, '');
+  } else {
+    restartFamilyCircleAssessment();
+  }
+}
+function restartFamilyCircleAssessment(){
   familyCircleAnswers = [];
   renderFamilyCircleQuestion(0);
-  showScreen('screen-family-circle');
 }
 function renderFamilyCircleQuestion(index){
   const wrap = document.getElementById('familyCircleBody');
@@ -3212,7 +3258,7 @@ function renderFamilyCircleResult(result, freeText){
         <p class="layer-title" style="color:var(--navy-dark);">🌱 كل العلاقات دي مش منطبقة عليك دلوقتي</p>
         <p class="layer-text" style="margin-top:6px;">ما فيش داعي تقلق — ركّز بس على «علاقتك بالأب والأم» و«الإخوة» لو منطبقة، هي الأساس دايمًا.</p>
       </div>
-      <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startFamilyCircleAssessment()">🔄 أعد التقييم</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="restartFamilyCircleAssessment()">🔄 أعد التقييم</div>
       ${renderFamilyCircleHistorySection()}
     `;
     return;
@@ -3239,7 +3285,7 @@ function renderFamilyCircleResult(result, freeText){
     ${renderProphetLinkCard(weakestLink, false)}
     ${(freeMatch && freeMatch.id !== (weakestLink && weakestLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
-    <div class="choice-btn" style="text-align:center;" onclick="startFamilyCircleAssessment()">🔄 أعد التقييم</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartFamilyCircleAssessment()">🔄 أعد التقييم</div>
     ${renderFamilyCircleHistorySection()}
   `;
 }
