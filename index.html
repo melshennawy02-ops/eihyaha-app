@@ -4272,9 +4272,15 @@ function openRabbekScreen(){
 }
 
 function matchClosenessText(text){
-  const scores = CLOSENESS_BANK.map((c,i) => ({ i, score: c.keywords.filter(k => text.includes(k)).length }));
-  scores.sort((a,b) => b.score - a.score);
-  return scores[0].score > 0 ? scores[0].i : null;
+  const rawNorm = normalizeArabic(text || '');
+  const inputWords = new Set(tokenizeArabic(text));
+  if(inputWords.size === 0) return null;
+  let bestI = null, bestScore = 0;
+  CLOSENESS_BANK.forEach((c,i) => {
+    const score = scoreKeywordList(rawNorm, inputWords, c.keywords);
+    if(score > bestScore){ bestScore = score; bestI = i; }
+  });
+  return bestScore >= 3 ? bestI : null;
 }
 
 async function analyzeRabbekText(){
@@ -5261,17 +5267,66 @@ const PROPHET_LINK_TABLE_POSITIVE = [
   { id:'siblings_forgive', keywords:['سامحت اخواتي','مبقتش حامل ضغينة لإخوتي'], prophetId:'envy_betrayal', encourageMsg:"سماحك ده أعلى درجة وصلها يوسف عليه السلام مع من ظلموه." },
   { id:'social_reconnect', keywords:['بحاول اتواصل بدل ما اعزل نفسي'], prophetId:'isolation', encourageMsg:"خطوتك للتواصل بدل الانسحاب هي نفس رجوع سيدنا نوح من عزلته." },
 ];
-function matchProphetLink(text, positive){
+// تطبيع النص العربي (همزات، تاء مربوطة، ألف مقصورة، تشكيل) عشان اختلاف الكتابة
+// مايمنعش التطابق (مثلاً "مديري" و"مديرى"، أو "متضايقة" و"متضايقه")
+function normalizeArabic(s){
+  return (s || '')
+    .replace(/[إأآا]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[ًٌٍَُِّْـ]/g, '')
+    .trim();
+}
+const ARABIC_STOPWORDS = new Set(['في','من','علي','الي','عن','مع','هو','هي','انا','انت','ده','دي','دول','اللي','كل','او','و','ب','ل','لا','مش','بس','كده','عشان','علشان','يا','ان','مافيش','فيه','بقي','قوي','جدا','اوي','بشكل','حتي']);
+function tokenizeArabic(text){
+  return normalizeArabic(text)
+    .replace(/[^\u0600-\u06FF\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !ARABIC_STOPWORDS.has(w));
+}
+// دالة عامة: بتاخد نص المستخدم وليستة كلمات مفتاحية وترجع درجة تطابق —
+// مستخدمة في كل محركات "اكتب بكلامك" بالتطبيق (مش بس أداة الأنبياء)
+function scoreKeywordList(rawNorm, inputWords, keywords){
+  let score = 0;
+  keywords.forEach(k => {
+    const kNorm = normalizeArabic(k);
+    if(rawNorm.includes(kNorm)) score += 3; // تطابق الجملة كاملة إشارة قوية
+    const kWords = tokenizeArabic(k);
+    score += kWords.filter(w => inputWords.has(w)).length; // تطابق كلمة بكلمة
+  });
+  return score;
+}
+function scoreProphetLink(text, positive){
   const table = positive ? PROPHET_LINK_TABLE_POSITIVE : PROPHET_LINK_TABLE;
-  const norm = (text || '').trim();
-  if(!norm) return null;
+  const rawNorm = normalizeArabic(text || '');
+  const inputWords = new Set(tokenizeArabic(text));
+  if(inputWords.size === 0) return { entry:null, score:0 };
   let best = null, bestScore = 0;
   table.forEach(entry => {
     let score = 0;
-    entry.keywords.forEach(k => { if(norm.includes(k)) score++; });
+    entry.keywords.forEach(k => {
+      const kNorm = normalizeArabic(k);
+      if(rawNorm.includes(kNorm)) score += 3; // تطابق الجملة كاملة إشارة قوية
+      const kWords = tokenizeArabic(k);
+      score += kWords.filter(w => inputWords.has(w)).length; // تطابق كلمة بكلمة (أكتر تسامحًا)
+    });
     if(score > bestScore){ bestScore = score; best = entry; }
   });
-  return bestScore > 0 ? best : null;
+  return { entry:best, score:bestScore };
+}
+// حد أدنى للثقة عشان مانديش نتيجة عشوائية على تشابه كلمة واحدة عامة بين نصين مختلفين تمامًا في المعنى
+const PROPHET_LINK_MIN_SCORE = 3;
+function matchProphetLink(text, positive){
+  const { entry, score } = scoreProphetLink(text, positive);
+  return score >= PROPHET_LINK_MIN_SCORE ? entry : null;
+}
+// نسخة بتقارن الجدول السلبي والإيجابي مع بعض وترجع الأقوى تطابقًا فعليًا،
+// بدل ما تفترض دايمًا إن كلام المستخدم الحر عن مشكلة (زي ما كان بيحصل قبل كده)
+function matchProphetLinkBest(text){
+  const neg = scoreProphetLink(text, false);
+  const pos = scoreProphetLink(text, true);
+  if(neg.score < PROPHET_LINK_MIN_SCORE && pos.score < PROPHET_LINK_MIN_SCORE) return null;
+  return pos.score > neg.score ? { entry:pos.entry, positive:true } : { entry:neg.entry, positive:false };
 }
 function getProphetLinkById(id, positive){
   const table = positive ? PROPHET_LINK_TABLE_POSITIVE : PROPHET_LINK_TABLE;
@@ -5362,12 +5417,10 @@ function analyzeBankFreeText(bankKey, text){
   const returnFn = BANK_RETURN_FN[bankKey];
   const wrap = document.getElementById(containerId);
   if(!text){ window[returnFn](); return; }
-  let match = matchProphetLink(text, false);
-  let positive = false;
-  if(!match){ match = matchProphetLink(text, true); positive = true; }
+  const best = matchProphetLinkBest(text);
   wrap.innerHTML = `
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">من كلامك بكلماتك انت:</p>
-    ${match ? renderProphetLinkCard(match, positive) : `<div class="layer-card l1"><p class="layer-text">مفيش تطابق مباشر لغاية دلوقتي — استمر تكتب لنفسك بصدق، وده كافي كخطوة أولى.</p></div>`}
+    ${best ? renderProphetLinkCard(best.entry, best.positive) : `<div class="layer-card l1"><p class="layer-text">مفيش تطابق مباشر لغاية دلوقتي — استمر تكتب لنفسك بصدق، وده كافي كخطوة أولى.</p></div>`}
     <button class="btn-ghost" onclick="${returnFn}()">رجوع للقائمة</button>
   `;
 }
@@ -6194,15 +6247,15 @@ const FREE_TEXT_KEYWORDS = {
 };
 
 function matchFreeText(text){
-  const scores = {};
-  for(const id in FREE_TEXT_KEYWORDS){
-    scores[id] = FREE_TEXT_KEYWORDS[id].filter(k => text.includes(k)).length;
-  }
+  const rawNorm = normalizeArabic(text || '');
+  const inputWords = new Set(tokenizeArabic(text));
+  if(inputWords.size === 0) return null;
   let bestId = null, bestScore = 0;
-  for(const id in scores){
-    if(scores[id] > bestScore){ bestScore = scores[id]; bestId = id; }
+  for(const id in FREE_TEXT_KEYWORDS){
+    const score = scoreKeywordList(rawNorm, inputWords, FREE_TEXT_KEYWORDS[id]);
+    if(score > bestScore){ bestScore = score; bestId = id; }
   }
-  return bestScore > 0 ? bestId : null;
+  return bestScore >= 3 ? bestId : null;
 }
 
 // ================= بنك كلمات "الاختيار الخفي" — جرح الأم/الأب وعلامات المنافق =================
@@ -6303,9 +6356,19 @@ const WOUND_FREE_TEXT_BANK = {
   ],
 };
 function matchWoundFreeText(text){
+  const rawNorm = normalizeArabic(text || '');
+  const inputWords = new Set(tokenizeArabic(text));
+  if(inputWords.size === 0) return null;
   const scores = {};
   for(const key in WOUND_FREE_TEXT_BANK){
-    scores[key] = WOUND_FREE_TEXT_BANK[key].reduce((s,item) => s + (text.includes(item.phrase) ? item.weight : 0), 0);
+    scores[key] = WOUND_FREE_TEXT_BANK[key].reduce((s,item) => {
+      const pNorm = normalizeArabic(item.phrase);
+      if(rawNorm.includes(pNorm)) return s + item.weight; // تطابق الجملة كاملة ياخد وزنها كامل
+      const pWords = tokenizeArabic(item.phrase);
+      if(pWords.length === 0) return s;
+      const overlap = pWords.filter(w => inputWords.has(w)).length;
+      return s + (overlap / pWords.length) * item.weight * 0.6; // تطابق جزئي ياخد جزء من الوزن
+    }, 0);
   }
   let bestKey = null, bestScore = 0;
   for(const key in scores){
