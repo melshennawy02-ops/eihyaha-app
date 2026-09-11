@@ -674,6 +674,16 @@
     <div style="padding:0 16px;" id="firstStepBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: PROFESSIONAL REPORT (تقريرك المهني) ===================== -->
+  <div class="screen" id="screen-professional-report">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(5)">→</div>
+      <h1>تقريرك المهني</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="professionalReportBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -2590,6 +2600,7 @@ function renderProfessionalPillar(body){
     { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
     { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية" },
     { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
+    { key:"professional_report", onclick:"openProfessionalReport()", icon:"📊", title:"تقريرك المهني", sub:"تقدمك، أهدافك، ونتايجها لحد دلوقتي" },
   ];
   const startIdx = firstUntriedIndex(professionalTools);
   body.innerHTML = `
@@ -2774,12 +2785,36 @@ function renderProfessionalCircleResult(result, freeText){
 }
 
 function getProfessionalAppliedLog(){ return JSON.parse(localStorage.getItem('eihyaha_professional_applied') || '[]'); }
-function markProfessionalApplied(category, label){
+function markProfessionalApplied(category, label, goal, deadline){
   const log = getProfessionalAppliedLog();
-  log.unshift({ category, label, date: new Date().toISOString() });
+  const followUpId = scheduleFollowUp('professional', label);
+  log.unshift({ category, label, goal: goal || null, deadline: deadline || null, followUpId, date: new Date().toISOString() });
   localStorage.setItem('eihyaha_professional_applied', JSON.stringify(log.slice(0,300)));
-  scheduleFollowUp('professional', label);
   syncProfessionalSummaryToCloud();
+}
+// ---------- تحويل "طبّقتها" من مجرد ضغطة لهدف محدد وموعد فعلي (SMART) ----------
+function showSmartGoalForm(btn, category, label){
+  const formId = 'goalForm_' + Math.random().toString(36).slice(2,8);
+  const safeLabel = label.replace(/'/g, "\\'");
+  btn.outerHTML = `
+    <div id="${formId}" style="margin-top:10px;">
+      <label style="font-size:12px; color:#fff; display:block; margin-bottom:4px;">هدفك بالظبط (خطوة واحدة محددة)</label>
+      <input type="text" id="${formId}_goal" placeholder="مثلاً: أبعت رسالة لمديري النهاردة" style="width:100%; box-sizing:border-box; padding:9px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px; font-family:inherit; font-size:13px;">
+      <label style="font-size:12px; color:#fff; display:block; margin-bottom:4px;">هتحققه إمتى؟</label>
+      <input type="date" id="${formId}_date" style="width:100%; box-sizing:border-box; padding:9px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px; font-family:inherit; font-size:13px;">
+      <div class="choice-btn" style="text-align:center; margin:0; color:#fff; background:rgba(255,255,255,.15); border-color:var(--gold);" onclick="confirmSmartGoal('${formId}', '${category}', '${safeLabel}')">تأكيد الهدف ✅</div>
+    </div>
+  `;
+}
+function confirmSmartGoal(formId, category, label){
+  const goalEl = document.getElementById(formId + '_goal');
+  const dateEl = document.getElementById(formId + '_date');
+  const goal = goalEl ? goalEl.value.trim() : '';
+  const deadline = dateEl ? dateEl.value : '';
+  if(!goal){ goalEl.style.borderColor = '#c0392b'; goalEl.placeholder = 'اكتب هدفك الأول من فضلك'; return; }
+  markProfessionalApplied(category, label, goal, deadline);
+  const wrap = document.getElementById(formId);
+  wrap.outerHTML = `<p style="color:#fff; font-size:13px; margin:0;">✓ اتسجل هدفك: <b>${goal}</b>${deadline ? ' — بحلول ' + deadline : ''}</p>`;
 }
 
 // ---------- بنك: علاقتك بمن فوقك في الشغل (عائلة "سلطة مباشرة") ----------
@@ -2813,7 +2848,7 @@ function showBossDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${b.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('boss','${b.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'boss', '${b.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     ${b.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${b.linkFn}">${b.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openBossScreen()">رجوع للقائمة</button>
@@ -2851,7 +2886,7 @@ function showOwnerDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${o.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('owner','${o.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'owner', '${o.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     <button class="btn-ghost" onclick="openOwnerScreen()">رجوع للقائمة</button>
   `;
@@ -2888,7 +2923,7 @@ function showFreelancerDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${f.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('freelancer','${f.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'freelancer', '${f.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     ${f.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${f.linkFn}">${f.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openFreelancerScreen()">رجوع للقائمة</button>
@@ -2926,7 +2961,7 @@ function showHomeRoleDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${h.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('home_role','${h.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'home_role', '${h.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     <button class="btn-ghost" onclick="openHomeRoleScreen()">رجوع للقائمة</button>
   `;
@@ -2963,7 +2998,7 @@ function showTransitionDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${t.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('transition','${t.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'transition', '${t.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     <button class="btn-ghost" onclick="openTransitionScreen()">رجوع للقائمة</button>
   `;
@@ -3001,7 +3036,7 @@ function showAmbitionDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${a.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('ambition','${a.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'ambition', '${a.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     ${a.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${a.linkFn}">${a.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openAmbitionScreen()">رجوع للقائمة</button>
@@ -3191,6 +3226,7 @@ function renderGrowthPlanResult(family, index){
   const current = stages[index];
   const next = stages[index+1] || null;
   const yusuf = YUSUF_GROWTH_PHASES[index];
+  const currentTitleSafe = current.title.replace(/'/g, "\\'");
   const wrap = document.getElementById('growthPlanBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
@@ -3210,7 +3246,7 @@ function renderGrowthPlanResult(family, index){
       <p class="layer-title" style="color:var(--gold);">📖 مراحل سيدنا يوسف — نفس رحلتك</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;"><b>${yusuf.title}:</b> ${yusuf.note}</p>
     </div>
-    <div class="choice-btn" style="text-align:center; margin-top:14px; color:#fff; background:rgba(0,0,0,.05); border-color:var(--gold);" onclick="markProfessionalApplied('growth_plan', current.title); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك بدأت الخطوة الجاية ✅</div>
+    <div class="choice-btn" style="text-align:center; margin-top:14px; color:#fff; background:rgba(0,0,0,.05); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'growth_plan', '${currentTitleSafe}')">حدد هدفك وابدأ الخطوة ✅</div>
     <div class="choice-btn" style="text-align:center;" onclick="renderGrowthPlanPicker('${family}')">🔄 غيّر مرحلتك</div>
   `;
 }
@@ -3247,10 +3283,100 @@ function showFirstStepDetail(i){
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${f.action}</p>
-      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('first_step','${f.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'first_step', '${f.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
     <button class="btn-ghost" onclick="openFirstStepScreen()">رجوع للقائمة</button>
   `;
+}
+
+// ---------- تقريرك المهني: تحليل شامل + تشجيع في الإيجابي + تنبيه في السلبي ----------
+function openProfessionalReport(){
+  markToolOpened('professional_report');
+  const wrap = document.getElementById('professionalReportBody');
+  const log = getProfessionalAppliedLog();
+  const followUps = getFollowUps().filter(f => f.pillar === 'professional');
+  const worked = getResolvedFollowUpCount('professional', 'worked');
+  const trying = getResolvedFollowUpCount('professional', 'trying');
+  const didntWork = getResolvedFollowUpCount('professional', 'didnt_work');
+  const now = new Date();
+  const overdueUnresolved = followUps.filter(f => f.status === 'pending' && new Date(f.dueDate) <= now).length;
+  const stillPending = followUps.filter(f => f.status === 'pending' && new Date(f.dueDate) > now).length;
+  const resolvedTotal = worked + trying + didntWork;
+
+  let toneHtml = '';
+  if(log.length === 0){
+    toneHtml = `
+      <div class="layer-card l1">
+        <p class="layer-title" style="color:var(--navy-dark);">لسه ماحددتش أي هدف في الركن المهني</p>
+        <p class="layer-text" style="margin-top:8px;">ابدأ بأي أداة في الركن، ولما توصل لخطوة عملية، حدد هدفك بالظبط وإمتى هتحققه — وهنا هنقدر نتابع معاك.</p>
+      </div>`;
+  } else if(didntWork > worked && didntWork >= 2){
+    toneHtml = `
+      <div class="layer-card l3">
+        <p class="layer-title" style="color:var(--navy-dark);">⚠️ ملاحظة تستاهل وقفة</p>
+        <p class="layer-text" style="margin-top:8px;">أكتر من هدف حددته قلت إنه «ماحصلش». ده مش فشل، لكنه مؤشر إن الأهداف كانت أكبر من اللي تقدر عليه دلوقتي، أو محتاجة صياغة أوضح. جرب المرة الجاية هدف أصغر بكتير وموعد أقرب.</p>
+      </div>`;
+  } else if(worked > 0 && worked >= didntWork){
+    toneHtml = `
+      <div class="layer-card l1" style="border-color:var(--gold);">
+        <p class="layer-title" style="color:var(--navy-dark);">✨ تقدم حقيقي وملموس</p>
+        <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
+      </div>`;
+  } else if(overdueUnresolved >= 2){
+    toneHtml = `
+      <div class="layer-card l2">
+        <p class="layer-title" style="color:#8A6A1E;">🔔 عندك أهداف فاتت مواعيدها من غير متابعة</p>
+        <p class="layer-text" style="margin-top:8px;">${overdueUnresolved} هدف فات ميعاده ومحددتش نتيجته لسه — راجعهم وحدد هل حصلوا ولا محتاجين إعادة صياغة.</p>
+      </div>`;
+  } else {
+    toneHtml = `
+      <div class="layer-card l1">
+        <p class="layer-title" style="color:var(--navy-dark);">بداية كويسة</p>
+        <p class="layer-text" style="margin-top:8px;">حددت ${log.length} هدف لحد دلوقتي — استمر وهنقدر نديك صورة أوضح عن تقدمك مع الوقت.</p>
+      </div>`;
+  }
+
+  const circle = getProfessionalCircleAssessment();
+  const fieldDiscovery = getFieldDiscoveryResult();
+  const growth = getGrowthPlanResult();
+  const snapshotItems = [];
+  if(fieldDiscovery) snapshotItems.push(`مجالك الأقرب: <b>${FIELD_TYPE_CONTENT[fieldDiscovery.dominant].title}</b>`);
+  if(circle){
+    const weakest = Object.entries(circle.scores).sort((a,b)=>b[1]-a[1])[0][0];
+    snapshotItems.push(`أضعف نقطة مهنية: <b>${PROFESSIONAL_CIRCLE_LABELS[weakest]}</b>`);
+  }
+  if(growth) snapshotItems.push(`مرحلة نموك الحالية: <b>${GROWTH_STAGES_BY_FAMILY[growth.family][growth.stageIndex].title}</b>`);
+
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">ملخص سريع</p>
+      <p class="layer-text" style="margin-top:8px;">🎯 أهداف حددتها: <b>${log.length}</b> &nbsp; | &nbsp; ✅ فرّقت: <b>${worked}</b> &nbsp; | &nbsp; 🔄 لسه بتجرب: <b>${trying}</b> &nbsp; | &nbsp; ⚠️ ماحصلتش: <b>${didntWork}</b></p>
+      ${stillPending > 0 ? `<p class="layer-text" style="margin-top:6px; font-size:12px; color:var(--muted);">${stillPending} هدف لسه معاد متابعته ماجاش.</p>` : ''}
+    </div>
+    ${toneHtml}
+    ${snapshotItems.length ? `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">لمحة عن تشخيصك</p>
+      ${snapshotItems.map(s => `<p class="layer-text" style="margin-top:6px;">${s}</p>`).join('')}
+    </div>` : ''}
+    ${log.length ? `
+    <p style="font-size:12px; color:var(--gold); font-weight:700; margin:16px 0 6px;">كل الأهداف اللي حددتها</p>
+    ${log.slice(0,30).map(entry => {
+      const fu = entry.followUpId ? followUps.find(f => f.id === entry.followUpId) : null;
+      const statusMap = { worked:'✅ فرّقت', trying:'🔄 لسه بتجرب', didnt_work:'⚠️ ماحصلتش', pending:'⏳ لسه معلقة' };
+      const status = fu ? statusMap[fu.status] : '—';
+      return `
+        <div class="tool-row" style="cursor:default;">
+          <div class="icon-circle" style="font-size:14px;">${status.slice(0,2)}</div>
+          <div>
+            <div class="card-title" style="font-size:13px;">${entry.goal || entry.label}</div>
+            <div class="card-sub">${entry.deadline ? 'الموعد: ' + entry.deadline + ' — ' : ''}${status}</div>
+          </div>
+        </div>`;
+    }).join('')}
+    ` : ''}
+  `;
+  showScreen('screen-professional-report');
 }
 
 // ---------- مزامنة ملخص الركن المهني ----------
@@ -3280,14 +3406,16 @@ async function syncProfessionalSummaryFromCloud(){
 function getFollowUps(){ return JSON.parse(localStorage.getItem('eihyaha_followups') || '[]'); }
 function scheduleFollowUp(pillar, label){
   const followUps = getFollowUps();
-  followUps.push({
+  const entry = {
     id: Date.now() + Math.random(),
     pillar, // 'family' أو 'social'
     label,
     dueDate: new Date(Date.now() + 3*86400000).toISOString(),
     status: 'pending', // pending | worked | trying | didnt_work
-  });
+  };
+  followUps.push(entry);
   localStorage.setItem('eihyaha_followups', JSON.stringify(followUps.slice(-200)));
+  return entry.id;
 }
 function getDueFollowUp(){
   const now = new Date();
