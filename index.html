@@ -674,6 +674,16 @@
     <div style="padding:0 16px;" id="firstStepBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: EXECUTIVE PREP (جهّزني تنفيذيًا) ===================== -->
+  <div class="screen" id="screen-executive-prep">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(5)">→</div>
+      <h1>جهّزني تنفيذيًا</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="executivePrepBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: PROFESSIONAL REPORT (تقريرك المهني) ===================== -->
   <div class="screen" id="screen-professional-report">
     <div class="topbar">
@@ -2596,6 +2606,7 @@ function renderProfessionalPillar(body){
   const professionalTools = [
     { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا" },
     { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية" },
+    { key:"executive_prep", onclick:"openExecutivePrepScreen()", icon:"📄", title:"جهّزني تنفيذيًا", sub:"سيرتك الذاتية، المقابلة، والتفاوض على الراتب" },
     { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
     { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
     { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية" },
@@ -3290,6 +3301,44 @@ function showFirstStepDetail(i){
     </div>
     ${f.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${f.linkFn}">${f.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openFirstStepScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- بنك: جهّزني تنفيذيًا (محتوى عملي مباشر — CV، مقابلة، تفاوض، تقديم) ----------
+const EXECUTIVE_PREP_BANK = [
+  { emoji:"📄", label:"جهّز سيرتك الذاتية (CV)", psych:"كتير من الناس بتاخد وقت أطول في القلق بشأن الشكل بدل ما تركز على المحتوى الفعلي اللي بيقنع صاحب العمل.", quran:"﴿يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ وَقُولُوا قَوْلًا سَدِيدًا﴾ (سورة الأحزاب ٧٠) — الصدق في كتابة خبراتك جزء من القول السديد، مش مبرر للمبالغة", action:"رتّب سيرتك بالترتيب ده: (١) بياناتك ووسيلة تواصل واضحة (٢) ملخص مهني في 2-3 أسطر (٣) خبراتك من الأحدث للأقدم بنتائج ملموسة مش وصف مهام بس (٤) مهارات مرتبطة بالوظيفة تحديدًا (٥) تعليمك وشهاداتك. صفحة أو اتنين بالكتير، وراجعها لغويًا قبل الإرسال." },
+  { emoji:"🎤", label:"استعد لأسئلة المقابلة الشخصية", psych:"القلق قبل المقابلة غالبًا مصدره الخوف من سؤال مفاجئ — والاستعداد المسبق لأكتر الأسئلة تكرارًا بيقلل الجزء ده كتير.", quran:"﴿رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي﴾ (سورة طه ٢٥-٢٧) — دعاء موسى قبل مواجهة فرعون، أصعب موقف مواجهة في القرآن", action:"جهّز إجابات مختصرة (دقيقة لدقيقتين) لـ: «حدثني عن نفسك»، «ليه عايز الوظيفة دي؟»، «إيه نقاط ضعفك؟» (اذكر نقطة حقيقية وإزاي بتتعامل معاها، مش «بحب الكمال أوي» الجاهزة)، «فين شايف نفسك بعد 5 سنين؟». اتدرب بصوت عالي قبل المقابلة بيوم." },
+  { emoji:"💰", label:"تفاوض على راتبك بثقة", psych:"الخوف من المفاوضة بيخلي كتير من الناس تقبل بأقل من قيمتها الحقيقية في السوق، ظنًا إن الطلب «وقاحة».", quran:"﴿وَلَا تَبْخَسُوا النَّاسَ أَشْيَاءَهُمْ﴾ (سورة الأعراف ٨٥) — الآية بتتكلم عن حقك إنت كمان، مش بس حق التاني عليك", action:"قبل التفاوض: (١) اعرف متوسط الراتب لنفس الدور في السوق (٢) حدد أقل رقم مقبول عندك (٣) خلّي الطرف التاني يذكر رقمه الأول لو قدرت (٤) لو عرضوا أقل من توقعك، اسأل عن مميزات تانية (تأمين، مرونة، تدريب) بدل الرفض المباشر." },
+  { emoji:"📬", label:"قدّم على وظائف بذكاء", psych:"التقديم العشوائي على عدد كبير من غير تخصيص بيقلل فرص الرد، وبيزوّد الإحباط مع الوقت.", quran:"﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا﴾ (سورة الطلاق ٢)", action:"(١) خصّص سيرتك لكل وظيفة بكلمات من الإعلان نفسه (٢) اكتب خطاب تقديم قصير شخصي مش نسخة عامة (٣) تابع بعد أسبوع لو محدش رد برسالة مهذبة (٤) قدّم على عدد وظائف مش وظيفة واحدة بس عشان تقلل الضغط النفسي على قرار واحد." },
+];
+function openExecutivePrepScreen(){
+  markToolOpened('executive_prep');
+  const wrap = document.getElementById('executivePrepBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">محتوى عملي مباشر — اختار اللي محتاجه دلوقتي:</p>
+    ${EXECUTIVE_PREP_BANK.map((e,i) => `
+      <div class="tool-row" onclick="showExecutivePrepDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${e.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${e.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('executive_prep')}
+  `;
+  showScreen('screen-executive-prep');
+}
+function showExecutivePrepDetail(i){
+  const e = EXECUTIVE_PREP_BANK[i];
+  const wrap = document.getElementById('executivePrepBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${e.emoji} ${e.label}</p><p class="layer-text" style="margin-top:8px;">${e.psych}</p></div>
+    <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${e.quran}</p></div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ الخطوات العملية</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${e.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'executive_prep', '${e.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openExecutivePrepScreen()">رجوع للقائمة</button>
   `;
 }
 
@@ -5818,8 +5867,8 @@ const FAMILY_CIRCLE_PROPHET_MAP = { spouse:'marriage_distance', children:'kids_p
 const COWORKER_EXCHANGE_PROPHET_MAP = { balanced:['balanced_giving', true], give:['drain_giving', false], take:['credit_stolen', false], toxic:['hypocrite_signs', false] };
 // ---------- نفس فكرة النص الحر، لكن لأدوات "بنك المواقف" (اختار موقفك من قائمة) ----------
 function isPositiveLink(entry){ return !!(entry && PROPHET_LINK_TABLE_POSITIVE.some(e => e.id === entry.id)); }
-const BANK_RETURN_FN = { rahm:'openRahmScreen', neighbor:'openNeighborScreen', social_skills:'openSocialSkillsScreen', coworker_boundary:'openCoworkerBoundariesScreen', spouse:'openSpouseScreen', children:'openChildrenScreen', siblings:'openSiblingsScreen', extended_family:'openExtendedFamilyScreen', boss:'openBossScreen', owner:'openOwnerScreen', freelancer:'openFreelancerScreen', home_role:'openHomeRoleScreen', transition:'openTransitionScreen', ambition:'openAmbitionScreen', first_step:'openFirstStepScreen' };
-const BANK_CONTAINER = { rahm:'rahmBody', neighbor:'neighborBody', social_skills:'socialSkillsBody', coworker_boundary:'coworkerBoundariesBody', spouse:'spouseBody', children:'childrenBody', siblings:'siblingsBody', extended_family:'extendedFamilyBody', boss:'bossBody', owner:'ownerBody', freelancer:'freelancerBody', home_role:'homeRoleBody', transition:'transitionBody', ambition:'ambitionBody', first_step:'firstStepBody' };
+const BANK_RETURN_FN = { rahm:'openRahmScreen', neighbor:'openNeighborScreen', social_skills:'openSocialSkillsScreen', coworker_boundary:'openCoworkerBoundariesScreen', spouse:'openSpouseScreen', children:'openChildrenScreen', siblings:'openSiblingsScreen', extended_family:'openExtendedFamilyScreen', boss:'openBossScreen', owner:'openOwnerScreen', freelancer:'openFreelancerScreen', home_role:'openHomeRoleScreen', transition:'openTransitionScreen', ambition:'openAmbitionScreen', first_step:'openFirstStepScreen', executive_prep:'openExecutivePrepScreen' };
+const BANK_CONTAINER = { rahm:'rahmBody', neighbor:'neighborBody', social_skills:'socialSkillsBody', coworker_boundary:'coworkerBoundariesBody', spouse:'spouseBody', children:'childrenBody', siblings:'siblingsBody', extended_family:'extendedFamilyBody', boss:'bossBody', owner:'ownerBody', freelancer:'freelancerBody', home_role:'homeRoleBody', transition:'transitionBody', ambition:'ambitionBody', first_step:'firstStepBody', executive_prep:'executivePrepBody' };
 function renderBankFreeTextEntry(bankKey){
   return `
     <div class="tool-row" style="border-style:dashed; opacity:.9;" onclick="showFreeTextBox('${BANK_CONTAINER[bankKey]}','analyzeBankFreeText','${bankKey}')">
