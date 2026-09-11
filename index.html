@@ -644,6 +644,36 @@
     <div style="padding:0 16px;" id="ambitionBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: FIELD DISCOVERY (اكتشف مجالك) ===================== -->
+  <div class="screen" id="screen-field-discovery">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(5)">→</div>
+      <h1>اكتشف مجالك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="fieldDiscoveryBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: GROWTH PLAN (خطة نموك المهني) ===================== -->
+  <div class="screen" id="screen-growth-plan">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(5)">→</div>
+      <h1>خطة نموك المهني</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="growthPlanBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: FIRST STEP (خطوة أول ميل) ===================== -->
+  <div class="screen" id="screen-first-step">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(5)">→</div>
+      <h1>خطوة أول ميل</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="firstStepBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -2552,12 +2582,16 @@ function renderProfessionalPillar(body){
   }
   const family = EMPLOYMENT_FAMILY_MAP[profile.employmentType];
   const familyToolMap = PROFESSIONAL_FAMILY_TOOLS[family];
+  const FAMILY_TOOL_KEY = { authority:'boss', owner:'owner', freelancer:'freelancer', home_role:'home_role', transitional:'transition' };
   const professionalTools = [
-    { onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
-    { onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
-    { onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
+    { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
+    { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
+    { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
+    { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا" },
+    { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية" },
+    { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية" },
   ];
-  const startIdx = firstUntriedIndex(professionalTools.map(t => ({key:t.onclick})));
+  const startIdx = firstUntriedIndex(professionalTools);
   body.innerHTML = `
     <p style="font-size:12px; color:var(--muted); margin:14px 0 4px;">نوع عملك: ${EMPLOYMENT_TYPE_LABELS[profile.employmentType]} <span style="color:var(--gold); cursor:pointer;" onclick="clearEmploymentType()">(غيّره)</span></p>
     <p style="font-size:12.5px; color:var(--muted); margin:0 0 10px; line-height:1.7;">جزء من مشاكل الشغل جذرها مش في الشغل نفسه — لو التشخيص وجّهك لركن تاني، ده مقصود.</p>
@@ -2974,17 +3008,268 @@ function showAmbitionDetail(i){
   `;
 }
 
+// ---------- ٤) اكتشف مجالك (يستفيد من MBTI واعرف نفسك لو موجودين) ----------
+const FIELD_DISCOVERY_QUESTIONS = [
+  { q:"إيه اللي بتتقنه فعلًا من غير مجهود زيادة؟", options:[
+    { label:"تحليل الأرقام وحل المشاكل المنطقية", tag:'analytical' },
+    { label:"إيجاد أفكار وحلول غير تقليدية", tag:'creative' },
+    { label:"فهم الناس ومساعدتهم", tag:'people' },
+    { label:"إنجاز مهام عملية بإيدي أو بخطوات واضحة", tag:'hands_on' },
+  ]},
+  { q:"إيه اللي الناس بتيجي تطلبه منك دايمًا؟", options:[
+    { label:"رأيي في تحليل موقف أو قرار", tag:'analytical' },
+    { label:"أفكار جديدة أو حل إبداعي", tag:'creative' },
+    { label:"دعم نفسي أو نصيحة في علاقاتهم", tag:'people' },
+    { label:"مساعدة في تنفيذ حاجة ملموسة", tag:'hands_on' },
+  ]},
+  { q:"لو الفلوس مش شرط، هتعمل إيه ببلاش من كتر ما بتحبه؟", options:[
+    { label:"أتعلم وأبحث في موضوع يشدني", tag:'analytical' },
+    { label:"أصمم أو أكتب أو أنتج حاجة فنية", tag:'creative' },
+    { label:"أقعد مع ناس وأسمعهم وأساعدهم", tag:'people' },
+    { label:"أشتغل بإيدي في حاجة ملموسة (زراعة، صيانة، طبخ..)", tag:'hands_on' },
+  ]},
+  { q:"تفتكر نفسك أقرب لإيه؟", options:[
+    { label:"شخص منطقي بيحب الأنظمة والدقة", tag:'analytical' },
+    { label:"شخص خياله واسع وبيمل من الروتين", tag:'creative' },
+    { label:"شخص اجتماعي بيحس بمشاعر التانيين بسهولة", tag:'people' },
+    { label:"شخص عملي بيحب يشوف نتيجة ملموسة لشغله", tag:'hands_on' },
+  ]},
+];
+const FIELD_TYPE_CONTENT = {
+  analytical: { title:"تحليلي 📊", desc:"بتميل للمنطق والأنظمة والدقة أكتر من الحماس العاطفي في القرار.", fields:"مجالات زي: البيانات والتحليل، المحاسبة والمالية، الهندسة، البرمجة، البحث العلمي." },
+  creative: { title:"إبداعي 🎨", desc:"بتميل للأفكار الجديدة والتعبير، وبتمل بسرعة من الروتين المكرر.", fields:"مجالات زي: التصميم، الكتابة وصناعة المحتوى، التسويق، الفنون، ريادة الأعمال الإبداعية." },
+  people: { title:"خدمة وتواصل مع الناس 🤝", desc:"بتميل لفهم مشاعر واحتياجات اللي حواليك ومساعدتهم فعليًا.", fields:"مجالات زي: التعليم، الطب والتمريض، المبيعات، الموارد البشرية، الاستشارات والتدريب." },
+  hands_on: { title:"عملي ويدوي 🛠️", desc:"بتميل للإنجاز الملموس والنتيجة الواضحة قدامك مباشرة.", fields:"مجالات زي: الحرف والصيانة، الطهي، الزراعة، البناء والتشييد، الخدمات الفنية." },
+};
+let fieldDiscoveryAnswers = [];
+function startFieldDiscovery(){
+  markToolOpened('field_discovery');
+  const saved = getFieldDiscoveryResult();
+  showScreen('screen-field-discovery');
+  if(saved){
+    renderFieldDiscoveryResult(saved.dominant);
+  } else {
+    restartFieldDiscovery();
+  }
+}
+function restartFieldDiscovery(){
+  fieldDiscoveryAnswers = [];
+  renderFieldDiscoveryQuestion(0);
+}
+function renderFieldDiscoveryQuestion(index){
+  const wrap = document.getElementById('fieldDiscoveryBody');
+  if(index >= FIELD_DISCOVERY_QUESTIONS.length){ revealFieldDiscoveryResult(); return; }
+  const q = FIELD_DISCOVERY_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${FIELD_DISCOVERY_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFieldDiscovery(${index}, ${i})">${o.label}</div>`).join('')}
+      ${freeTextOptionHtml('fieldDiscoveryBody', 'answerFieldDiscoveryFreeTextCB', index)}
+    </div>
+  `;
+}
+function answerFieldDiscovery(qIndex, oIndex){
+  fieldDiscoveryAnswers.push(FIELD_DISCOVERY_QUESTIONS[qIndex].options[oIndex].tag);
+  renderFieldDiscoveryQuestion(qIndex + 1);
+}
+function answerFieldDiscoveryFreeTextCB(qIndex){
+  renderFieldDiscoveryQuestion(qIndex + 1); // إجابة حرة هنا مش بتصوّت لنمط معين، بس بتسيب المستخدم يعبّر
+}
+function getFieldDiscoveryResult(){ return JSON.parse(localStorage.getItem('eihyaha_field_discovery') || 'null'); }
+function revealFieldDiscoveryResult(){
+  if(fieldDiscoveryAnswers.length === 0){
+    const wrap = document.getElementById('fieldDiscoveryBody');
+    wrap.innerHTML = `
+      <div class="layer-card l1" style="margin-top:14px;">
+        <p class="layer-title" style="color:var(--navy-dark);">محتاجين إجابة واحدة على الأقل من الاختيارات</p>
+        <p class="layer-text" style="margin-top:8px;">كتبت كل إجاباتك بكلامك الحر، وده تمام، لكن مش هيكفي نحدد بيه نمطك — جرب تاني واختار من الاختيارات في سؤال واحد على الأقل.</p>
+      </div>
+      <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="restartFieldDiscovery()">🔄 حاول تاني</div>
+    `;
+    return;
+  }
+  const counts = { analytical:0, creative:0, people:0, hands_on:0 };
+  fieldDiscoveryAnswers.forEach(t => counts[t]++);
+  let dominant = 'analytical', max = -1;
+  for(const k in counts){ if(counts[k] > max){ max = counts[k]; dominant = k; } }
+  localStorage.setItem('eihyaha_field_discovery', JSON.stringify({ dominant, date:new Date().toISOString() }));
+  syncProfessionalSummaryToCloud();
+  renderFieldDiscoveryResult(dominant);
+}
+function renderFieldDiscoveryResult(dominant){
+  const c = FIELD_TYPE_CONTENT[dominant];
+  const mbti = localStorage.getItem('eihyaha_mbti_type');
+  const wrap = document.getElementById('fieldDiscoveryBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">${c.title}</p>
+      <p class="layer-text" style="margin-top:8px;">${c.desc}</p>
+    </div>
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">مجالات تستاهل تستكشفها</p>
+      <p class="layer-text" style="margin-top:8px;">${c.fields}</p>
+    </div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">📖 الأساس القرآني</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">﴿وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ﴾ (سورة التوبة ١٠٥) — عملك مش عشوائي، وفيه استعداد فطري ركّبه الله فيك تكتشفه مش تختلقه.</p>
+    </div>
+    ${mbti ? `<p style="font-size:11px; color:var(--muted); margin:10px 0;">ملحوظة: نتيجتك في اختبار نمط الشخصية (${mbti}) ممكن تزودك تفاصيل إضافية — راجعها من الركن الشخصي.</p>` : ''}
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="openGrowthPlanScreen()">كمّل بخطة نموك المهني ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartFieldDiscovery()">🔄 أعد الاختبار</div>
+  `;
+}
+
+// ---------- ٥) خطة نموك المهني (مراحل مختلفة حسب عائلة الشغل + إطار "مراحل يوسف") ----------
+const GROWTH_STAGES_BY_FAMILY = {
+  authority: [
+    { title:"تعلّم الأساسيات وإثبات الانضباط", desc:"لسه في مرحلة بناء الثقة الأساسية — الالتزام والدقة هنا أهم من التميز الاستثنائي." },
+    { title:"اكتساب مهارة تميّزك عن زمايلك", desc:"عندك أساس كويس، دلوقتي وقت تطور مهارة محددة تخليك مرجع فيها." },
+    { title:"بناء سمعة داخل الفريق أو القسم", desc:"مهاراتك واضحة، دلوقتي التركيز على إن مجهودك يبقى مرئي وموثوق فيه من محيطك." },
+    { title:"التقديم على مسؤولية أكبر (ترقية أو قيادة فريق)", desc:"جاهز تاخد خطوة فعلية — اطلب المسؤولية الأكبر بدل ما تستنى حد يلاحظك." },
+  ],
+  owner: [
+    { title:"تأسيس الفكرة والمنتج/الخدمة الأولى", desc:"التركيز دلوقتي على إثبات إن الفكرة أصلًا محتاجة، مش على الكمال." },
+    { title:"الحصول على أول عملاء وتثبيت الدخل", desc:"عندك منتج/خدمة، دلوقتي وقت بناء قاعدة عملاء ثابتة مش مجرد تجارب متفرقة." },
+    { title:"بناء أنظمة وتفويض", desc:"الدخل مستقر، دلوقتي خطر عليك إنك تفضل المركز الوحيد لكل قرار — ابدأ توثّق العمليات وتفوّض." },
+    { title:"التوسع من غير ما يبقى كل حاجة معلّقة بيك", desc:"عندك نظام شغال، دلوقتي التوسع الحقيقي (فروع، خدمات جديدة، فريق أكبر)." },
+  ],
+  freelancer: [
+    { title:"بناء بورتفوليو وأول عملاء", desc:"التركيز على إثبات جودة شغلك ولو بأسعار تأسيسية مؤقتة." },
+    { title:"تثبيت تدفق دخل منتظم", desc:"عندك عملاء، دلوقتي الهدف استقرار الدخل مش بس عدد المشاريع." },
+    { title:"رفع الأسعار وبناء علامة شخصية", desc:"خبرتك واضحة، وقت تسعّر نفسك صح وتبني حضور يميزك عن الغالبية." },
+    { title:"تنويع مصادر الدخل أو تعليم غيرك", desc:"وصلت لاستقرار حقيقي — فكر في مصادر دخل إضافية (منتجات، تدريب) بدل الاعتماد على وقتك بس." },
+  ],
+  home_role: [
+    { title:"اكتشاف مهارة أو شغف جانبي", desc:"مفيش داعي تعرف الوجهة النهائية دلوقتي — بس لاحظ إيه اللي بيشدّك فعلًا." },
+    { title:"تطويرها في وقت محدود بلا ضغط", desc:"خصّص وقت صغير ثابت أسبوعيًا للمهارة دي، من غير ما تحسّها عبء إضافي." },
+    { title:"تحويلها لمصدر قيمة (تطوعي أو مربح)", desc:"المهارة نضجت، دلوقتي جرّب تقدّمها لحد تاني — بمقابل أو تطوعًا، المهم تخرج من دايرتك." },
+    { title:"دمجها بشكل مستدام مع دورك الحالي", desc:"وصلت لتوازن بين دورك الأساسي ومصدر القيمة الجديد ده — استمر عليه." },
+  ],
+  transitional: [
+    { title:"استيعاب المرحلة والتقييم الذاتي", desc:"المرحلة دي محتاجة وقت تستوعب فيها التغيير قبل أي قرار كبير — ده طبيعي." },
+    { title:"تحديد اتجاه جديد أو تأهيل", desc:"استوعبت الوضع، دلوقتي وقت تستكشف اتجاه جديد أو تطور مهارة تأهلك له." },
+    { title:"خطوة عملية أولى (تقديم، تدريب، تواصل)", desc:"عندك اتجاه، دلوقتي حان وقت التنفيذ الفعلي مش مجرد التفكير." },
+    { title:"الاستقرار في الاتجاه الجديد", desc:"بدأت فعليًا، والتركيز دلوقتي على الثبات والاستمرارية." },
+  ],
+};
+const YUSUF_GROWTH_PHASES = [
+  { title:"اكتشاف الموهبة", note:"زي رؤيا سيدنا يوسف بالكواكب الساجدة له — كل حد عنده استعداد فطري لازم يكتشفه ويهتم بيه من بدري." },
+  { title:"الصبر في الشدة", note:"زي صبر سيدنا يوسف في الجب والسجن — المرحلة الصعبة مش نهاية الطريق، هي جزء من تجهيزك للي جاي." },
+  { title:"إثبات الكفاءة بالفعل", note:"زي تفسيره الدقيق لرؤيا الملك — الكفاءة بتتثبت بالفعل والنتيجة، مش بالكلام عن النفس." },
+  { title:"تولي المسؤولية الكبرى", note:"زي قوله «اجعلني على خزائن الأرض» — لما تثبت جدارتك فعليًا، المسؤولية الأكبر بتيجي في وقتها المناسب." },
+];
+function openGrowthPlanScreen(){
+  markToolOpened('growth_plan');
+  const family = getEmploymentFamily();
+  if(!family){ goToPillar(5); return; }
+  const saved = getGrowthPlanResult();
+  showScreen('screen-growth-plan');
+  if(saved && saved.family === family){
+    renderGrowthPlanResult(family, saved.stageIndex);
+  } else {
+    renderGrowthPlanPicker(family);
+  }
+}
+function renderGrowthPlanPicker(family){
+  const stages = GROWTH_STAGES_BY_FAMILY[family];
+  const wrap = document.getElementById('growthPlanBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">النمو مش سباق، لكنه مراحل — اختار أقرب مرحلة لوضعك دلوقتي:</p>
+    ${stages.map((s,i) => `<div class="choice-btn" style="margin:0 0 8px; text-align:right;" onclick="selectGrowthStage(${i})">${i+1}. ${s.title}</div>`).join('')}
+  `;
+}
+function selectGrowthStage(index){
+  const family = getEmploymentFamily();
+  localStorage.setItem('eihyaha_growth_stage', JSON.stringify({ family, stageIndex:index, date:new Date().toISOString() }));
+  syncProfessionalSummaryToCloud();
+  renderGrowthPlanResult(family, index);
+}
+function getGrowthPlanResult(){ return JSON.parse(localStorage.getItem('eihyaha_growth_stage') || 'null'); }
+function renderGrowthPlanResult(family, index){
+  const stages = GROWTH_STAGES_BY_FAMILY[family];
+  const current = stages[index];
+  const next = stages[index+1] || null;
+  const yusuf = YUSUF_GROWTH_PHASES[index];
+  const wrap = document.getElementById('growthPlanBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">مرحلتك الحالية: ${current.title}</p>
+      <p class="layer-text" style="margin-top:8px;">${current.desc}</p>
+    </div>
+    ${next ? `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">الخطوة الجاية</p>
+      <p class="layer-text" style="margin-top:8px;"><b>${next.title}</b> — ${next.desc}</p>
+    </div>` : `
+    <div class="layer-card l3">
+      <p class="layer-title" style="color:var(--navy-dark);">وصلت لأعلى مرحلة في المسار ده 🎉</p>
+      <p class="layer-text" style="margin-top:8px;">التركيز دلوقتي على الثبات والحفاظ على المكتسب، مش البحث عن مرحلة تانية بالضرورة.</p>
+    </div>`}
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">📖 مراحل سيدنا يوسف — نفس رحلتك</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;"><b>${yusuf.title}:</b> ${yusuf.note}</p>
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-top:14px; color:#fff; background:rgba(0,0,0,.05); border-color:var(--gold);" onclick="markProfessionalApplied('growth_plan', current.title); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك بدأت الخطوة الجاية ✅</div>
+    <div class="choice-btn" style="text-align:center;" onclick="renderGrowthPlanPicker('${family}')">🔄 غيّر مرحلتك</div>
+  `;
+}
+
+// ---------- ٦) خطوة أول ميل (تجاوز الخوف من البداية) ----------
+const FIRST_STEP_BANK = [
+  { emoji:"😨", label:"خايف أفشل قبل ما أبدأ", psych:"الخوف من الفشل بيخليك تحكم على نتيجة لسه مش موجودة، وده بيمنعك تجرب أصلًا.", quran:"﴿وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ﴾ (سورة البقرة ٢١٦)", action:"عرّف الفشل هنا بمعنى: «محاولة ماخدتش النتيجة المتوقعة» مش «حكم نهائي عليك» — وابدأ بخطوة تقدر تتحمل نتيجتها." },
+  { emoji:"👨‍👩‍👧", label:"خايف من حكم أهلي أو الناس اللي حواليا", psych:"الخوف من رأي الناس ممكن يوقفك سنين عن حاجة كنت مقتنع بيها من جوه.", quran:"﴿وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ﴾ (سورة آل عمران ١٣٩)", action:"افصل بين استشارة حد بتثق في حكمته، وبين الخوف من كل رأي حواليك — الأول مفيد، التاني بيشلّك." },
+  { emoji:"⏳", label:"حاسس إني فوّت قطار عمري ومتأخر أبدأ", psych:"فكرة «فوات الأوان» غالبًا مقارنة بمسار مثالي متخيَّل، مش حقيقة عن وقتك الفعلي.", quran:"﴿وَعِندَهُ مَفَاتِحُ الْغَيْبِ لَا يَعْلَمُهَا إِلَّا هُوَ﴾ (سورة الأنعام ٥٩)", action:"ابحث عن قصة واحدة حقيقية لحد بدأ في سن متأخرة نسبيًا في نفس المجال — القطار مش واحد بس." },
+  { emoji:"🌀", label:"بخطط كتير وماببدأش فعليًا (شلل التحليل)", psych:"التخطيط الزيادة أحيانًا بيبقى شكل مقنّع من الخوف من التنفيذ — تحس إنك «بتشتغل» من غير ما تتحرك فعليًا.", quran:"﴿فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ﴾ (سورة آل عمران ١٥٩)", action:"حدد سقف زمني للتخطيط (٣ أيام مثلًا)، وبعده نفّذ أصغر خطوة ممكنة حتى لو الخطة مش كاملة." },
+];
+function openFirstStepScreen(){
+  markToolOpened('first_step');
+  const wrap = document.getElementById('firstStepBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب حاجة بتمنعك تبدأ:</p>
+    ${FIRST_STEP_BANK.map((f,i) => `
+      <div class="tool-row" onclick="showFirstStepDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${f.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${f.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('first_step')}
+  `;
+  showScreen('screen-first-step');
+}
+function showFirstStepDetail(i){
+  const f = FIRST_STEP_BANK[i];
+  const wrap = document.getElementById('firstStepBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
+    <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${f.quran}</p></div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${f.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="markProfessionalApplied('first_step','${f.label}'); this.textContent='✓ تم — أحسنت'; this.onclick=null;">علّمها إنك طبّقتها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openFirstStepScreen()">رجوع للقائمة</button>
+  `;
+}
+
 // ---------- مزامنة ملخص الركن المهني ----------
 function buildProfessionalSummaryFields(){
   const fields = { updated_at: new Date().toISOString(), applied_count: getProfessionalAppliedLog().length };
   const circle = getProfessionalCircleAssessment();
   if(circle) fields.professional_circle = JSON.stringify(circle);
+  const fieldDiscovery = getFieldDiscoveryResult();
+  if(fieldDiscovery) fields.field_discovery = JSON.stringify(fieldDiscovery);
+  const growthStage = getGrowthPlanResult();
+  if(growthStage) fields.growth_stage = JSON.stringify(growthStage);
   return fields;
 }
 function syncProfessionalSummaryToCloud(){ pushPillarSummary('professional_summary', buildProfessionalSummaryFields()); }
 async function syncProfessionalSummaryFromCloud(){
   await pullPillarSummary('professional_summary', (remote) => {
     if(remote.professional_circle && !getProfessionalCircleAssessment()) localStorage.setItem('eihyaha_professional_circle_assessment', remote.professional_circle);
+    if(remote.field_discovery && !getFieldDiscoveryResult()) localStorage.setItem('eihyaha_field_discovery', remote.field_discovery);
+    if(remote.growth_stage && !getGrowthPlanResult()) localStorage.setItem('eihyaha_growth_stage', remote.growth_stage);
   });
 }
 
@@ -5401,8 +5686,8 @@ const FAMILY_CIRCLE_PROPHET_MAP = { spouse:'marriage_distance', children:'kids_p
 const COWORKER_EXCHANGE_PROPHET_MAP = { balanced:['balanced_giving', true], give:['drain_giving', false], take:['credit_stolen', false], toxic:['hypocrite_signs', false] };
 // ---------- نفس فكرة النص الحر، لكن لأدوات "بنك المواقف" (اختار موقفك من قائمة) ----------
 function isPositiveLink(entry){ return !!(entry && PROPHET_LINK_TABLE_POSITIVE.some(e => e.id === entry.id)); }
-const BANK_RETURN_FN = { rahm:'openRahmScreen', neighbor:'openNeighborScreen', social_skills:'openSocialSkillsScreen', coworker_boundary:'openCoworkerBoundariesScreen', spouse:'openSpouseScreen', children:'openChildrenScreen', siblings:'openSiblingsScreen', extended_family:'openExtendedFamilyScreen', boss:'openBossScreen', owner:'openOwnerScreen', freelancer:'openFreelancerScreen', home_role:'openHomeRoleScreen', transition:'openTransitionScreen', ambition:'openAmbitionScreen' };
-const BANK_CONTAINER = { rahm:'rahmBody', neighbor:'neighborBody', social_skills:'socialSkillsBody', coworker_boundary:'coworkerBoundariesBody', spouse:'spouseBody', children:'childrenBody', siblings:'siblingsBody', extended_family:'extendedFamilyBody', boss:'bossBody', owner:'ownerBody', freelancer:'freelancerBody', home_role:'homeRoleBody', transition:'transitionBody', ambition:'ambitionBody' };
+const BANK_RETURN_FN = { rahm:'openRahmScreen', neighbor:'openNeighborScreen', social_skills:'openSocialSkillsScreen', coworker_boundary:'openCoworkerBoundariesScreen', spouse:'openSpouseScreen', children:'openChildrenScreen', siblings:'openSiblingsScreen', extended_family:'openExtendedFamilyScreen', boss:'openBossScreen', owner:'openOwnerScreen', freelancer:'openFreelancerScreen', home_role:'openHomeRoleScreen', transition:'openTransitionScreen', ambition:'openAmbitionScreen', first_step:'openFirstStepScreen' };
+const BANK_CONTAINER = { rahm:'rahmBody', neighbor:'neighborBody', social_skills:'socialSkillsBody', coworker_boundary:'coworkerBoundariesBody', spouse:'spouseBody', children:'childrenBody', siblings:'siblingsBody', extended_family:'extendedFamilyBody', boss:'bossBody', owner:'ownerBody', freelancer:'freelancerBody', home_role:'homeRoleBody', transition:'transitionBody', ambition:'ambitionBody', first_step:'firstStepBody' };
 function renderBankFreeTextEntry(bankKey){
   return `
     <div class="tool-row" style="border-style:dashed; opacity:.9;" onclick="showFreeTextBox('${BANK_CONTAINER[bankKey]}','analyzeBankFreeText','${bankKey}')">
