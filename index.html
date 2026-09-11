@@ -713,6 +713,86 @@
     <div style="padding:0 16px;" id="professionalReportBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: FINANCIAL CIRCLE ASSESSMENT ===================== -->
+  <div class="screen" id="screen-financial-circle">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>أضعف نقطة مادية عندك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="financialCircleBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: MONEY RELATIONSHIP (علاقتك بالفلوس) ===================== -->
+  <div class="screen" id="screen-money-relationship">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>علاقتك بالفلوس</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="moneyRelationshipBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: BUDGET (إدارة ميزانيتك) ===================== -->
+  <div class="screen" id="screen-budget">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>إدارة ميزانيتك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="budgetBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: DEBT (التعامل مع الديون) ===================== -->
+  <div class="screen" id="screen-debt">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>التعامل مع الديون</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="debtBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SAVINGS (الادخار واحتياطي الطوارئ) ===================== -->
+  <div class="screen" id="screen-savings">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>الادخار واحتياطي الطوارئ</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="savingsBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: GIVING (الزكاة والعطاء) ===================== -->
+  <div class="screen" id="screen-giving">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>الزكاة والعطاء</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="givingBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: CONTENTMENT (القناعة والرضا المادي) ===================== -->
+  <div class="screen" id="screen-contentment">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>القناعة والرضا المادي</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="contentmentBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: FINANCIAL REPORT (تقريرك المادي) ===================== -->
+  <div class="screen" id="screen-financial-report">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(6)">→</div>
+      <h1>تقريرك المادي</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="financialReportBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -1272,6 +1352,7 @@ async function enterApp(){
   await syncSpiritualSummaryFromCloud();
   await syncPersonalSummaryFromCloud();
   await syncProfessionalSummaryFromCloud();
+  await syncFinancialSummaryFromCloud();
   renderHome();
   if(!localStorage.getItem('eihyaha_onboarding_seen')){
     showOnboarding();
@@ -1764,7 +1845,7 @@ const PILLARS = [
   {id:3, title:"الركن العائلي", icon:"👪", ready:true, tag:"أسرة متوازنة .. سعادة دائمة", grad:"linear-gradient(135deg, #8A4B32, #B36A45)", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:4, title:"الركن الاجتماعي", icon:"🤝", ready:true, tag:"علاقات صحية .. حياة أعمق", grad:"linear-gradient(135deg, #1B4E6B, #2E7396)", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:5, title:"الركن المهني", icon:"💼", ready:true, tag:"طموح أكبر .. إنجازات أعمق", grad:"linear-gradient(135deg, #4A2E6B, #6B4696)", img:"https://images.unsplash.com/photo-1752223638233-4c9545333f89?fm=jpg&q=70&w=900&auto=format&fit=crop"},
-  {id:6, title:"الركن المادي", icon:"💰", ready:false, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
+  {id:6, title:"الركن المادي", icon:"💰", ready:true, tag:"استقرار مادي .. أمان للمستقبل", grad:"linear-gradient(135deg, #6B5A1E, #A38A2E)", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=900&auto=format&fit=crop"},
   {id:7, title:"الركن الصحي", icon:"🩺", ready:false, tag:"جسدك أمانة .. فاعتنِ به", grad:"linear-gradient(135deg, #0F3D2E, #1D6B52)", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=900&auto=format&fit=crop"},
 ];
 
@@ -3553,6 +3634,457 @@ async function syncProfessionalSummaryFromCloud(){
   });
 }
 
+// ============================================================
+// الركن المادي — سيكولوجية الفلوس ومبادئ عامة، مش استشارة استثمارية
+// (لزيادة الدخل نفسه، بُعد "كفاية الدخل" بيوجّه مباشرة للركن المهني)
+// ============================================================
+const FINANCIAL_CIRCLE_QUESTIONS = [
+  { circle:'income', q:"دخلك بيغطي احتياجاتك إزاي؟", options:[
+    { label:"بيغطي وبيفضل منه", score:0 }, { label:"بيغطي بالظبط من غير فايض", score:1 }, { label:"مش كافي واحتاج أستلف أو أأجل", score:2 },
+  ]},
+  { circle:'relationship', q:"علاقتك النفسية بالفلوس إزاي؟", options:[
+    { label:"مرتاح ومتوازن", score:0 }, { label:"أحيانًا قلقان بس مش دايمًا", score:1 }, { label:"خايف من الفقر باستمرار أو بستخدم الفلوس لإثبات نفسي", score:2 },
+  ]},
+  { circle:'budget', q:"بتتابع مصاريفك وميزانيتك إزاي؟", options:[
+    { label:"بتابعها بانتظام", score:0 }, { label:"بتابعها بس مش منتظم", score:1 }, { label:"مش بتابعها خالص", score:2 },
+  ]},
+  { circle:'debt', q:"وضعك مع الديون إزاي؟", options:[
+    { label:"من غير ديون، أو ديون بسيطة مريحة", score:0 }, { label:"عندي ديون بس متحكم فيها", score:1 }, { label:"عندي ديون بتضغط عليّا نفسيًا", score:2 },
+  ]},
+  { circle:'savings', q:"عندك مدخرات أو احتياطي طوارئ؟", options:[
+    { label:"آه، تكفيني فترة", score:0 }, { label:"عندي شوية بس مش كافية", score:1 }, { label:"معنديش خالص", score:2 },
+  ]},
+  { circle:'giving', q:"عادتك في الزكاة والصدقة إزاي؟", options:[
+    { label:"منتظم فيها", score:0 }, { label:"بس مناسبات معينة", score:1 }, { label:"نادرًا أو مبعرفش أحسبها صح", score:2 },
+  ]},
+  { circle:'contentment', q:"حاسس بقلق على مستقبلك المادي (تقاعد، أولاد، إلخ)؟", options:[
+    { label:"لأ، مطمئن نسبيًا", score:0 }, { label:"قلق متوسط", score:1 }, { label:"قلق شديد ومستمر", score:2 },
+  ]},
+];
+const FINANCIAL_CIRCLE_LABELS = { income:"كفاية الدخل", relationship:"علاقتك بالفلوس", budget:"إدارة الميزانية", debt:"وضع الديون", savings:"الادخار والاحتياطي", giving:"الزكاة والعطاء", contentment:"القناعة والقلق المستقبلي" };
+function getFinancialIncomeTool(){
+  const profile = getLocalProfile();
+  if(!profile.employmentType) return { fn:"goToPillar(5)", label:"الركن المهني" };
+  return { fn:"openGrowthPlanScreen()", label:"خطة نموك المهني (الركن المهني)" };
+}
+const FINANCIAL_TOOL_MAP = {
+  income: null, // بيتحسب ديناميكيًا حسب حالة التوظيف
+  relationship: { fn:"openMoneyRelationshipScreen()", label:"علاقتك بالفلوس" },
+  budget: { fn:"openBudgetScreen()", label:"إدارة ميزانيتك" },
+  debt: { fn:"openDebtScreen()", label:"التعامل مع الديون" },
+  savings: { fn:"openSavingsScreen()", label:"الادخار واحتياطي الطوارئ" },
+  giving: { fn:"openGivingScreen()", label:"الزكاة والعطاء" },
+  contentment: { fn:"openContentmentScreen()", label:"القناعة والرضا المادي" },
+};
+const FINANCIAL_PROPHET_MAP = { income:'ambition_dissatisfaction', relationship:'fear_of_poverty', budget:'financial_disorganization', debt:'debt_distress', savings:'savings_difficulty', giving:'giving_fear', contentment:'financial_future_anxiety' };
+let financialCircleAnswers = [];
+function startFinancialCircleAssessment(){
+  markToolOpened('financial_circle');
+  const saved = getFinancialCircleAssessment();
+  showScreen('screen-financial-circle');
+  if(saved){
+    renderFinancialCircleResult(saved, '');
+  } else {
+    restartFinancialCircleAssessment();
+  }
+}
+function restartFinancialCircleAssessment(){
+  financialCircleAnswers = [];
+  renderFinancialCircleQuestion(0);
+}
+function renderFinancialCircleQuestion(index){
+  const wrap = document.getElementById('financialCircleBody');
+  if(index >= FINANCIAL_CIRCLE_QUESTIONS.length){ revealFinancialCircleResult(); return; }
+  const q = FINANCIAL_CIRCLE_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${FINANCIAL_CIRCLE_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFinancialCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${freeTextOptionHtml('financialCircleBody', 'answerFinancialCircleFreeTextCB', index)}
+    </div>
+  `;
+}
+function answerFinancialCircleFreeTextCB(qIndex, text){
+  const q = FINANCIAL_CIRCLE_QUESTIONS[qIndex];
+  financialCircleAnswers.push({ circle:q.circle, score:1, freeText: text || null });
+  renderFinancialCircleQuestion(qIndex + 1);
+}
+function answerFinancialCircle(qIndex, oIndex){
+  const q = FINANCIAL_CIRCLE_QUESTIONS[qIndex];
+  financialCircleAnswers.push({ circle:q.circle, score:q.options[oIndex].score });
+  renderFinancialCircleQuestion(qIndex + 1);
+}
+function getFinancialCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_financial_circle_assessment') || 'null'); }
+function revealFinancialCircleResult(){
+  const scores = {};
+  financialCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
+  const freeText = financialCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
+  const result = { scores, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_financial_circle_assessment', JSON.stringify(result));
+  syncFinancialSummaryToCloud();
+  renderFinancialCircleResult(result, freeText);
+}
+function renderFinancialCircleResult(result, freeText){
+  const wrap = document.getElementById('financialCircleBody');
+  const weakest = Object.entries(result.scores).sort((a,b) => b[1]-a[1])[0][0];
+  const tool = weakest === 'income' ? getFinancialIncomeTool() : FINANCIAL_TOOL_MAP[weakest];
+  const freeMatch = freeText ? matchProphetLink(freeText, false) : null;
+  const weakestLink = getProphetLinkById(FINANCIAL_PROPHET_MAP[weakest], false);
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">🗺️ أضعف نقطة مادية عندك دلوقتي</p>
+      <p class="layer-text" style="margin-top:6px;">نقطة تركيز منطقية: <b>${FINANCIAL_CIRCLE_LABELS[weakest]}</b>${weakest === 'income' ? ' — وده فعليًا جذره في الركن المهني، مش الركن المادي نفسه.' : ''}</p>
+    </div>
+    ${Object.entries(result.scores).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+          <span>${FINANCIAL_CIRCLE_LABELS[circle]}</span><span style="color:var(--muted);">${val >= 2 ? 'محتاجة شغل' : 'مستقرة'}</span>
+        </div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;">
+          <div style="width:${Math.min(val/2,1)*100}%; height:100%; background:${circle===weakest ? 'var(--gold)' : '#C9BFA0'}; border-radius:3px;"></div>
+        </div>
+      </div>
+    `).join('')}
+    ${renderProphetLinkCard(weakestLink, false)}
+    ${(freeMatch && freeMatch.id !== (weakestLink && weakestLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartFinancialCircleAssessment()">🔄 أعد التقييم</div>
+  `;
+}
+
+function getFinancialAppliedLog(){ return JSON.parse(localStorage.getItem('eihyaha_financial_applied') || '[]'); }
+function markFinancialApplied(category, label, goal, deadline){
+  const log = getFinancialAppliedLog();
+  const followUpId = scheduleFollowUp('financial', label);
+  log.unshift({ category, label, goal: goal || null, deadline: deadline || null, followUpId, date: new Date().toISOString() });
+  localStorage.setItem('eihyaha_financial_applied', JSON.stringify(log.slice(0,300)));
+  syncFinancialSummaryToCloud();
+}
+
+// ---------- ١) علاقتك بالفلوس ----------
+const MONEY_RELATIONSHIP_BANK = [
+  { emoji:"😰", label:"خايف من الفقر باستمرار حتى لو وضعي كويس", psych:"الخوف الدائم من الفقر بيخليك تعيش قلق مستمر حتى وقت الاستقرار الفعلي، وده استنزاف نفسي بلا داعي موضوعي.", quran:"﴿الشَّيْطَانُ يَعِدُكُمُ الْفَقْرَ وَيَأْمُرُكُم بِالْفَحْشَاءِ﴾ (سورة البقرة ٢٦٨)", action:"اكتب 3 مواقف ربنا وفّر لك فيها من غير ما تتوقع، وارجعلهم كل ما القلق يزيد." },
+  { emoji:"🛍️", label:"بستخدم الشراء عشان أثبت نفسي أو أحس بقيمتي", psych:"ربط قيمتك الذاتية بالامتلاك أو الإنفاق بيخليك في سباق مالي مفتوح النهاية، مهما وصلت.", quran:"﴿وَمَا أَمْوَالُكُمْ وَلَا أَوْلَادُكُم بِالَّتِي تُقَرِّبُكُمْ عِندَنَا زُلْفَىٰ﴾ (سورة سبأ ٣٧)", action:"قبل أي عملية شراء غير أساسية، اسأل نفسك: «بشتري ده عشان محتاجه، ولا عشان حد يشوفني؟»" },
+  { emoji:"😔", label:"بحس بذنب لما بصرف على نفسي حتى في حاجات أساسية", psych:"الشعور بالذنب من الإنفاق المعتدل على النفس بيقلب لحرمان مستمر مش مبرر شرعًا ولا نفسيًا.", quran:"﴿قُلْ مَنْ حَرَّمَ زِينَةَ اللَّهِ الَّتِي أَخْرَجَ لِعِبَادِهِ﴾ (سورة الأعراف ٣٢)", action:"خصص مبلغ صغير شهريًا لنفسك بلا ذنب — الاعتدال مطلوب مش الحرمان الكامل." },
+];
+function openMoneyRelationshipScreen(){
+  markToolOpened('money_relationship');
+  const wrap = document.getElementById('moneyRelationshipBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${MONEY_RELATIONSHIP_BANK.map((m,i) => `
+      <div class="tool-row" onclick="showMoneyRelationshipDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${m.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${m.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('money_relationship')}
+  `;
+  showScreen('screen-money-relationship');
+}
+function showMoneyRelationshipDetail(i){
+  const m = MONEY_RELATIONSHIP_BANK[i];
+  const wrap = document.getElementById('moneyRelationshipBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${m.emoji} ${m.label}</p><p class="layer-text" style="margin-top:8px;">${m.psych}</p></div>
+    <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${m.quran}</p></div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${m.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'money_relationship', '${m.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openMoneyRelationshipScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٢) إدارة ميزانيتك ----------
+const BUDGET_BANK = [
+  { emoji:"❓", label:"مش عارف فلوسي بتروح فين بالظبط", psych:"غياب التتبع بيخلي القلق المالي مستمر حتى لو الوضع الفعلي مش سيء، لأن الغموض نفسه مقلق.", quran:"﴿وَلَا تُبَذِّرْ تَبْذِيرًا﴾ (سورة الإسراء ٢٦)", action:"سجّل كل مصروفاتك لمدة أسبوع واحد بس (حتى ورقة وقلم)، من غير حكم على نفسك — المعرفة الأول." },
+  { emoji:"💸", label:"بصرف الأول وبفكر في الادخار لو فضل حاجة", psych:"الادخار «لو فضل حاجة» بيخليه دايمًا آخر أولوية، وده بيمنع أي تراكم حقيقي.", quran:"«ابدأ بنفسك ثم بمن تعول» (رواه مسلم) — الترتيب الصحيح للأولويات أساسي", action:"اقلب الترتيب: خصص نسبة للادخار وقت ما يوصل الدخل مباشرة، قبل أي صرف." },
+  { emoji:"🧭", label:"مفيش خطة واضحة لأولوياتي المالية", psych:"غياب الأولويات الواضحة بيخلي كل قرار مالي عشوائي ومرهق ذهنيًا.", action:"رتّب أولوياتك في 3 فئات بس: أساسي (سكن/أكل)، التزامات (ديون/فواتير)، اختياري — وابدأ بالأول دايمًا." },
+];
+function openBudgetScreen(){
+  markToolOpened('budget');
+  const wrap = document.getElementById('budgetBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${BUDGET_BANK.map((b,i) => `
+      <div class="tool-row" onclick="showBudgetDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${b.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${b.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('budget')}
+  `;
+  showScreen('screen-budget');
+}
+function showBudgetDetail(i){
+  const b = BUDGET_BANK[i];
+  const wrap = document.getElementById('budgetBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
+    ${b.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p><p class="layer-text" style="margin-top:8px;">${b.quran}</p></div>` : ''}
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${b.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'budget', '${b.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openBudgetScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٣) التعامل مع الديون ----------
+const DEBT_BANK = [
+  { emoji:"😞", label:"حاسس بعار أو خجل من إني مديون", psych:"الشعور بالعار من الدين بيمنعك تتعامل معاه بوضوح وممكن يخليك تخبيه بدل حله.", quran:"﴿وَإِن كَانَ ذُو عُسْرَةٍ فَنَظِرَةٌ إِلَىٰ مَيْسَرَةٍ﴾ (سورة البقرة ٢٨٠) — الإسلام راعى حالة العسر أصلًا", action:"افصل بين «أنا مديون» و«أنا فاشل» — دي جملتين مختلفتين تمامًا، والدين ظرف مش حكم عليك." },
+  { emoji:"🙈", label:"بتجنب التفكير في ديوني عشان الموضوع مقلقني", psych:"التجاهل بيكبّر القلق بمرور الوقت بدل ما يقلله، لأن الغموض عن حجم المشكلة أخطر من مواجهتها.", quran:"﴿فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ﴾ (سورة آل عمران ١٥٩)", action:"اكتب كل ديونك في ورقة واحدة (المبلغ + لمين) — التجاهل بيكبّر القلق مش بيقلله.", linkFn:"openAsmaByName('اللطيف')", linkLabel:"اطّلع على اسم الله «اللطيف» ومعناه ←" },
+  { emoji:"🔄", label:"بتاخد دين جديد عشان تسدد دين قديم", psych:"الاستدانة لتغطية دين سابق بتأجل المشكلة وبتكبّرها غالبًا، بدل ما تحلها فعليًا.", action:"قبل أي دين جديد، اسأل: «ده بيحل المشكلة ولا بيأجلها بس؟» — لو الجواب تأجيل، دوّر على حل تاني." },
+];
+function openDebtScreen(){
+  markToolOpened('debt');
+  const wrap = document.getElementById('debtBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${DEBT_BANK.map((d,i) => `
+      <div class="tool-row" onclick="showDebtDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${d.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${d.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('debt')}
+  `;
+  showScreen('screen-debt');
+}
+function showDebtDetail(i){
+  const d = DEBT_BANK[i];
+  const wrap = document.getElementById('debtBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${d.emoji} ${d.label}</p><p class="layer-text" style="margin-top:8px;">${d.psych}</p></div>
+    ${d.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${d.quran}</p></div>` : ''}
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${d.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'debt', '${d.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    ${d.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${d.linkFn}">${d.linkLabel}</div>` : ''}
+    <button class="btn-ghost" onclick="openDebtScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٤) الادخار واحتياطي الطوارئ ----------
+const SAVINGS_BANK = [
+  { emoji:"😅", label:"بحس إن الادخار مستحيل بدخلي الحالي", psych:"فكرة «مستحيل أدخر» غالبًا بتمنعك تجرب أصلًا، حتى بمبلغ صغير جدًا.", quran:"﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا﴾ (سورة الطلاق ٢)", action:"ابدأ بمبلغ صغير جدًا (حتى لو رمزي) بانتظام — العادة أهم من المبلغ في البداية." },
+  { emoji:"🏃", label:"بادخر بس أول ظرف بسحب كل حاجة", psych:"سهولة الوصول للمدخرات بتخليها عمليًا زي أي حساب عادي، مش احتياطي حقيقي.", action:"افتح حساب أو مكان ادخار منفصل تمامًا عن حسابك اليومي، صعب توصله بسهولة." },
+  { emoji:"🎯", label:"معنديش هدف واضح للادخار فمش بحس بالحافز", psych:"الادخار «عمومًا» بلا هدف ملموس بيفقد قيمته التحفيزية بسرعة.", action:"حدد هدف واحد ملموس (احتياطي 3 شهور مصاريف، أو حاجة محددة) بدل «أدخر عمومًا»." },
+];
+function openSavingsScreen(){
+  markToolOpened('savings');
+  const wrap = document.getElementById('savingsBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${SAVINGS_BANK.map((s,i) => `
+      <div class="tool-row" onclick="showSavingsDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${s.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${s.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('savings')}
+  `;
+  showScreen('screen-savings');
+}
+function showSavingsDetail(i){
+  const s = SAVINGS_BANK[i];
+  const wrap = document.getElementById('savingsBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p><p class="layer-text" style="margin-top:8px;">${s.psych}</p></div>
+    ${s.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${s.quran}</p></div>` : ''}
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${s.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'savings', '${s.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openSavingsScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٥) الزكاة والعطاء ----------
+const GIVING_BANK = [
+  { emoji:"📅", label:"مش متابع صح إمتى وكام الزكاة المفروضة عليّا", psych:"غياب التتبع بيخلي فريضة الزكاة تتأجل أو تتحسب بتقريب مش دقيق.", quran:"﴿وَآتُوا الزَّكَاةَ﴾ (سورة البقرة ٤٣)", action:"حدد تاريخ ثابت في السنة (هجري) تحسب فيه زكاتك بدقة، بدل ما تفضل مؤجلها." },
+  { emoji:"😟", label:"بحس إن الصدقة هتقلل من فلوسي", psych:"الخوف من نقصان المال بسبب العطاء بيمنع بركة حقيقية موعود بيها.", quran:"﴿وَمَا أَنفَقْتُم مِّن شَيْءٍ فَهُوَ يُخْلِفُهُ﴾ (سورة سبأ ٣٩)", action:"جرّب صدقة صغيرة منتظمة (حتى لو رمزية) لمدة شهر وراقب أثرها على طمأنينتك، مش على رصيدك بس." },
+  { emoji:"👀", label:"بديها بس لما حد يشوفني", psych:"العطاء المرتبط بنظر الناس بيفقد جزء كبير من قيمته النفسية والروحية.", quran:"﴿الَّذِينَ يُنفِقُونَ أَمْوَالَهُم بِاللَّيْلِ وَالنَّهَارِ سِرًّا وَعَلَانِيَةً﴾ (سورة البقرة ٢٧٤)", action:"جرّب صدقة سرية تمامًا محدش يعرف بيها غير الله — راقب الفرق في إحساسك." },
+];
+function openGivingScreen(){
+  markToolOpened('giving');
+  const wrap = document.getElementById('givingBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${GIVING_BANK.map((g,i) => `
+      <div class="tool-row" onclick="showGivingDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${g.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${g.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('giving')}
+  `;
+  showScreen('screen-giving');
+}
+function showGivingDetail(i){
+  const g = GIVING_BANK[i];
+  const wrap = document.getElementById('givingBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${g.emoji} ${g.label}</p><p class="layer-text" style="margin-top:8px;">${g.psych}</p></div>
+    <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${g.quran}</p></div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${g.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'giving', '${g.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    <button class="btn-ghost" onclick="openGivingScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- ٦) القناعة والرضا المادي ----------
+const CONTENTMENT_BANK = [
+  { emoji:"👀", label:"بقارن وضعي المادي بالناس اللي حواليا باستمرار", psych:"المقارنة المستمرة بمستوى غيرك بتخليك تعيش دايمًا حاسس بالنقص، مهما تحسّن وضعك فعليًا.", quran:"﴿وَلَا تَمُدَّنَّ عَيْنَيْكَ إِلَىٰ مَا مَتَّعْنَا بِهِ أَزْوَاجًا مِّنْهُمْ﴾ (سورة طه ١٣١)", action:"قارن وضعك بنفسك من سنة، مش بحد تاني — ده المقياس الوحيد العادل." },
+  { emoji:"😟", label:"قلقان جدًا على مستقبلي المادي (تقاعد، أولاد)", psych:"القلق على المستقبل طبيعي، لكن لو بقى دائم ومُقعِد بيمنعك من أي خطوة فعلية للأمام دلوقتي.", quran:"﴿وَمَا مِن دَابَّةٍ فِي الْأَرْضِ إِلَّا عَلَى اللَّهِ رِزْقُهَا﴾ (سورة هود ٦)", action:"حدد خطوة عملية واحدة تجاه القلق ده (ادخار بسيط، تعلم مهارة) بدل القلق المجرد بلا فعل.", linkFn:"openGrowthPlanScreen()", linkLabel:"محتاج تطور مسارك المهني كمان؟ شوف خطة نموك المهني ←" },
+  { emoji:"🏷️", label:"حاسس إن قيمتي مرتبطة بمقدار اللي أملكه", psych:"ربط قيمتك الذاتية الكاملة بالممتلكات بيخليك عرضة دايمة للقلق مع أي تقلب مادي.", quran:"﴿وَلَقَدْ كَرَّمْنَا بَنِي آدَمَ﴾ (سورة الإسراء ٧٠)", action:"اكتب 3 صفات فيك مالهاش علاقة بالفلوس خالص، وذكّر نفسك بيهم دوريًا." },
+];
+function openContentmentScreen(){
+  markToolOpened('contentment');
+  const wrap = document.getElementById('contentmentBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
+    ${CONTENTMENT_BANK.map((c,i) => `
+      <div class="tool-row" onclick="showContentmentDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${c.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${c.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    ${renderBankFreeTextEntry('contentment')}
+  `;
+  showScreen('screen-contentment');
+}
+function showContentmentDetail(i){
+  const c = CONTENTMENT_BANK[i];
+  const wrap = document.getElementById('contentmentBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${c.emoji} ${c.label}</p><p class="layer-text" style="margin-top:8px;">${c.psych}</p></div>
+    <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${c.quran}</p></div>
+    <div class="layer-card" style="background:var(--navy-dark);">
+      <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
+      <p class="layer-text" style="color:#fff; margin-top:8px;">${c.action}</p>
+      <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'contentment', '${c.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
+    </div>
+    ${c.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${c.linkFn}">${c.linkLabel}</div>` : ''}
+    <button class="btn-ghost" onclick="openContentmentScreen()">رجوع للقائمة</button>
+  `;
+}
+
+// ---------- تقريرك المادي: تحليل شامل + تشجيع في الإيجابي + تنبيه في السلبي ----------
+function openFinancialReport(){
+  markToolOpened('financial_report');
+  const wrap = document.getElementById('financialReportBody');
+  const log = getFinancialAppliedLog();
+  const followUps = getFollowUps().filter(f => f.pillar === 'financial');
+  const worked = getResolvedFollowUpCount('financial', 'worked');
+  const trying = getResolvedFollowUpCount('financial', 'trying');
+  const didntWork = getResolvedFollowUpCount('financial', 'didnt_work');
+  const now = new Date();
+  const overdueUnresolved = followUps.filter(f => f.status === 'pending' && new Date(f.dueDate) <= now).length;
+  const stillPending = followUps.filter(f => f.status === 'pending' && new Date(f.dueDate) > now).length;
+
+  let toneHtml = '';
+  if(log.length === 0){
+    toneHtml = `
+      <div class="layer-card l1">
+        <p class="layer-title" style="color:var(--navy-dark);">لسه ماحددتش أي هدف في الركن المادي</p>
+        <p class="layer-text" style="margin-top:8px;">ابدأ بأي أداة في الركن، ولما توصل لخطوة عملية، حدد هدفك بالظبط وإمتى هتحققه.</p>
+      </div>`;
+  } else if(didntWork > worked && didntWork >= 2){
+    toneHtml = `
+      <div class="layer-card l3">
+        <p class="layer-title" style="color:var(--navy-dark);">⚠️ ملاحظة تستاهل وقفة</p>
+        <p class="layer-text" style="margin-top:8px;">أكتر من هدف حددته قلت إنه «ماحصلش». جرب المرة الجاية هدف أصغر وأوضح، بميعاد أقرب.</p>
+      </div>`;
+  } else if(worked > 0 && worked >= didntWork){
+    toneHtml = `
+      <div class="layer-card l1" style="border-color:var(--gold);">
+        <p class="layer-title" style="color:var(--navy-dark);">✨ تقدم حقيقي وملموس</p>
+        <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
+      </div>`;
+  } else if(overdueUnresolved >= 2){
+    toneHtml = `
+      <div class="layer-card l2">
+        <p class="layer-title" style="color:#8A6A1E;">🔔 عندك أهداف فاتت مواعيدها من غير متابعة</p>
+        <p class="layer-text" style="margin-top:8px;">${overdueUnresolved} هدف فات ميعاده ومحددتش نتيجته لسه — راجعهم.</p>
+      </div>`;
+  } else {
+    toneHtml = `
+      <div class="layer-card l1">
+        <p class="layer-title" style="color:var(--navy-dark);">بداية كويسة</p>
+        <p class="layer-text" style="margin-top:8px;">حددت ${log.length} هدف لحد دلوقتي — استمر وهنقدر نديك صورة أوضح مع الوقت.</p>
+      </div>`;
+  }
+
+  const circle = getFinancialCircleAssessment();
+  const snapshotItems = [];
+  if(circle){
+    const weakest = Object.entries(circle.scores).sort((a,b)=>b[1]-a[1])[0][0];
+    snapshotItems.push(`أضعف نقطة مادية: <b>${FINANCIAL_CIRCLE_LABELS[weakest]}</b>`);
+  }
+
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">ملخص سريع</p>
+      <p class="layer-text" style="margin-top:8px;">🎯 أهداف حددتها: <b>${log.length}</b> &nbsp; | &nbsp; ✅ فرّقت: <b>${worked}</b> &nbsp; | &nbsp; 🔄 لسه بتجرب: <b>${trying}</b> &nbsp; | &nbsp; ⚠️ ماحصلتش: <b>${didntWork}</b></p>
+      ${stillPending > 0 ? `<p class="layer-text" style="margin-top:6px; font-size:12px; color:var(--muted);">${stillPending} هدف لسه معاد متابعته ماجاش.</p>` : ''}
+    </div>
+    ${toneHtml}
+    ${snapshotItems.length ? `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">لمحة عن تشخيصك</p>
+      ${snapshotItems.map(s => `<p class="layer-text" style="margin-top:6px;">${s}</p>`).join('')}
+    </div>` : ''}
+    ${log.length ? `
+    <p style="font-size:12px; color:var(--gold); font-weight:700; margin:16px 0 6px;">كل الأهداف اللي حددتها</p>
+    ${log.slice(0,30).map(entry => {
+      const fu = entry.followUpId ? followUps.find(f => f.id === entry.followUpId) : null;
+      const statusMap = { worked:'✅ فرّقت', trying:'🔄 لسه بتجرب', didnt_work:'⚠️ ماحصلتش', pending:'⏳ لسه معلقة' };
+      const status = fu ? statusMap[fu.status] : '—';
+      return `
+        <div class="tool-row" style="cursor:default;">
+          <div class="icon-circle" style="font-size:14px;">${status.slice(0,2)}</div>
+          <div>
+            <div class="card-title" style="font-size:13px;">${entry.goal || entry.label}</div>
+            <div class="card-sub">${entry.deadline ? 'الموعد: ' + entry.deadline + ' — ' : ''}${status}</div>
+          </div>
+        </div>`;
+    }).join('')}
+    ` : ''}
+  `;
+  showScreen('screen-financial-report');
+}
+
+// ---------- مزامنة ملخص الركن المادي ----------
+function buildFinancialSummaryFields(){
+  const fields = { updated_at: new Date().toISOString(), applied_count: getFinancialAppliedLog().length };
+  const circle = getFinancialCircleAssessment();
+  if(circle) fields.financial_circle = JSON.stringify(circle);
+  return fields;
+}
+function syncFinancialSummaryToCloud(){ pushPillarSummary('financial_summary', buildFinancialSummaryFields()); }
+async function syncFinancialSummaryFromCloud(){
+  await pullPillarSummary('financial_summary', (remote) => {
+    if(remote.financial_circle && !getFinancialCircleAssessment()) localStorage.setItem('eihyaha_financial_circle_assessment', remote.financial_circle);
+  });
+}
+
 
 // ============================================================
 // حلقة متابعة الأثر — بعد ٣ أيام من "طبّقتها"، نسأل: نفعت ولا لأ؟
@@ -4290,6 +4822,29 @@ function goToPillar(id){
     `).join('');
   } else if(id === 5){
     renderProfessionalPillar(body);
+  } else if(id === 6){
+    const financialTools = [
+      { key:"financial_circle", onclick:"startFinancialCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مادية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
+      { key:"money_relationship", onclick:"openMoneyRelationshipScreen()", icon:"💭", title:"علاقتك بالفلوس", sub:"الخوف، الذنب، وربط قيمتك بيها" },
+      { key:"budget", onclick:"openBudgetScreen()", icon:"📊", title:"إدارة ميزانيتك", sub:"مبادئ عملية للتتبع والتوزيع" },
+      { key:"debt", onclick:"openDebtScreen()", icon:"📉", title:"التعامل مع الديون", sub:"العار من الدين، والتعامل معاه بوضوح" },
+      { key:"savings", onclick:"openSavingsScreen()", icon:"🏦", title:"الادخار واحتياطي الطوارئ", sub:"بناء عادة الادخار خطوة بخطوة" },
+      { key:"giving", onclick:"openGivingScreen()", icon:"🤲", title:"الزكاة والعطاء", sub:"العطاء كطمأنينة مش عبء" },
+      { key:"contentment", onclick:"openContentmentScreen()", icon:"🌿", title:"القناعة والرضا المادي", sub:"مواجهة المقارنة والقلق على المستقبل" },
+      { key:"financial_report", onclick:"openFinancialReport()", icon:"📋", title:"تقريرك المادي", sub:"تقدمك، أهدافك، ونتايجها لحد دلوقتي" },
+    ];
+    const financialStartIdx = firstUntriedIndex(financialTools);
+    body.innerHTML = `
+      <p style="font-size:12.5px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">الركن ده بيركّز على علاقتك النفسية بالفلوس ومبادئ عامة للتعامل معاها — مش استشارة استثمارية. لزيادة دخلك نفسه، شوف الركن المهني.</p>
+      ${financialTools.map((t,idx) => `
+      <div class="tool-row" style="border:${idx===financialStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
+        ${idx===financialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        <div class="icon-circle" style="font-size:18px;">${t.icon}</div>
+        <div><div class="card-title" style="font-size:14px;">${t.title}</div><div class="card-sub">${t.sub}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+    `;
   } else {
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
@@ -5820,6 +6375,12 @@ const PROPHET_LINK_TABLE = [
   { id:'home_financial_dependency', keywords:['معتمد ماديًا بالكامل على حد تاني','مش مستقل ماديًا'], prophetId:'sacrifice', tawbaDirection:"الاستغفار من ربط قيمتك أو راحتك النفسية بالاستقلال المادي وحده، مع نسيان قيمة العطاء والدور غير المدفوع." },
   { id:'identity_loss', keywords:['فقدت جزء من هويتي بعد ما بطلت شغل','حاسس اني مش حاجة من غير وظيفتي'], prophetId:'grief', tawbaDirection:"الاستغفار من ربط قيمتك الكاملة بمنصب أو وظيفة، مع نسيان إن التكريم الحقيقي من الله لبني آدم." },
   { id:'transitional_rizq_anxiety', keywords:['قلقان على رزقي في المرحلة الجاية','خايف من المستقبل المادي'], prophetId:'long_wait_hope', tawbaDirection:"الاستغفار من القنوط من الفرج القريب، مع تذكّر إن الصبر في الانتظار عبادة وليس عجزًا." },
+  { id:'fear_of_poverty', keywords:['خايف من الفقر','قلقان من الفقر','بستخدم الفلوس عشان اثبت نفسي'], prophetId:'anxiety', tawbaDirection:"الاستغفار من الخوف الدائم من الفقر رغم استقرار حالك، مع تذكّر إن هذا وعد من الشيطان لا من الله." },
+  { id:'financial_disorganization', keywords:['مش عارف فلوسي بتروح فين','مفيش خطة واضحة لأولوياتي المالية'], prophetId:'keeping_promise', tawbaDirection:"الاستغفار من الإسراف والتبذير الناتج عن غياب التنظيم، مع السعي للانضباط في أمانة المال." },
+  { id:'debt_distress', keywords:['حاسس بعار من الدين','مديون وحاسس بخجل','بتجنب التفكير في ديوني'], prophetId:'chronic_illness', tawbaDirection:"الاستغفار من اليأس أو الهروب من مواجهة الدين، مع الثقة إن الله ييسر لمن يسعى لحل مشكلته بصدق." },
+  { id:'savings_difficulty', keywords:['الادخار مستحيل بدخلي','معنديش هدف واضح للادخار'], prophetId:'long_wait_hope', tawbaDirection:"الاستغفار من اليأس من إمكانية التغيير التدريجي، مع تذكّر إن الله يجعل لمن يتقيه مخرجًا." },
+  { id:'giving_fear', keywords:['الصدقة هتقلل من فلوسي','خايف اديه صدقة'], prophetId:'sacrifice', tawbaDirection:"الاستغفار من الخوف من نقصان المال بسبب العطاء، مع تذكّر وعد الله بالخلف لمن أنفق." },
+  { id:'financial_future_anxiety', keywords:['قلقان جدًا على مستقبلي المادي','قلقان على التقاعد أو مستقبل أولادي ماديًا'], prophetId:'long_wait_hope', tawbaDirection:"الاستغفار من القلق المُقعِد عن الفعل تجاه المستقبل، مع الثقة إن رزق كل دابة على الله." },
 ];
 const PROPHET_LINK_TABLE_POSITIVE = [
   { id:'balanced_giving', keywords:['بديله وباخد حقي','متوازن معاه'], prophetId:'keeping_promise', encourageMsg:"إنت بتعيش نفس توازن الوفاء بالعهد: قلب سليم من غير ما تسيب حقك." },
@@ -5833,6 +6394,12 @@ const PROPHET_LINK_TABLE_POSITIVE = [
   { id:'kids_trust', keywords:['بسلم نتيجة تربية ولادي لله','بذلت المجهود المطلوب مع ولادي'], prophetId:'gratitude_success', encourageMsg:"بذلك للجهد مع تسليمك للنتيجة هو منهج نبوي أصيل." },
   { id:'siblings_forgive', keywords:['سامحت اخواتي','مبقتش حامل ضغينة لإخوتي'], prophetId:'envy_betrayal', encourageMsg:"سماحك ده أعلى درجة وصلها يوسف عليه السلام مع من ظلموه." },
   { id:'social_reconnect', keywords:['بحاول اتواصل بدل ما اعزل نفسي'], prophetId:'isolation', encourageMsg:"خطوتك للتواصل بدل الانسحاب هي نفس رجوع سيدنا نوح من عزلته." },
+  { id:'money_peace', keywords:['مرتاح ومتوازن مع الفلوس','مش خايف من الفقر'], prophetId:'anxiety', encourageMsg:"طمأنينتك مع الفلوس رغم عدم اليقين في المستقبل هي ثقة حقيقية في تدبير الله." },
+  { id:'budget_disciplined', keywords:['بتابع مصاريفي بانتظام','عندي خطة واضحة لأولوياتي المالية'], prophetId:'keeping_promise', encourageMsg:"انضباطك في تنظيم مالك أمانة حقيقية بتحفظ بيها نعمة الله عليك." },
+  { id:'debt_free_or_managed', keywords:['متحكم في ديوني','واجهت ديوني بوضوح'], prophetId:'chronic_illness', encourageMsg:"مواجهتك للدين بدل الهروب منه فيها صبر وشجاعة حقيقية." },
+  { id:'savings_habit', keywords:['بدخر بانتظام ولو بسيط','عندي هدف واضح للادخار'], prophetId:'long_wait_hope', encourageMsg:"بناء عادة الادخار بصبر خطوة صغيرة كل مرة هو نفس منطق الفرج التدريجي." },
+  { id:'giving_generously', keywords:['بديد صدقة بانتظام','مش خايف الصدقة تقلل فلوسي'], prophetId:'sacrifice', encourageMsg:"سخاؤك وثقتك إن العطاء ميقصش الرزق هو يقين حقيقي في وعد الله." },
+  { id:'contentment_present', keywords:['راضي عن وضعي المادي وشاكر','مش بقارن نفسي بحد في الفلوس'], prophetId:'gratitude_success', encourageMsg:"رضاك وشكرك على قسمتك الحالية هو نفس اختبار النعمة اللي نجح فيه سيدنا سليمان." },
 ];
 // تطبيع النص العربي (همزات، تاء مربوطة، ألف مقصورة، تشكيل) عشان اختلاف الكتابة
 // مايمنعش التطابق (مثلاً "مديري" و"مديرى"، أو "متضايقة" و"متضايقه")
@@ -5968,8 +6535,8 @@ const FAMILY_CIRCLE_PROPHET_MAP = { spouse:'marriage_distance', children:'kids_p
 const COWORKER_EXCHANGE_PROPHET_MAP = { balanced:['balanced_giving', true], give:['drain_giving', false], take:['credit_stolen', false], toxic:['hypocrite_signs', false] };
 // ---------- نفس فكرة النص الحر، لكن لأدوات "بنك المواقف" (اختار موقفك من قائمة) ----------
 function isPositiveLink(entry){ return !!(entry && PROPHET_LINK_TABLE_POSITIVE.some(e => e.id === entry.id)); }
-const BANK_RETURN_FN = { rahm:'openRahmScreen', neighbor:'openNeighborScreen', social_skills:'openSocialSkillsScreen', coworker_boundary:'openCoworkerBoundariesScreen', spouse:'openSpouseScreen', children:'openChildrenScreen', siblings:'openSiblingsScreen', extended_family:'openExtendedFamilyScreen', boss:'openBossScreen', owner:'openOwnerScreen', freelancer:'openFreelancerScreen', home_role:'openHomeRoleScreen', transition:'openTransitionScreen', ambition:'openAmbitionScreen', first_step:'openFirstStepScreen', executive_prep:'openExecutivePrepScreen', business_prep:'openBusinessPrepScreen' };
-const BANK_CONTAINER = { rahm:'rahmBody', neighbor:'neighborBody', social_skills:'socialSkillsBody', coworker_boundary:'coworkerBoundariesBody', spouse:'spouseBody', children:'childrenBody', siblings:'siblingsBody', extended_family:'extendedFamilyBody', boss:'bossBody', owner:'ownerBody', freelancer:'freelancerBody', home_role:'homeRoleBody', transition:'transitionBody', ambition:'ambitionBody', first_step:'firstStepBody', executive_prep:'executivePrepBody', business_prep:'businessPrepBody' };
+const BANK_RETURN_FN = { rahm:'openRahmScreen', neighbor:'openNeighborScreen', social_skills:'openSocialSkillsScreen', coworker_boundary:'openCoworkerBoundariesScreen', spouse:'openSpouseScreen', children:'openChildrenScreen', siblings:'openSiblingsScreen', extended_family:'openExtendedFamilyScreen', boss:'openBossScreen', owner:'openOwnerScreen', freelancer:'openFreelancerScreen', home_role:'openHomeRoleScreen', transition:'openTransitionScreen', ambition:'openAmbitionScreen', first_step:'openFirstStepScreen', executive_prep:'openExecutivePrepScreen', business_prep:'openBusinessPrepScreen', money_relationship:'openMoneyRelationshipScreen', budget:'openBudgetScreen', debt:'openDebtScreen', savings:'openSavingsScreen', giving:'openGivingScreen', contentment:'openContentmentScreen' };
+const BANK_CONTAINER = { rahm:'rahmBody', neighbor:'neighborBody', social_skills:'socialSkillsBody', coworker_boundary:'coworkerBoundariesBody', spouse:'spouseBody', children:'childrenBody', siblings:'siblingsBody', extended_family:'extendedFamilyBody', boss:'bossBody', owner:'ownerBody', freelancer:'freelancerBody', home_role:'homeRoleBody', transition:'transitionBody', ambition:'ambitionBody', first_step:'firstStepBody', executive_prep:'executivePrepBody', business_prep:'businessPrepBody', money_relationship:'moneyRelationshipBody', budget:'budgetBody', debt:'debtBody', savings:'savingsBody', giving:'givingBody', contentment:'contentmentBody' };
 function renderBankFreeTextEntry(bankKey){
   return `
     <div class="tool-row" style="border-style:dashed; opacity:.9;" onclick="showFreeTextBox('${BANK_CONTAINER[bankKey]}','analyzeBankFreeText','${bankKey}')">
