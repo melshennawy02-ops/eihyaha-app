@@ -2584,12 +2584,12 @@ function renderProfessionalPillar(body){
   const familyToolMap = PROFESSIONAL_FAMILY_TOOLS[family];
   const FAMILY_TOOL_KEY = { authority:'boss', owner:'owner', freelancer:'freelancer', home_role:'home_role', transitional:'transition' };
   const professionalTools = [
+    { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا" },
+    { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية" },
     { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
     { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
-    { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
-    { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا" },
     { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية" },
-    { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية" },
+    { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
   ];
   const startIdx = firstUntriedIndex(professionalTools);
   body.innerHTML = `
@@ -3949,10 +3949,10 @@ function goToPillar(id){
     // الركن الروحاني — لوحة ملخص سريعة + الأدوات المتاحة بخلفيات صور
     const spiritualTools = [
       { key:"rabbek", onclick:"openRabbekScreen()", icon:"🤲", title:"علاقتك بربك", sub:"الخوف والرجاء والحب .. لمين موجّهين؟", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,35,.72)" },
-      { key:"worship", onclick:"openWorshipScreen()", icon:"📿", title:"متابعة عباداتك", sub:"الصلاة، القرآن، والأذكار يوميًا", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(90,70,20,.78)" },
-      { key:"prophets", onclick:"openProphetsScreen()", icon:"📖", title:"قصص الأنبياء والتسليم", sub:"٢٢ نبيًا .. إزاي طبّقوا التسليم لله", img:"https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,15,10,.75)" },
-      { key:"tawba", onclick:"openTawbaScreen()", icon:"🕊️", title:"التوبة والعودة", sub:"لحظة رجوعك لله بعد أي غلطة", img:"https://images.unsplash.com/photo-1506564461966-4107c88f6d29?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,45,60,.55)" },
       { key:"asma", onclick:"openAsmaScreen()", icon:"📿", title:"أسماء الله الحسنى", sub:"معنى، أثر نفسي، وتطبيق عملي لكل اسم", img:"https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
+      { key:"prophets", onclick:"openProphetsScreen()", icon:"📖", title:"قصص الأنبياء والتسليم", sub:"٢٢ نبيًا .. إزاي طبّقوا التسليم لله", img:"https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,15,10,.75)" },
+      { key:"worship", onclick:"openWorshipScreen()", icon:"📿", title:"متابعة عباداتك", sub:"الصلاة، القرآن، والأذكار يوميًا", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(90,70,20,.78)" },
+      { key:"tawba", onclick:"openTawbaScreen()", icon:"🕊️", title:"التوبة والعودة", sub:"لحظة رجوعك لله بعد أي غلطة", img:"https://images.unsplash.com/photo-1506564461966-4107c88f6d29?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,45,60,.55)" },
     ];
     const spiritStartIdx = firstUntriedIndex(spiritualTools);
     body.innerHTML = `
@@ -3970,8 +3970,8 @@ function goToPillar(id){
     // الركن العائلي — الأدوات المتاحة بخلفيات صور
     const familyTools = [
       { key:"family_wound", onclick:"openFamilyWoundScreen()", icon:"🗝️", title:"علاقتك بالأب والأم", sub:"تقييم لعلاقتك بيهم من الصغر", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(60,25,10,.72)" },
-      { key:"spouse", onclick:"openSpouseScreen()", icon:"💞", title:"علاقتك بشريك حياتك", sub:"السكن والمودة والرحمة .. مش مجرد كلمة", img:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,20,30,.72)" },
       { key:"relcheck_3", onclick:"openRelationshipCheckScreen(3, 'زوجك أو زوجتك')", icon:"🎭", title:"قيّم شريك حياتك", sub:"علامات المنافق والمثلث المظلم في الزواج", img:"https://images.unsplash.com/photo-1593629765902-31ed1b8d24d1?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(40,20,15,.72)" },
+      { key:"spouse", onclick:"openSpouseScreen()", icon:"💞", title:"علاقتك بشريك حياتك", sub:"السكن والمودة والرحمة .. مش مجرد كلمة", img:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,20,30,.72)" },
       { key:"children", onclick:"openChildrenScreen()", icon:"🧒", title:"الأولاد والتعامل معهم", sub:"هل بتكرر مع ولادك جرحك إنت؟", img:"https://images.unsplash.com/photo-1476234251651-f353703a034d?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,40,30,.72)" },
       { key:"siblings", onclick:"openSiblingsScreen()", icon:"👨‍👩‍👧‍👦", title:"الإخوة", sub:"الغيرة والمقارنة .. من منظور قصة يوسف", img:"https://images.unsplash.com/photo-1511895426328-dc8714191300?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(45,30,10,.72)" },
       { key:"extended_family", onclick:"openExtendedFamilyScreen()", icon:"🏡", title:"عائلة الأب وعائلة الأم", sub:"التوازن بين بيتك وأهل الطرفين", img:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,25,45,.72)" },
@@ -3990,10 +3990,10 @@ function goToPillar(id){
     // الركن الاجتماعي — لوحة ملخص + الأدوات المتاحة بخلفيات صور
     const socialTools = [
       { key:"circle", onclick:"startCircleAssessment()", icon:"🗺️", title:"دائرتك الإجتماعية", sub:"تقييم يحدد أضعف دايرة محتاجة شغل", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
-      { key:"rahm", onclick:"openRahmScreen()", icon:"🤝", title:"صلة الرحم", sub:"الأقارب الممتدين .. من الوصل لا القطيعة", img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,50,40,.72)" },
       { key:"relcheck_4", onclick:"openRelationshipCheckScreen(4, 'صاحبك')", icon:"🎭", title:"قيّم أصدقائك", sub:"علامات المنافق والمثلث المظلم في الصداقة", img:"https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,50,.72)" },
-      { key:"neighbor", onclick:"openNeighborScreen()", icon:"🏘️", title:"حقوق الجار والمجتمع", sub:"وصايا نبوية في التعامل مع المحيط", img:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,35,10,.72)" },
       { key:"social_skills", onclick:"openSocialSkillsScreen()", icon:"🧩", title:"مهارات التواصل والحدود", sub:"الرفض بأدب، الحدود، وحل الخلاف", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,20,45,.72)" },
+      { key:"rahm", onclick:"openRahmScreen()", icon:"🤝", title:"صلة الرحم", sub:"الأقارب الممتدين .. من الوصل لا القطيعة", img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,50,40,.72)" },
+      { key:"neighbor", onclick:"openNeighborScreen()", icon:"🏘️", title:"حقوق الجار والمجتمع", sub:"وصايا نبوية في التعامل مع المحيط", img:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,35,10,.72)" },
       { key:"coworkers", onclick:"openCoworkersScreen()", icon:"💼", title:"زملاء العمل بالتفصيل", sub:"ميزان التبادل، الحدود، وكشف السياسة المكتبية", img:"https://images.unsplash.com/photo-1522071820081-009f0129c71c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,45,.72)" },
       { key:"social_report", onclick:"openSocialReport()", icon:"📊", title:"تقريرك الاجتماعي", sub:"كل خطواتك في الركن ده في مكان واحد", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,25,35,.75)" },
     ];
@@ -4012,12 +4012,12 @@ function goToPillar(id){
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
       { key:"selfknow", onclick:"openSelfKnowScreen()", icon:"🧠", title:"اعرف نفسك", sub:"مين أنت؟ .. مشاعرك وأفكارك وسلوكك", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
+      { key:"tabiei", onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
       { key:"ehkily", onclick:"startEhkily()", icon:"💬", title:"طبيبك النفسي السري", sub:"احكيلي — مساحة آمنة ومجهولة", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
       { key:"merat", onclick:"startMerat()", icon:"🪞", title:"مرآة العقل", sub:"افهم أنماطك الفكرية والشعورية", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,20,20,.68)" },
-      { key:"tabiei", onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
+      { key:"flash", onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
       { key:"daftar", onclick:"openDaftarScreen()", icon:"📓", title:"مرآتي اليومية", sub:"تتبع مزاجك وطاقتك يوميًا", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(25,20,15,.68)" },
       { key:"report", onclick:"startReport()", icon:"📋", title:"جهزني للدكتور", sub:"تقرير مبسط قبل زيارة المتخصص", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
-      { key:"flash", onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
     ];
     const personalStartIdx = firstUntriedIndex(personalTools);
     body.innerHTML = renderPersonalDashboard() + personalTools.map((t,idx) => `
