@@ -182,6 +182,15 @@
 
       <div id="followUpCardWrap"></div>
 
+      <div class="quick-help-card" onclick="startCompassTest()" style="margin:0 0 14px; background:var(--navy-dark); border-color:var(--gold);">
+        <div class="icon-circle" style="width:38px; height:38px; font-size:20px; background:rgba(255,255,255,.12); border-color:var(--gold);">🧭</div>
+        <div style="flex:1;">
+          <p style="font-size:14px; font-weight:700; color:#fff; margin:0;">تهت؟ خد بوصلتك تاني</p>
+          <p style="font-size:11.5px; color:rgba(255,255,255,.75); margin:2px 0 0;">اختبار سريع يوضّحلك تبدأ منين دلوقتي</p>
+        </div>
+        <div class="arrow" style="color:#fff;">‹</div>
+      </div>
+
       <div style="display:flex; align-items:center; gap:8px; margin:6px 0 14px;">
         <span style="font-size:17px;">🌿</span>
         <p style="font-size:12px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
@@ -713,6 +722,16 @@
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="journeyBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: COMPASS TEST (بوصلتك الأولى) ===================== -->
+  <div class="screen" id="screen-compass">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1>بوصلتك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="compassBody"></div>
   </div>
 
   <!-- ===================== SCREEN: PERSONAL REPORT (التقرير الشخصي الشامل) ===================== -->
@@ -1276,7 +1295,7 @@ function showOnboarding(){
 function finishOnboarding(){
   localStorage.setItem('eihyaha_onboarding_seen', '1');
   document.getElementById('bottomNav').style.display = 'flex';
-  goHome();
+  startCompassTest();
 }
 
 // ---------- مستخدم عادي: تسجيل حساب جديد ببيانات شخصية ----------
@@ -2619,10 +2638,10 @@ function renderProfessionalPillar(body){
   const showBusinessPrep = BUSINESS_PREP_ELIGIBLE_FAMILIES.includes(family);
   const professionalTools = [
     { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا" },
+    { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
     { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية" },
     ...(showExecutivePrep ? [{ key:"executive_prep", onclick:"openExecutivePrepScreen()", icon:"📄", title:"جهّزني تنفيذيًا", sub:"سيرتك الذاتية، المقابلة، والتفاوض على الراتب" }] : []),
     ...(showBusinessPrep ? [{ key:"business_prep", onclick:"openBusinessPrepScreen()", icon:"🧾", title:"جهّزني تجاريًا", sub:"التسعير، التفاوض، وعرضك التجاري" }] : []),
-    { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
     { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
     { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية" },
     { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
@@ -2859,13 +2878,20 @@ const BOSS_BANK = [
   { emoji:"😤", label:"مديري بينتقد باستمرار ومحدش بيحس بمجهودي", psych:"النقد المستمر من سلطة بيخلي أي مجهود حاسس إنه «مش كفاية»، حتى لو موضوعيًا كويس.", quran:"﴿وَلَا تَبْخَسُوا النَّاسَ أَشْيَاءَهُمْ﴾ (سورة الأعراف ٨٥)", action:"وثّق مجهودك كتابيًا (إيميل قصير بعد كل مهمة) — مرجع موضوعي غير متأثر بمزاج النقد اليومي." },
   { emoji:"🤐", label:"خايف أختلف مع مديري في الرأي", psych:"الخوف من عواقب الاختلاف مع سلطة بيخلي كتير من الناس يسكتوا حتى لو رأيهم أصح.", quran:"﴿وَقُولُوا لِلنَّاسِ حُسْنًا﴾ (سورة البقرة ٨٣)", action:"اختار نقطة صغيرة تقول فيها رأيك بأدب ووضوح، وشوف رد الفعل الحقيقي بدل المتخيَّل." },
   { emoji:"📥", label:"مديري بيحمّلني فوق طاقتي وصعب أرفض", psych:"الخوف من الرفض قدام السلطة بيخلي حدودك تتلاشى، وده طريق مباشر للاحتراق الوظيفي.", quran:"﴿لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا﴾ (سورة البقرة ٢٨٦)", action:"جرّب رد مهني: «ممكن أخلص المهمة دي كويس لو أجّلنا التانية شوية» — توضيح الأولويات مش رفض.", linkFn:"startCoworkerBurnout()", linkLabel:"محتاج تقييم أعمق للاحتراق الوظيفي؟ ←" },
+  { emoji:"🔄", label:"مديري بيغيّر رأيه باستمرار وده بيحيّرني", psych:"عدم ثبات القرارات من فوقك بيخليك في حالة قلق دائم وعدم استقرار في شغلك، حتى لو مجهودك ثابت.", quran:"﴿فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ﴾ (سورة آل عمران ١٥٩)", action:"وثّق التعليمات المهمة كتابةً بعد أي اجتماع («تأكيدًا لكلامنا...») — ده بيقلل التخبط ويحميك لو رجع في كلامه." },
 ];
+// موقف إضافي يظهر بس للعسكري (نظام التقييم والترقية الهرمي مختلف عن القطاع المدني)
+const MILITARY_BOSS_EXTRA = { emoji:"🎖️", label:"الترقية والتقييم في السلك العسكري بيختلف عن القطاع المدني", psych:"نظام التقييم الهرمي والانضباط الصارم بيحتاج صبر واستعداد نفسي مختلف عن بيئة العمل المدنية العادية.", quran:"﴿يَا أَيُّهَا الَّذِينَ آمَنُوا اصْبِرُوا وَصَابِرُوا وَرَابِطُوا﴾ (سورة آل عمران ٢٠٠)", action:"وثّق إنجازاتك وتقييماتك الدورية بانتظام، والتزم بقنوات التصعيد الرسمية بدل الإحباط الصامت لو حسيت بتأخر في الترقية." };
+function getBossBank(){
+  const profile = getLocalProfile();
+  return profile.employmentType === 'military' ? [...BOSS_BANK, MILITARY_BOSS_EXTRA] : BOSS_BANK;
+}
 function openBossScreen(){
   markToolOpened('boss');
   const wrap = document.getElementById('bossBody');
   wrap.innerHTML = `
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">اختار أقرب موقف لحالتك:</p>
-    ${BOSS_BANK.map((b,i) => `
+    ${getBossBank().map((b,i) => `
       <div class="tool-row" onclick="showBossDetail(${i})">
         <div class="icon-circle" style="font-size:18px;">${b.emoji}</div>
         <div><div class="card-title" style="font-size:14px;">${b.label}</div></div>
@@ -2877,7 +2903,7 @@ function openBossScreen(){
   showScreen('screen-boss');
 }
 function showBossDetail(i){
-  const b = BOSS_BANK[i];
+  const b = getBossBank()[i];
   const wrap = document.getElementById('bossBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
@@ -2897,6 +2923,7 @@ const OWNER_BANK = [
   { emoji:"📋", label:"حاسس إن كل القرارات لازم تعدي عليّا وده مرهقني", psych:"صعوبة التفويض غالبًا مرتبطة بخوف من فقدان السيطرة أو عدم ثقة كاملة في الآخرين — وده بيحمّلك فوق طاقتك.", quran:"﴿وَشَاوِرْهُمْ فِي الْأَمْرِ﴾ (سورة آل عمران ١٥٩)", action:"اختار قرار واحد صغير الأسبوع ده وفوّضه بالكامل لحد تثق فيه، وشوف النتيجة.", linkFn:"openSocialSkillsScreen()", linkLabel:"محتاج تتواصل حدودك مع فريقك بوضوح؟ شوف مهارات التواصل ←" },
   { emoji:"😰", label:"قلقان باستمرار من فشل المشروع", psych:"القلق من الفشل لو بقى دائم بيستهلك طاقتك من التنفيذ الفعلي، ويحولك من بناء لدفاع مستمر.", quran:"﴿وَتَوَكَّلْ عَلَى اللَّهِ وَكَفَىٰ بِاللَّهِ وَكِيلًا﴾ (سورة الأحزاب ٣)", action:"اكتب أسوأ سيناريو واقعي ممكن يحصل، وخطة تعامل بسيطة معاه — بيقلل القلق المتخيَّل الأكبر من الواقع.", linkFn:"openAsmaByName('الوكيل')", linkLabel:"اطّلع على اسم الله «الوكيل» ومعناه ←" },
   { emoji:"⚖️", label:"مسؤوليتي عن اللي شغالين معايا بتقلقني", psych:"الشعور بالمسؤولية عن رزق ومستقبل ناس تانيين ضغط حقيقي، لكنه أيضًا أمانة لها أجر لو اتحملت بعدل.", quran:"﴿كُلُّكُمْ رَاعٍ وَكُلُّكُمْ مَسْئُولٌ عَنْ رَعِيَّتِهِ﴾ (متفق عليه)", action:"راجع مرة واحدة الشهر: هل بتعامل فريقك بعدل ووضوح؟ لو آه، القلق الزائد مش مبرر بموضوعية.", linkFn:"openAsmaByName('العدل')", linkLabel:"اطّلع على اسم الله «العدل» ومعناه ←" },
+  { emoji:"📊", label:"بقارن مشروعي بمنافسين أكبر مني", psych:"مقارنة مشروعك في بدايته بمشاريع وصلت لمرحلة متقدمة بتخلي تقدمك الحقيقي يتحس صغير أو بلا قيمة.", quran:"﴿وَلَا تَتَمَنَّوْا مَا فَضَّلَ اللَّهُ بِهِ بَعْضَكُمْ عَلَىٰ بَعْضٍ﴾ (سورة النساء ٣٢)", action:"قيّم مشروعك بمقارنة بنفسه من 6 شهور، مش بمنافس في مرحلة مختلفة تمامًا — التقدم النسبي هو المقياس الصح." },
 ];
 function openOwnerScreen(){
   markToolOpened('owner');
@@ -2935,6 +2962,7 @@ const FREELANCER_BANK = [
   { emoji:"📉", label:"دخلي مش منتظم وده بيقلقني باستمرار", psych:"عدم انتظام الدخل بيخلي مخك في حالة قلق دائم من الغيب، حتى لو المعدل السنوي كويس.", quran:"﴿وَمَا مِن دَابَّةٍ فِي الْأَرْضِ إِلَّا عَلَى اللَّهِ رِزْقُهَا﴾ (سورة هود ٦)", action:"احسب متوسط دخلك آخر ٦ شهور (مش شهر واحد) — الصورة الأشمل غالبًا أطمن من القلق الشهري." },
   { emoji:"🕰️", label:"صعب أفصل بين وقت شغلي ووقت راحتي", psych:"غياب مكتب أو دوام ثابت بيخلي حدود الوقت تتلاشى تمامًا، وده استنزاف تراكمي.", quran:"﴿وَجَعَلْنَا نَوْمَكُمْ سُبَاتًا﴾ (سورة النبأ ٩)", action:"حدد ساعة نهاية واضحة لشغلك يوميًا، وابلغ عملاءك بيها كسياسة ثابتة." },
   { emoji:"🫥", label:"حاسس إني وحيد في الشغل ده، مفيش فريق ورايا", psych:"غياب فريق أو مؤسسة بيخلي أي تحدي تواجهه وحدك، وده بيزوّد إحساس عدم الاستقرار.", quran:"﴿وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ﴾ (سورة المائدة ٢)", action:"ابحث عن مجتمع أو شبكة فريلانسرز في مجالك — العزلة المهنية مش شرط للاستقلالية.", linkFn:"openRahmScreen()", linkLabel:"محتاج تقوّي شبكتك الاجتماعية عمومًا؟ ←" },
+  { emoji:"💳", label:"عميل اتأخر في الدفع وحرجت أطالبه", psych:"الحرج من المطالبة بحقك المادي بيخلي كتير من الفريلانسرز يسيبوا فلوسهم من غير متابعة واضحة.", quran:"﴿يَا أَيُّهَا الَّذِينَ آمَنُوا أَوْفُوا بِالْعُقُودِ﴾ (سورة المائدة ١)", action:"ابعت رسالة متابعة مهنية ومباشرة («بخصوص فاتورة كذا، ممكن أعرف موعد السداد؟») — المطالبة بحقك مش وقاحة." },
 ];
 function openFreelancerScreen(){
   markToolOpened('freelancer');
@@ -2973,6 +3001,7 @@ const HOME_ROLE_BANK = [
   { emoji:"🫥", label:"حاسس إن دوري مش «شغل حقيقي» في نظر التانيين", psych:"المجتمع أحيانًا بيقيّم بس اللي بياخد أجر ظاهر، وده بيخلي مجهود ضخم في البيت أو الدراسة يتحس إنه غير مرئي.", quran:"﴿فَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ﴾ (سورة الزلزلة ٧)", action:"اكتب لنفسك 3 حاجات عملتها الأسبوع ده وأثّرت فعليًا على حد، حتى لو محدش لاحظها.", linkFn:"openAsmaByName('الشكور')", linkLabel:"اطّلع على اسم الله «الشكور» ومعناه ←" },
   { emoji:"👀", label:"بقارن نفسي بصورة «المرأة الناجحة مهنيًا» اللي بشوفها حواليا", psych:"المقارنة بصورة مثالية (سواء واقعية أو على السوشيال ميديا) بتخلي دورك الحالي يتحس أقل قيمة من الحقيقة.", quran:"﴿وَلَا تَتَمَنَّوْا مَا فَضَّلَ اللَّهُ بِهِ بَعْضَكُمْ عَلَىٰ بَعْضٍ﴾ (سورة النساء ٣٢)", action:"لو حابة تطوري نفسك مهنيًا كمان، ده ممكن يبقى هدف إضافي — لكن مش شرط لإثبات قيمتك الحالية.", linkFn:"openSelfKnowScreen()", linkLabel:"محتاجة تبني صورتك عن نفسك بمعزل عن المقارنة؟ شوف اعرف نفسك ←" },
   { emoji:"🔄", label:"حاسس إن يومي بيتكرر بلا معنى واضح", psych:"الروتين بلا هدف واضح مُعاش بيسبّب فراغ، حتى لو المهام نفسها مفيدة وضرورية.", quran:"﴿وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ﴾ (سورة الذاريات ٥٦)", action:"اربط مهمة واحدة يومية بنية واضحة (رعاية، تعلّم، عبادة) بدل ما تفضل مجرد «مهمة لازم تتعمل».", linkFn:"openRabbekScreen()", linkLabel:"محتاجة تربطي يومك بمعنى أعمق؟ شوف علاقتك بربك ←" },
+  { emoji:"😔", label:"أهلي أو زوجي بيستصغروا اللي بعمله في البيت", psych:"استخفاف من قريبين بمجهودك بيأذي أكتر من استخفاف الغرباء، لأنك متوقعة منهم تقدير أعمق.", quran:"﴿فَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ﴾ (سورة الزلزلة ٧)", action:"عبّري عن حاجتك للتقدير بوضوح ومن غير لوم («بحتاج حد يلاحظ اللي بعمله») بدل ما تستني حد يكتشف بمفرده." },
 ];
 function openHomeRoleScreen(){
   markToolOpened('home_role');
@@ -3011,6 +3040,7 @@ const TRANSITION_BANK = [
   { emoji:"🪞", label:"حاسس إني فقدت جزء من هويتي بعد ما بطّلت شغل", psych:"لما تبني جزء كبير من هويتك على وظيفتك، توقفها بيحس وكأنه فقدان جزء منك — لكن قيمتك الحقيقية أعمق من أي منصب.", quran:"﴿وَلَقَدْ كَرَّمْنَا بَنِي آدَمَ﴾ (سورة الإسراء ٧٠)", action:"اكتب 3 صفات فيك مالهاش علاقة بوظيفتك خالص، وذكّر نفسك بيهم دوريًا.", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج تبني صورتك عن نفسك بمعزل عن الوظيفة؟ شوف اعرف نفسك ←" },
   { emoji:"😟", label:"قلقان جدًا على رزقي في المرحلة الجاية", psych:"القلق على المستقبل طبيعي، لكن لو بقى دائم ومُقعِد، بيمنعك من أي خطوة فعلية للأمام.", quran:"﴿وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ﴾ (سورة الطلاق ٣)", action:"حدد خطوة عملية واحدة صغيرة تقدر تعملها الأسبوع ده تجاه المرحلة الجاية، بدل القلق المجرد.", linkFn:"openAsmaByName('الرزاق')", linkLabel:"اطّلع على اسم الله «الرزاق» ومعناه ←" },
   { emoji:"👥", label:"خايف من حكم الناس عليّا في المرحلة دي", psych:"الخوف من نظرة المجتمع بيضيف عبء نفسي فوق التحدي الأصلي نفسه.", quran:"﴿وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ﴾ (سورة آل عمران ١٣٩)", action:"افصل بين تقييمك لنفسك وتقييم الناس المؤقت — المرحلة دي جزء من قصتك، مش نهايتها.", linkFn:"openSocialSkillsScreen()", linkLabel:"محتاج حدود أوضح مع تعليقات الناس؟ شوف مهارات التواصل ←" },
+  { emoji:"🐢", label:"بقارن سرعة تجاوزي للمرحلة دي بحد تاني كان فيها وطلع أسرع مني", psych:"كل مرحلة انتقالية ليها ظروفها الخاصة — مقارنة سرعتك بحد تاني بتتجاهل فروق حقيقية بين الموقفين.", quran:"﴿لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا﴾ (سورة البقرة ٢٨٦)", action:"قيّم تقدمك بمقارنة بنفسك من شهر، مش بشخص تاني — التوقيت المناسب ليك مش لازم يطابق توقيت حد غيرك." },
 ];
 function openTransitionScreen(){
   markToolOpened('transition');
@@ -3241,7 +3271,7 @@ function openGrowthPlanScreen(){
   const saved = getGrowthPlanResult();
   showScreen('screen-growth-plan');
   if(saved && saved.family === family){
-    renderGrowthPlanResult(family, saved.stageIndex);
+    renderGrowthPlanResult(family, saved.stageIndex, saved.date);
   } else {
     renderGrowthPlanPicker(family);
   }
@@ -3258,18 +3288,25 @@ function selectGrowthStage(index){
   const family = getEmploymentFamily();
   localStorage.setItem('eihyaha_growth_stage', JSON.stringify({ family, stageIndex:index, date:new Date().toISOString() }));
   syncProfessionalSummaryToCloud();
-  renderGrowthPlanResult(family, index);
+  renderGrowthPlanResult(family, index, new Date().toISOString());
 }
 function getGrowthPlanResult(){ return JSON.parse(localStorage.getItem('eihyaha_growth_stage') || 'null'); }
-function renderGrowthPlanResult(family, index){
+function renderGrowthPlanResult(family, index, savedDate){
   const stages = GROWTH_STAGES_BY_FAMILY[family];
   const current = stages[index];
   const next = stages[index+1] || null;
   const yusuf = YUSUF_GROWTH_PHASES[index];
   const currentTitleSafe = current.title.replace(/'/g, "\\'");
+  const daysSince = savedDate ? Math.floor((Date.now() - new Date(savedDate).getTime()) / 86400000) : 0;
+  const showReviewReminder = daysSince >= 30;
   const wrap = document.getElementById('growthPlanBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;">
+    ${showReviewReminder ? `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:#8A6A1E;">🔔 فاتلك ${daysSince} يوم على نفس المرحلة</p>
+      <p class="layer-text" style="margin-top:6px;">مش لازم يكون فيه تغيير، لكن يستاهل تراجع: لسه في نفس المرحلة فعليًا، ولا الوقت جه تتقدم للي بعدها؟</p>
+    </div>` : ''}
+    <div class="layer-card l1" style="margin-top:${showReviewReminder ? '10px' : '14px'};">
       <p class="layer-title" style="color:var(--navy-dark);">مرحلتك الحالية: ${current.title}</p>
       <p class="layer-text" style="margin-top:8px;">${current.desc}</p>
     </div>
@@ -6694,15 +6731,149 @@ function openJourneyScreen(){
         </div>
       </div>
     `).join('')}
+    <div class="choice-btn" style="text-align:center; margin-top:18px;" onclick="startCompassTest()">🧭 تهت؟ خد بوصلتك تاني</div>
   `;
   showScreen('screen-journey');
+}
+
+// ============================================================
+// بوصلتك الأولى — اختبار مدمج: مرحلتك في الرحلة النفسية + أضعف ركن محتاج شغل
+// ============================================================
+const COMPASS_JOURNEY_QUESTIONS = [
+  { stageKey:"اعرف", q:"لو حد سألك «مين انت؟»، هتقدر تجاوب بوضوح عن شخصيتك ومشاعرك؟", options:[
+    { label:"آه، عندي صورة واضحة عن نفسي", done:true }, { label:"لأ، لسه مش واضحة", done:false },
+  ]},
+  { stageKey:"آمن", q:"عندك تصور واضح عن علاقتك بالله دلوقتي؟", options:[
+    { label:"آه، واضحة نسبيًا", done:true }, { label:"لأ، مشوشة أو بعيدة", done:false },
+  ]},
+  { stageKey:"اطمئن", q:"حاسس بطمأنينة حقيقية في علاقتك بالله، مش بس معرفة نظرية؟", options:[
+    { label:"آه، حاسس بطمأنينة", done:true }, { label:"لأ، لسه قلقان أو خايف كتير", done:false },
+  ]},
+  { stageKey:"اصبر", q:"بتحاول تطبّق حاجة عملية بخصوص نفسك، ولا بس بتفكر وتقرا؟", options:[
+    { label:"بطبّق فعليًا", done:true }, { label:"بفكر بس لسه", done:false },
+  ]},
+];
+const COMPASS_PILLAR_QUESTIONS = [
+  { pillar:'spiritual', q:"علاقتك بربك دلوقتي مبنية على إيه أكتر؟", options:[
+    { label:"حب وطمأنينة", score:0 }, { label:"خوف وقلق زايد", score:1 }, { label:"بعيدة أو باهتة", score:2 },
+  ]},
+  { pillar:'spiritual', q:"عباداتك (صلاة/قرآن/ذكر) منتظمة إزاي؟", options:[
+    { label:"منتظمة", score:0 }, { label:"متقطعة", score:1 }, { label:"شبه متوقفة", score:2 },
+  ]},
+  { pillar:'family', q:"علاقتك بأقرب حد ليك في بيتك (زوج/أهل) إزاي؟", options:[
+    { label:"مستقرة", score:0 }, { label:"فيها توتر متقطع", score:1 }, { label:"متوترة باستمرار", score:2 },
+  ]},
+  { pillar:'family', q:"بتحس إن جروح طفولتك بتأثر على علاقاتك دلوقتي؟", options:[
+    { label:"لأ", score:0 }, { label:"شوية", score:1 }, { label:"آه كتير", score:2 },
+  ]},
+  { pillar:'personal', q:"بتحس بالسيطرة على مشاعرك ومزاجك بشكل عام؟", options:[
+    { label:"آه", score:0 }, { label:"أحيانًا", score:1 }, { label:"لأ، مزاجي متقلب جدًا", score:2 },
+  ]},
+  { pillar:'personal', q:"عندك مساحة تفضفض فيها عن نفسك (كتابة، أو حد تتكلم معاه)؟", options:[
+    { label:"آه", score:0 }, { label:"نادرًا", score:1 }, { label:"لأ خالص", score:2 },
+  ]},
+  { pillar:'social', q:"علاقاتك الاجتماعية (أصحاب، جيران، أقارب) بتضيفلك ولا بتستهلكك؟", options:[
+    { label:"بتضيفلي", score:0 }, { label:"متوازنة", score:1 }, { label:"بتستهلكني", score:2 },
+  ]},
+  { pillar:'social', q:"عندك حدود واضحة مع الناس، ولا بتوافق على حاجات ضد رغبتك؟", options:[
+    { label:"عندي حدود واضحة", score:0 }, { label:"أحيانًا", score:1 }, { label:"بوافق كتير ضد رغبتي", score:2 },
+  ]},
+  { pillar:'professional', q:"راضي عن وضعك المهني الحالي؟", options:[
+    { label:"راضي", score:0 }, { label:"نص نص", score:1 }, { label:"مش راضي خالص", score:2 },
+  ]},
+  { pillar:'professional', q:"شغلك بياخد من صحتك النفسية أو وقتك الشخصي؟", options:[
+    { label:"لأ", score:0 }, { label:"أحيانًا", score:1 }, { label:"آه كتير", score:2 },
+  ]},
+];
+const PILLAR_ENTRY_TOOL = {
+  spiritual: { fn:"openRabbekScreen()", label:"علاقتك بربك", pillarName:"الركن الروحاني" },
+  family: { fn:"startFamilyCircleAssessment()", label:"أضعف علاقة عائلية عندك", pillarName:"الركن العائلي" },
+  personal: { fn:"openSelfKnowScreen()", label:"اعرف نفسك", pillarName:"الركن الشخصي" },
+  social: { fn:"startCircleAssessment()", label:"دائرتك الاجتماعية", pillarName:"الركن الاجتماعي" },
+  professional: { fn:"goToPillar(5)", label:"الركن المهني", pillarName:"الركن المهني" },
+};
+const COMPASS_ALL_QUESTIONS = [...COMPASS_JOURNEY_QUESTIONS.map(q => ({...q, type:'journey'})), ...COMPASS_PILLAR_QUESTIONS.map(q => ({...q, type:'pillar'}))];
+let compassAnswers = [];
+function startCompassTest(){
+  compassAnswers = [];
+  renderCompassQuestion(0);
+  showScreen('screen-compass');
+}
+function renderCompassQuestion(index){
+  const wrap = document.getElementById('compassBody');
+  if(index >= COMPASS_ALL_QUESTIONS.length){ revealCompassResult(); return; }
+  const q = COMPASS_ALL_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${COMPASS_ALL_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCompass(${index}, ${i})">${o.label}</div>`).join('')}
+    </div>
+  `;
+}
+function answerCompass(qIndex, oIndex){
+  const q = COMPASS_ALL_QUESTIONS[qIndex];
+  const o = q.options[oIndex];
+  if(q.type === 'journey'){
+    compassAnswers.push({ type:'journey', stageKey:q.stageKey, done:o.done });
+  } else {
+    compassAnswers.push({ type:'pillar', pillar:q.pillar, score:o.score });
+  }
+  renderCompassQuestion(qIndex + 1);
+}
+function computeCombinedJourneyStages(){
+  const realStages = computeJourneyStages();
+  const overrides = {};
+  compassAnswers.filter(a => a.type === 'journey').forEach(a => { overrides[a.stageKey] = a.done; });
+  return realStages.map(s => {
+    if((s.key in overrides) && !s.done){
+      // التتبع الحقيقي لسه معندوش دليل استخدام، فنستخدم تقدير المستخدم عن نفسه بدل افتراض إنه "لسه مبدأش"
+      return { ...s, done: overrides[s.key] };
+    }
+    return s;
+  });
+}
+function revealCompassResult(){
+  const pillarScores = { spiritual:0, family:0, personal:0, social:0, professional:0 };
+  compassAnswers.filter(a => a.type === 'pillar').forEach(a => { pillarScores[a.pillar] += a.score; });
+  const weakestPillar = Object.entries(pillarScores).sort((a,b) => b[1]-a[1])[0][0];
+  const stages = computeCombinedJourneyStages();
+  const currentIndex = stages.findIndex(s => !s.done);
+  const previous = getCompassResult();
+  const result = { pillarScores, weakestPillar, journeyStageKey: currentIndex !== -1 ? stages[currentIndex].key : null, date:new Date().toISOString() };
+  localStorage.setItem('eihyaha_compass_result', JSON.stringify(result));
+  renderCompassResult(result, stages, currentIndex, previous);
+}
+function getCompassResult(){ return JSON.parse(localStorage.getItem('eihyaha_compass_result') || 'null'); }
+function renderCompassResult(result, stages, currentIndex, previous){
+  const wrap = document.getElementById('compassBody');
+  const tool = PILLAR_ENTRY_TOOL[result.weakestPillar];
+  const stageInfo = currentIndex !== -1 ? stages[currentIndex] : null;
+  let comparisonHtml = '';
+  if(previous && previous.journeyStageKey){
+    if(previous.weakestPillar === result.weakestPillar && previous.journeyStageKey === result.journeyStageKey){
+      comparisonHtml = `<p style="font-size:12px; color:var(--muted); margin:8px 0 0;">قبل كده كنت في نفس النقطة تقريبًا — استمر، التكرار ده طبيعي.</p>`;
+    } else {
+      comparisonHtml = `<p style="font-size:12px; color:var(--muted); margin:8px 0 0;">قبل كده كنت واقف في مرحلة «${previous.journeyStageKey}» وركن «${PILLAR_ENTRY_TOOL[previous.weakestPillar].pillarName}» — دلوقتي الصورة اتغيّرت.</p>`;
+    }
+  }
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--navy-dark);">🧭 ابدأ من هنا</p>
+      <p class="layer-text" style="margin-top:8px; font-size:16px; font-weight:700;">${tool.pillarName} — ${tool.label}</p>
+      ${stageInfo ? `<p class="layer-text" style="margin-top:8px;">وده هيقدّمك خطوة في رحلتك النفسية كمان: إنت واقف عند مرحلة «${stageInfo.key} — ${stageInfo.label}».</p>` : `<p class="layer-text" style="margin-top:8px;">وقطعت كل المراحل المتاحة حاليًا في رحلتك النفسية 🎉</p>`}
+      ${comparisonHtml}
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="openJourneyScreen()">شوف رحلتك كاملة ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="goHome()">رجوع للرئيسية</div>
+  `;
 }
 
 function openMeratPattern(id){
   showMeratResult(id);
   showScreen('screen-merat');
 }
-
 let ehkilyCurrent = "start";
 function startEhkily(){
   markToolOpened('ehkily');
