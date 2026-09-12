@@ -322,6 +322,7 @@
       <textarea id="journalText" placeholder="اكتب سطرين عن يومك..."></textarea>
       <button class="btn-primary" onclick="saveJournal()">حفظ اليوم</button>
       <div id="journalMatchResult"></div>
+      <div id="journalWeeklyTrendWrap" style="margin-top:14px;"></div>
       <div class="card" style="margin-top:16px;">
         <p class="card-title">سجلك (على الجهاز ده بس)</p>
         <div id="journalHistory" style="font-size:14px; color:var(--muted);">لسه معملتش تسجيل</div>
@@ -863,6 +864,16 @@
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="healthReportBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: BODY SIGNALS (إيه اللي حاسس بيه جسديًا؟) ===================== -->
+  <div class="screen" id="screen-body-signals">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(7)">→</div>
+      <h1>إيه اللي حاسس بيه جسديًا؟</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="bodySignalsBody"></div>
   </div>
 
 
@@ -1931,7 +1942,7 @@ const PILLAR_TOOL_KEYS = {
   4: ['circle','relcheck_4','social_skills','rahm','neighbor','coworkers','social_report'],
   5: ['field_discovery','professional_circle','first_step','executive_prep','business_prep','boss','owner','freelancer','home_role','transition','growth_plan','ambition','professional_report'],
   6: ['financial_circle','money_relationship','budget','debt','savings','giving','contentment','financial_report'],
-  7: ['health_circle','eating','doctor','sleep','movement','fatigue','health_report'],
+  7: ['health_circle','body_signals','eating','doctor','sleep','movement','fatigue','health_report'],
 };
 function getPillarEngagement(){
   return PILLARS.map(p => {
@@ -3893,6 +3904,7 @@ const MONEY_RELATIONSHIP_BANK = [
   { emoji:"😰", label:"خايف من الفقر باستمرار حتى لو وضعي كويس", psych:"الخوف الدائم من الفقر بيخليك تعيش قلق مستمر حتى وقت الاستقرار الفعلي، وده استنزاف نفسي بلا داعي موضوعي.", quran:"﴿الشَّيْطَانُ يَعِدُكُمُ الْفَقْرَ وَيَأْمُرُكُم بِالْفَحْشَاءِ﴾ (سورة البقرة ٢٦٨)", action:"اكتب 3 مواقف ربنا وفّر لك فيها من غير ما تتوقع، وارجعلهم كل ما القلق يزيد.", linkFn:"openAsmaByName('الرزاق')", linkLabel:"اطّلع على اسم الله «الرزاق» ومعناه ←" },
   { emoji:"🛍️", label:"بستخدم الشراء عشان أثبت نفسي أو أحس بقيمتي", psych:"ربط قيمتك الذاتية بالامتلاك أو الإنفاق بيخليك في سباق مالي مفتوح النهاية، مهما وصلت.", quran:"﴿وَمَا أَمْوَالُكُمْ وَلَا أَوْلَادُكُم بِالَّتِي تُقَرِّبُكُمْ عِندَنَا زُلْفَىٰ﴾ (سورة سبأ ٣٧)", action:"قبل أي عملية شراء غير أساسية، اسأل نفسك: «بشتري ده عشان محتاجه، ولا عشان حد يشوفني؟»", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج تبني قيمتك بمعزل عن الامتلاك؟ شوف اعرف نفسك ←" },
   { emoji:"😔", label:"بحس بذنب لما بصرف على نفسي حتى في حاجات أساسية", psych:"الشعور بالذنب من الإنفاق المعتدل على النفس بيقلب لحرمان مستمر مش مبرر شرعًا ولا نفسيًا.", quran:"﴿قُلْ مَنْ حَرَّمَ زِينَةَ اللَّهِ الَّتِي أَخْرَجَ لِعِبَادِهِ﴾ (سورة الأعراف ٣٢)", action:"خصص مبلغ صغير شهريًا لنفسك بلا ذنب — الاعتدال مطلوب مش الحرمان الكامل.", linkFn:"openAsmaByName('الرحيم')", linkLabel:"اطّلع على اسم الله «الرحيم» ومعناه ←" },
+  { emoji:"🤕", label:"قلقي المستمر على الفلوس بيسبّبلي توتر جسدي دائم", psych:"القلق المالي المزمن بيترجم جسديًا (صداع، شد في الرقبة والكتفين، تعب عام) حتى لو مش واخد باله إن السبب مادي أصلًا.", action:"لو حسيت بتوتر جسدي متكرر، اسأل نفسك: «ده مرتبط بقلق مادي مش واخد باله بيه؟» قبل ما تدوّر على سبب تاني بس.", linkFn:"openFatigueScreen()", linkLabel:"محتاج تراجع علاقتك بالإرهاق الجسدي؟ شوف الإرهاق والحدود الجسدية (الركن الصحي) ←" },
 ];
 function openMoneyRelationshipScreen(){
   markToolOpened('money_relationship');
@@ -3931,6 +3943,7 @@ const BUDGET_BANK = [
   { emoji:"❓", label:"مش عارف فلوسي بتروح فين بالظبط", psych:"غياب التتبع بيخلي القلق المالي مستمر حتى لو الوضع الفعلي مش سيء، لأن الغموض نفسه مقلق.", quran:"﴿وَلَا تُبَذِّرْ تَبْذِيرًا﴾ (سورة الإسراء ٢٦)", action:"سجّل كل مصروفاتك لمدة أسبوع واحد بس (حتى ورقة وقلم)، من غير حكم على نفسك — المعرفة الأول.", linkFn:"startMerat()", linkLabel:"محتاج تفهم نمط تفكيرك في تجنب المواجهة؟ شوف مرآة العقل ←" },
   { emoji:"💸", label:"بصرف الأول وبفكر في الادخار لو فضل حاجة", psych:"الادخار «لو فضل حاجة» بيخليه دايمًا آخر أولوية، وده بيمنع أي تراكم حقيقي.", quran:"«ابدأ بنفسك ثم بمن تعول» (رواه مسلم) — الترتيب الصحيح للأولويات أساسي", action:"اقلب الترتيب: خصص نسبة للادخار وقت ما يوصل الدخل مباشرة، قبل أي صرف.", linkFn:"openAsmaByName('الحفيظ')", linkLabel:"اطّلع على اسم الله «الحفيظ» ومعناه ←" },
   { emoji:"🧭", label:"مفيش خطة واضحة لأولوياتي المالية", psych:"غياب الأولويات الواضحة بيخلي كل قرار مالي عشوائي ومرهق ذهنيًا.", action:"رتّب أولوياتك في 3 فئات بس: أساسي (سكن/أكل)، التزامات (ديون/فواتير)، اختياري — وابدأ بالأول دايمًا.", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج توضّح أولوياتك في حياتك عمومًا؟ شوف اعرف نفسك ←" },
+  { emoji:"🍽️", label:"قلق الميزانية بيخليني ماكلش صح أو أنسى أوقات أكلي", psych:"الانشغال الذهني بضيق الميزانية بيسرق تركيزك من احتياجاتك الأساسية زي الأكل في وقته، وده بيأثر على جسمك مش بس على مزاجك.", quran:"﴿كُلُوا مِن طَيِّبَاتِ مَا رَزَقْنَاكُمْ﴾ (سورة البقرة ١٧٢)", action:"حدد وقت ثابت للأكل في يومك زي أي التزام مالي تاني، حتى لو وسط ضغط الميزانية.", linkFn:"openEatingScreen()", linkLabel:"محتاج تراجع علاقتك بالأكل وقت الضغط؟ شوف علاقتك بالأكل (الركن الصحي) ←" },
 ];
 function openBudgetScreen(){
   markToolOpened('budget');
@@ -3969,6 +3982,7 @@ const DEBT_BANK = [
   { emoji:"😞", label:"حاسس بعار أو خجل من إني مديون", psych:"الشعور بالعار من الدين بيمنعك تتعامل معاه بوضوح وممكن يخليك تخبيه بدل حله.", quran:"﴿وَإِن كَانَ ذُو عُسْرَةٍ فَنَظِرَةٌ إِلَىٰ مَيْسَرَةٍ﴾ (سورة البقرة ٢٨٠) — الإسلام راعى حالة العسر أصلًا", action:"افصل بين «أنا مديون» و«أنا فاشل» — دي جملتين مختلفتين تمامًا، والدين ظرف مش حكم عليك.", linkFn:"openSocialSkillsScreen()", linkLabel:"محتاج تتكلم مع صاحب الدين بوضوح؟ شوف مهارات التواصل ←" },
   { emoji:"🙈", label:"بتجنب التفكير في ديوني عشان الموضوع مقلقني", psych:"التجاهل بيكبّر القلق بمرور الوقت بدل ما يقلله، لأن الغموض عن حجم المشكلة أخطر من مواجهتها.", quran:"﴿فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ﴾ (سورة آل عمران ١٥٩)", action:"اكتب كل ديونك في ورقة واحدة (المبلغ + لمين) — التجاهل بيكبّر القلق مش بيقلله.", linkFn:"openAsmaByName('اللطيف')", linkLabel:"اطّلع على اسم الله «اللطيف» ومعناه ←" },
   { emoji:"🔄", label:"بتاخد دين جديد عشان تسدد دين قديم", psych:"الاستدانة لتغطية دين سابق بتأجل المشكلة وبتكبّرها غالبًا، بدل ما تحلها فعليًا.", action:"قبل أي دين جديد، اسأل: «ده بيحل المشكلة ولا بيأجلها بس؟» — لو الجواب تأجيل، دوّر على حل تاني.", linkFn:"startMerat()", linkLabel:"محتاج تفهم نمط تكرار القرار ده؟ شوف مرآة العقل ←" },
+  { emoji:"😣", label:"قلق الديون بيأثر على نومي وصحتي الجسدية", psych:"القلق المالي المزمن بيفضل شغال في عقلك حتى وقت النوم، وبيترجم لأعراض جسدية حقيقية (صداع، توتر عضلي، أرق) مش بس إحساس نفسي.", quran:"﴿الَّذِينَ آمَنُوا وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ اللَّهِ﴾ (سورة الرعد ٢٨)", action:"لو لاحظت إن قلق الدين بيمنعك تنام، افصل وقت محدد للتفكير في الحل (نص ساعة بالنهار)، وامنع نفسك تفكر فيه وقت النوم.", linkFn:"openSleepScreen()", linkLabel:"محتاج تحسّن نومك المتأثر بالقلق؟ شوف النوم والراحة (الركن الصحي) ←" },
 ];
 function openDebtScreen(){
   markToolOpened('debt');
@@ -4007,6 +4021,7 @@ const SAVINGS_BANK = [
   { emoji:"😅", label:"بحس إن الادخار مستحيل بدخلي الحالي", psych:"فكرة «مستحيل أدخر» غالبًا بتمنعك تجرب أصلًا، حتى بمبلغ صغير جدًا.", quran:"﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا﴾ (سورة الطلاق ٢)", action:"ابدأ بمبلغ صغير جدًا (حتى لو رمزي) بانتظام — العادة أهم من المبلغ في البداية.", linkFn:"goToPillar(5)", linkLabel:"محتاج تزود دخلك الأساسي؟ شوف الركن المهني ←" },
   { emoji:"🏃", label:"بادخر بس أول ظرف بسحب كل حاجة", psych:"سهولة الوصول للمدخرات بتخليها عمليًا زي أي حساب عادي، مش احتياطي حقيقي.", action:"افتح حساب أو مكان ادخار منفصل تمامًا عن حسابك اليومي، صعب توصله بسهولة.", linkFn:"startMerat()", linkLabel:"محتاج تفهم نمط الاندفاع في القرار ده؟ شوف مرآة العقل ←" },
   { emoji:"🎯", label:"معنديش هدف واضح للادخار فمش بحس بالحافز", psych:"الادخار «عمومًا» بلا هدف ملموس بيفقد قيمته التحفيزية بسرعة.", action:"حدد هدف واحد ملموس (احتياطي 3 شهور مصاريف، أو حاجة محددة) بدل «أدخر عمومًا».", linkFn:"openGrowthPlanScreen()", linkLabel:"محتاج تتدرب على تحديد أهداف واضحة؟ شوف خطة نموك المهني ←" },
+  { emoji:"🏥", label:"بأجل مصاريف صحية عشان أوفر أو أدخر", psych:"توفير الفلوس على حساب الصحة اقتصاد ظاهري بس — تأجيل كشف أو علاج بسيط بيتحول لتكلفة أكبر بكتير لو المشكلة كبرت.", quran:"﴿وَلَا تُلْقُوا بِأَيْدِيكُمْ إِلَى التَّهْلُكَةِ﴾ (سورة البقرة ١٩٥)", action:"اعتبر المصروف الصحي الأساسي جزء من «الأساسي» في ميزانيتك، مش بند اختياري ينفع يتأجل.", linkFn:"openDoctorScreen()", linkLabel:"محتاج تراجع تأجيلك لمتابعة صحتك؟ شوف متابعة الطبيب (الركن الصحي) ←" },
 ];
 function openSavingsScreen(){
   markToolOpened('savings');
@@ -4045,6 +4060,7 @@ const GIVING_BANK = [
   { emoji:"📅", label:"مش متابع صح إمتى وكام الزكاة المفروضة عليّا", psych:"غياب التتبع بيخلي فريضة الزكاة تتأجل أو تتحسب بتقريب مش دقيق.", quran:"﴿وَآتُوا الزَّكَاةَ﴾ (سورة البقرة ٤٣)", action:"حدد تاريخ ثابت في السنة (هجري) تحسب فيه زكاتك بدقة، بدل ما تفضل مؤجلها.", linkFn:"openWorshipScreen()", linkLabel:"محتاج تتابع عباداتك عمومًا؟ شوف متابعة عباداتك ←" },
   { emoji:"😟", label:"بحس إن الصدقة هتقلل من فلوسي", psych:"الخوف من نقصان المال بسبب العطاء بيمنع بركة حقيقية موعود بيها.", quran:"﴿وَمَا أَنفَقْتُم مِّن شَيْءٍ فَهُوَ يُخْلِفُهُ﴾ (سورة سبأ ٣٩)", action:"جرّب صدقة صغيرة منتظمة (حتى لو رمزية) لمدة شهر وراقب أثرها على طمأنينتك، مش على رصيدك بس.", linkFn:"openAsmaByName('الشكور')", linkLabel:"اطّلع على اسم الله «الشكور» ومعناه ←" },
   { emoji:"👀", label:"بديها بس لما حد يشوفني", psych:"العطاء المرتبط بنظر الناس بيفقد جزء كبير من قيمته النفسية والروحية.", quran:"﴿الَّذِينَ يُنفِقُونَ أَمْوَالَهُم بِاللَّيْلِ وَالنَّهَارِ سِرًّا وَعَلَانِيَةً﴾ (سورة البقرة ٢٧٤)", action:"جرّب صدقة سرية تمامًا محدش يعرف بيها غير الله — راقب الفرق في إحساسك.", linkFn:"openRabbekScreen()", linkLabel:"محتاج تراجع إخلاص علاقتك بربك عمومًا؟ شوف علاقتك بربك ←" },
+  { emoji:"🤲", label:"بساعد التانيين ماديًا باستمرار لكن بهمل احتياجاتي الصحية أنا", psych:"العطاء للتانيين قيمة عظيمة، لكن لو كان على حساب صحتك أنت، بيتحول من إحسان لإهمال ذات مش مقصود.", quran:"﴿وَابْتَغِ فِيمَا آتَاكَ اللَّهُ الدَّارَ الْآخِرَةَ ۖ وَلَا تَنسَ نَصِيبَكَ مِنَ الدُّنْيَا﴾ (سورة القصص ٧٧) — الآية بتربط بين السعي للآخرة وعدم نسيان نصيبك في الدنيا، وصحتك جزء منه", action:"قبل ما تساعد حد ماديًا المرة الجاية، اسأل نفسك: «هل أنا متابع كشوفاتي واحتياجاتي الصحية زي ما بساعد بيها غيري؟»", linkFn:"openDoctorScreen()", linkLabel:"محتاج توازن بين رعايتك للتانيين ورعايتك لنفسك؟ شوف متابعة الطبيب (الركن الصحي) ←" },
 ];
 function openGivingScreen(){
   markToolOpened('giving');
@@ -4083,6 +4099,7 @@ const CONTENTMENT_BANK = [
   { emoji:"👀", label:"بقارن وضعي المادي بالناس اللي حواليا باستمرار", psych:"المقارنة المستمرة بمستوى غيرك بتخليك تعيش دايمًا حاسس بالنقص، مهما تحسّن وضعك فعليًا.", quran:"﴿وَلَا تَمُدَّنَّ عَيْنَيْكَ إِلَىٰ مَا مَتَّعْنَا بِهِ أَزْوَاجًا مِّنْهُمْ﴾ (سورة طه ١٣١)", action:"قارن وضعك بنفسك من سنة، مش بحد تاني — ده المقياس الوحيد العادل.", linkFn:"openAmbitionScreen()", linkLabel:"محتاج تواجه المقارنة في مسارك المهني كمان؟ شوف طموحك ورضاك الوظيفي ←" },
   { emoji:"😟", label:"قلقان جدًا على مستقبلي المادي (تقاعد، أولاد)", psych:"القلق على المستقبل طبيعي، لكن لو بقى دائم ومُقعِد بيمنعك من أي خطوة فعلية للأمام دلوقتي.", quran:"﴿وَمَا مِن دَابَّةٍ فِي الْأَرْضِ إِلَّا عَلَى اللَّهِ رِزْقُهَا﴾ (سورة هود ٦)", action:"حدد خطوة عملية واحدة تجاه القلق ده (ادخار بسيط، تعلم مهارة) بدل القلق المجرد بلا فعل.", linkFn:"openGrowthPlanScreen()", linkLabel:"محتاج تطور مسارك المهني كمان؟ شوف خطة نموك المهني ←" },
   { emoji:"🏷️", label:"حاسس إن قيمتي مرتبطة بمقدار اللي أملكه", psych:"ربط قيمتك الذاتية الكاملة بالممتلكات بيخليك عرضة دايمة للقلق مع أي تقلب مادي.", quran:"﴿وَلَقَدْ كَرَّمْنَا بَنِي آدَمَ﴾ (سورة الإسراء ٧٠)", action:"اكتب 3 صفات فيك مالهاش علاقة بالفلوس خالص، وذكّر نفسك بيهم دوريًا.", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج تبني قيمتك بمعزل عن الممتلكات؟ شوف اعرف نفسك ←" },
+  { emoji:"🍔", label:"بلجأ للشراء أو الأكل عشان أهدّي قلقي المادي", psych:"استخدام الإنفاق أو الأكل كتهدئة مؤقتة للقلق المادي بيعمل حلقة مفرغة — بتصرف أو تاكل عشان تهدأ من قلق مصدره الفلوس نفسها.", quran:"﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا﴾ (سورة الطلاق ٢)", action:"لو حسيت بالرغبة دي، جرب بديل مجاني للتهدئة (مشي، تنفس، مكالمة) قبل ما تصرف أو تاكل.", linkFn:"openEatingScreen()", linkLabel:"محتاج تفهم علاقتك بالأكل وقت التوتر؟ شوف علاقتك بالأكل (الركن الصحي) ←" },
 ];
 function openContentmentScreen(){
   markToolOpened('contentment');
@@ -4525,19 +4542,61 @@ function showFatigueDetail(i){
   `;
 }
 
-// ---------- تسجيل يومي سريع (اختياري) — بيتجمّع في رسم بياني بسيط بالتقرير ----------
-function getHealthDailyLog(){ return JSON.parse(localStorage.getItem('eihyaha_health_daily_log') || '[]'); }
-function logHealthDailyCheckin(value){
-  const log = getHealthDailyLog();
-  const today = new Date().toISOString().slice(0,10);
-  const filtered = log.filter(e => e.date !== today);
-  filtered.unshift({ date:today, value });
-  localStorage.setItem('eihyaha_health_daily_log', JSON.stringify(filtered.slice(0,60)));
-  syncHealthSummaryToCloud();
-  openHealthReport();
+// ---------- إيه اللي حاسس بيه جسديًا؟ (تشخيص عكسي — الجسم نقطة دخول لركن تاني، مش وجهة نهائية) ----------
+const BODY_SIGNAL_BANK = [
+  { emoji:"🤕", label:"صداع متكرر", psych:"الصداع المتكرر غالبًا بيرتبط بتوتر مزمن، وأكتر مصدر شائع ليه عندك تحديدًا هو القلق أو الضغط المادي.", linkFn:"startFinancialCircleAssessment()", linkLabel:"شوف تشخيص الركن المادي ←" },
+  { emoji:"🤢", label:"مشاكل في المعدة أو الهضم", psych:"المعدة من أكتر أعضاء الجسم حساسية للتوتر العاطفي، وغالبًا بترتبط بضغوط في علاقات قريبة (العائلة تحديدًا).", linkFn:"startFamilyCircleAssessment()", linkLabel:"شوف تشخيص الركن العائلي ←" },
+  { emoji:"💆", label:"شد في الرقبة والكتفين", psych:"شد العضلات في المنطقة دي من أوضح العلامات الجسدية لضغط الشغل والمسؤوليات المتراكمة.", linkFn:"startProfessionalCircleAssessment()", linkLabel:"شوف تشخيص الركن المهني ←" },
+  { emoji:"💓", label:"خفقان أو ضيق في التنفس", psych:"الإحساس ده أحيانًا بيرتبط بقلق وجودي أعمق أو بعد عن الطمأنينة الروحية، مش بس سبب جسدي مباشر.", linkFn:"openRabbekScreen()", linkLabel:"شوف علاقتك بربك (الركن الروحاني) ←" },
+  { emoji:"😩", label:"تعب عام مش عارف مصدره", psych:"التعب اللي مالوش سبب جسدي واضح غالبًا بيكون انعكاس لحمل نفسي متراكم محتاج تفهمه الأول.", linkFn:"openSelfKnowScreen()", linkLabel:"شوف اعرف نفسك (الركن الشخصي) ←" },
+  { emoji:"😔", label:"ضيق أو ثقل في الصدر وقت التفكير في الناس حواليّا", psych:"الإحساس الجسدي ده وقت التفكير في علاقة معينة بيكون غالبًا مؤشر مباشر إن العلاقة دي مصدر استنزاف حقيقي.", linkFn:"startCircleAssessment()", linkLabel:"شوف تشخيص الركن الاجتماعي ←" },
+];
+function openBodySignalsScreen(){
+  markToolOpened('body_signals');
+  const wrap = document.getElementById('bodySignalsBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">اختار أقرب إحساس جسدي بتلاحظه عندك — مش تشخيص طبي، لكن أعراض الجسد كتير بتكون مرآة لضغط نفسي مصدره ركن تاني.</p>
+    ${BODY_SIGNAL_BANK.map((b,i) => `
+      <div class="tool-row" onclick="showBodySignalDetail(${i})">
+        <div class="icon-circle" style="font-size:18px;">${b.emoji}</div>
+        <div><div class="card-title" style="font-size:14px;">${b.label}</div></div>
+        <div class="arrow">‹</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-body-signals');
+}
+function showBodySignalDetail(i){
+  const b = BODY_SIGNAL_BANK[i];
+  const wrap = document.getElementById('bodySignalsBody');
+  wrap.innerHTML = `
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${b.linkFn}">${b.linkLabel}</div>
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-text" style="font-size:11.5px;">⚠️ لو العرض ده مستمر أو بيزيد أو حاسس إنه شديد، لازم يتابع مع طبيب فعليًا — الربط النفسي هنا مكمّل مش بديل عن الفحص الطبي.</p>
+    </div>
+    <button class="btn-ghost" onclick="openBodySignalsScreen()">رجوع للقائمة</button>
+  `;
 }
 
 // ---------- تقريرك الصحي: اتجاه بمرور الوقت + تصعيد تلقائي عند تكرار التأجيل ----------
+function getUnifiedFatigueSignal(){
+  const signals = [];
+  const healthCircle = getHealthCircleAssessment();
+  if(healthCircle && healthCircle.scores.fatigue !== undefined) signals.push({ label:'الركن الصحي (الإرهاق)', score: healthCircle.scores.fatigue });
+  const profCircle = getProfessionalCircleAssessment();
+  if(profCircle && profCircle.scores.balance !== undefined) signals.push({ label:'الركن المهني (توازن الشغل)', score: profCircle.scores.balance });
+  const burnout = getCoworkerBurnoutResult();
+  if(burnout){
+    const normalized = burnout.score <= 3 ? 0 : (burnout.score <= 6 ? 1 : 2);
+    signals.push({ label:'الركن الاجتماعي (بيئة العمل)', score: normalized });
+  }
+  return signals;
+}
+function getJournalHealthTrend(){
+  const journal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+  return journal.filter(e => e.energy !== undefined && e.sleep !== undefined).slice(0,14).reverse();
+}
 function openHealthReport(){
   markToolOpened('health_report');
   const wrap = document.getElementById('healthReportBody');
@@ -4565,6 +4624,19 @@ function openHealthReport(){
         <p class="layer-title" style="color:var(--navy-dark);">🔔 لاحظنا نمط متكرر في تأجيل متابعة الطبيب</p>
         <p class="layer-text" style="margin-top:8px;">حددت متابعة طبية أكتر من مرة ولسه مش بتتحقق فعليًا. ده وقت مناسب تاخد خطوة حاسمة بدل ما يتكرر.</p>
         <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.15); border-color:var(--gold);" onclick="startReport()">جهّز نفسك للزيارة دلوقتي ←</div>
+      </div>`;
+  }
+
+  // ترمومتر الإرهاق الشامل: بيجمع إشارات من 3 أركان مختلفة بدل ما كل واحد يتقاس لوحده
+  const fatigueSignals = getUnifiedFatigueSignal();
+  const fatigueNegative = fatigueSignals.filter(s => s.score >= 1);
+  let fatigueThermoHtml = '';
+  if(fatigueSignals.length >= 2){
+    fatigueThermoHtml = `
+      <div class="layer-card ${fatigueNegative.length >= 2 ? 'l3' : 'l2'}">
+        <p class="layer-title" style="color:${fatigueNegative.length >= 2 ? 'var(--navy-dark)' : '#8A6A1E'};">🌡️ ترمومتر الإرهاق الشامل</p>
+        ${fatigueSignals.map(s => `<p class="layer-text" style="margin-top:6px; font-size:12.5px;">${s.label}: <b>${s.score >= 2 ? 'مرتفع' : (s.score === 1 ? 'متوسط' : 'منخفض')}</b></p>`).join('')}
+        ${fatigueNegative.length >= 2 ? `<p class="layer-text" style="margin-top:8px; font-weight:700;">أكتر من ركن بيوريك نفس الإشارة — إرهاقك مش حاجة عابرة، يستاهل تعامل جدي مش بس في ركن واحد.</p>` : ''}
       </div>`;
   }
 
@@ -4619,37 +4691,49 @@ function openHealthReport(){
       </div>`;
   }
 
-  // التسجيل اليومي: عرض آخر 14 يوم كصف نقط
-  const dailyLog = getHealthDailyLog().slice(0,14).reverse();
-  const dailyColors = { good:'#3E8E5A', ok:'#C9A64A', bad:'#B85450' };
-  const dailyHtml = dailyLog.length ? `
+  // الربط بين النوم والعبادة: لو النوم ضعيف والانتظام في العبادة ضعيف كمان، نوريه الترابط
+  let sleepWorshipHtml = '';
+  const sleepWeak = current && current.scores.sleep >= 2;
+  const worshipConsistency = computeLocalWorshipConsistency(7, 0);
+  if(sleepWeak && worshipConsistency !== null && worshipConsistency < 60){
+    sleepWorshipHtml = `
+      <div class="layer-card l2">
+        <p class="layer-title" style="color:#8A6A1E;">🕌 ملاحظة: النوم والعبادة مرتبطين عندك</p>
+        <p class="layer-text" style="margin-top:6px;">نومك ضعيف وانتظام عبادتك (${worshipConsistency}٪ آخر أسبوع) ضعيف كمان — غالبًا مرتبطين ببعض، خصوصًا صلاة الفجر.</p>
+        <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="openWorshipScreen()">شوف متابعة عباداتك (الركن الروحاني) ←</div>
+      </div>`;
+  }
+
+  // اتجاه الطاقة والنوم من "مرآتي اليومية" — بدل تسجيل يومي منفصل، بنستخدم نفس البيانات الموجودة أصلًا
+  const journalTrend = getJournalHealthTrend();
+  const journalTrendHtml = journalTrend.length ? `
     <div class="layer-card l2">
-      <p class="layer-title" style="color:#8A6A1E;">تسجيلك اليومي (آخر ${dailyLog.length} يوم)</p>
-      <div style="display:flex; gap:4px; margin-top:10px; flex-wrap:wrap;">
-        ${dailyLog.map(e => `<div style="width:16px; height:16px; border-radius:50%; background:${dailyColors[e.value]};" title="${e.date}"></div>`).join('')}
+      <p class="layer-title" style="color:#8A6A1E;">طاقتك ونومك آخر ${journalTrend.length} تسجيل (من مرآتي اليومية)</p>
+      <div style="display:flex; align-items:flex-end; gap:3px; margin-top:10px; height:40px;">
+        ${journalTrend.map(e => `<div style="flex:1; height:${Math.max(Number(e.energy)*4,4)}px; background:var(--gold); border-radius:2px 2px 0 0;" title="طاقة: ${e.energy}"></div>`).join('')}
       </div>
-    </div>` : '';
+      <p style="font-size:11px; color:var(--muted); margin-top:6px;">مستوى الطاقة المسجّل في كل يوم — كل عمود يوم.</p>
+    </div>` : `
+    <div class="layer-card l1">
+      <p class="layer-title" style="color:var(--navy-dark);">سجّل يومك في مرآتي اليومية</p>
+      <p class="layer-text" style="margin-top:6px;">بتسجّل هناك مستوى طاقتك ونومك أصلًا — هنستخدم نفس البيانات هنا بدل ما تكررها في مكانين.</p>
+      <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="openDaftarScreen()">روح لمرآتي اليومية (الركن الشخصي) ←</div>
+    </div>`;
 
   const weakestSnapshot = current ? `أضعف نقطة صحية: <b>${HEALTH_CIRCLE_LABELS[Object.entries(current.scores).sort((a,b)=>b[1]-a[1])[0][0]]}</b>` : null;
 
   wrap.innerHTML = `
-    <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">قيّم يومك بسرعة</p>
-      <div style="display:flex; gap:8px; margin-top:10px;">
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="logHealthDailyCheckin('good')">🙂 كويس</div>
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="logHealthDailyCheckin('ok')">😐 متوسط</div>
-        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="logHealthDailyCheckin('bad')">☹️ صعب</div>
-      </div>
-    </div>
-    ${dailyHtml}
+    ${journalTrendHtml}
     <div class="layer-card l2" style="margin-top:10px;">
       <p class="layer-title" style="color:var(--navy-dark);">ملخص سريع</p>
       <p class="layer-text" style="margin-top:8px;">🎯 أهداف حددتها: <b>${log.length}</b> &nbsp; | &nbsp; ✅ فرّقت: <b>${worked}</b> &nbsp; | &nbsp; 🔄 لسه بتجرب: <b>${trying}</b> &nbsp; | &nbsp; ⚠️ ماحصلتش: <b>${didntWork}</b></p>
       ${stillPending > 0 ? `<p class="layer-text" style="margin-top:6px; font-size:12px; color:var(--muted);">${stillPending} هدف لسه معاد متابعته ماجاش.</p>` : ''}
     </div>
     ${escalationHtml}
+    ${fatigueThermoHtml}
     ${toneHtml}
     ${trendHtml}
+    ${sleepWorshipHtml}
     ${weakestSnapshot ? `
     <div class="layer-card l2">
       <p class="layer-title" style="color:#8A6A1E;">لمحة عن تشخيصك</p>
@@ -4680,15 +4764,12 @@ function buildHealthSummaryFields(){
   const fields = { updated_at: new Date().toISOString(), applied_count: getHealthAppliedLog().length };
   const circle = getHealthCircleAssessment();
   if(circle) fields.health_circle = JSON.stringify(circle);
-  const dailyLog = getHealthDailyLog();
-  if(dailyLog.length) fields.daily_log = JSON.stringify(dailyLog.slice(0,14));
   return fields;
 }
 function syncHealthSummaryToCloud(){ pushPillarSummary('health_summary', buildHealthSummaryFields()); }
 async function syncHealthSummaryFromCloud(){
   await pullPillarSummary('health_summary', (remote) => {
     if(remote.health_circle && !getHealthCircleAssessment()) localStorage.setItem('eihyaha_health_circle_assessment', remote.health_circle);
-    if(remote.daily_log && !getHealthDailyLog().length) localStorage.setItem('eihyaha_health_daily_log', remote.daily_log);
   });
 }
 
@@ -5456,6 +5537,7 @@ function goToPillar(id){
   } else if(id === 7){
     const healthTools = [
       { key:"health_circle", onclick:"startHealthCircleAssessment()", icon:"🗺️", title:"أضعف نقطة صحية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,45,35,.72)" },
+      { key:"body_signals", onclick:"openBodySignalsScreen()", icon:"🧩", title:"إيه اللي حاسس بيه جسديًا؟", sub:"أعراض جسدك ممكن توديك لجذر المشكلة في ركن تاني", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,20,45,.72)" },
       { key:"eating", onclick:"openEatingScreen()", icon:"🍽️", title:"علاقتك بالأكل", sub:"الأكل الانفعالي، الذنب، والوعي وقت الأكل", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(45,30,15,.7)" },
       { key:"doctor", onclick:"openDoctorScreen()", icon:"🩺", title:"متابعة الطبيب", sub:"الخوف من الكشف، وتأجيل المتابعة", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
       { key:"sleep", onclick:"openSleepScreen()", icon:"🌙", title:"النوم والراحة", sub:"جودة النوم، والراحة كحق مش رفاهية", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,35,45,.7)" },
@@ -7414,6 +7496,7 @@ let darkTriadFreeTexts = [];
 let relCheckOrigin = 4, relCheckContext = 'الشخص ده', relCheckBackFn = null;
 function openDaftarScreen(){
   markToolOpened('daftar');
+  renderJournalWeeklyTrend();
   showScreen('screen-daftar');
 }
 function openRelationshipCheckScreen(originPillarId, contextLabel, titleOverride, backFn){
@@ -9100,6 +9183,7 @@ async function saveJournal(){
   local.unshift({ anxiety, energy, sleep, text, dateKey: new Date().toISOString().slice(0,10), date: new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}) });
   localStorage.setItem('eihyaha_journal', JSON.stringify(local.slice(0,200)));
   renderJournalHistory();
+  renderJournalWeeklyTrend();
   document.getElementById('journalText').value = '';
 
   const matchWrap = document.getElementById('journalMatchResult');
@@ -9107,17 +9191,54 @@ async function saveJournal(){
     const trimmed = text.trim();
     const matchedId = matchFreeText(trimmed);
     const woundKey = matchWoundFreeText(trimmed);
+    const crossPillarMatch = matchProphetLinkBest(trimmed);
     let html = '';
     if(matchedId){
       const p = MERAT_PATTERNS.find(x => x.id === matchedId);
       html += `<div class="choice-btn" style="margin-top:10px; text-align:center;" onclick="openMeratPattern('${matchedId}')">كلامك قريب من نمط «${p.title}» — شوف التحليل في مرآة العقل ←</div>`;
     }
     if(woundKey) html += `<div style="margin-top:8px; text-align:center;">${buildWoundSuggestionHtml(woundKey)}</div>`;
+    if(crossPillarMatch){
+      html += `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(crossPillarMatch.entry, crossPillarMatch.positive)}`;
+    }
     matchWrap.innerHTML = html;
   } else {
     matchWrap.innerHTML = '';
   }
   showFirebaseStatus(ok, 'يومك', 'journal');
+}
+// ---------- نمط أسبوعك: مقارنة متوسط القلق/الطاقة/النوم آخر 7 أيام بالأسبوع اللي فاته ----------
+function renderJournalWeeklyTrend(){
+  const wrap = document.getElementById('journalWeeklyTrendWrap');
+  if(!wrap) return;
+  const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]').filter(e => e.anxiety !== undefined);
+  if(local.length < 2){ wrap.innerHTML = ''; return; }
+  const now = new Date();
+  const sevenDaysAgo = new Date(now); sevenDaysAgo.setDate(now.getDate() - 7);
+  const fourteenDaysAgo = new Date(now); fourteenDaysAgo.setDate(now.getDate() - 14);
+  const thisWeek = local.filter(e => e.dateKey && new Date(e.dateKey) > sevenDaysAgo);
+  const lastWeek = local.filter(e => e.dateKey && new Date(e.dateKey) <= sevenDaysAgo && new Date(e.dateKey) > fourteenDaysAgo);
+  if(thisWeek.length === 0 || lastWeek.length === 0){ wrap.innerHTML = ''; return; }
+  const avg = (arr, key) => arr.reduce((s,e) => s + Number(e[key]), 0) / arr.length;
+  const metrics = [
+    { key:'anxiety', label:'القلق', lowerIsBetter:true },
+    { key:'energy', label:'الطاقة', lowerIsBetter:false },
+    { key:'sleep', label:'النوم', lowerIsBetter:false },
+  ];
+  const rows = metrics.map(m => {
+    const thisAvg = avg(thisWeek, m.key), lastAvg = avg(lastWeek, m.key);
+    const diff = thisAvg - lastAvg;
+    const improved = m.lowerIsBetter ? diff < -0.3 : diff > 0.3;
+    const worsened = m.lowerIsBetter ? diff > 0.3 : diff < -0.3;
+    const icon = improved ? '📈' : (worsened ? '📉' : '➡️');
+    const color = improved ? '#3E8E5A' : (worsened ? '#B85450' : 'var(--muted)');
+    return `<p class="layer-text" style="margin-top:6px; color:${color};">${icon} ${m.label}: ${thisAvg.toFixed(1)} (كان ${lastAvg.toFixed(1)} الأسبوع اللي فات)</p>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div class="layer-card l2">
+      <p class="layer-title" style="color:#8A6A1E;">نمط أسبوعك</p>
+      ${rows}
+    </div>`;
 }
 
 function showFirebaseStatus(ok, label, collectionName){
