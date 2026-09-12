@@ -2717,27 +2717,34 @@ function renderProfessionalPillar(body){
   // مش لأصحاب الأعمال والتجار وأصحاب المهن الحرة والمزارعين والفريلانسرز اللي بيتفاوضوا مع عملاء مش أصحاب عمل
   const showExecutivePrep = EXECUTIVE_PREP_ELIGIBLE.includes(profile.employmentType);
   const showBusinessPrep = BUSINESS_PREP_ELIGIBLE_FAMILIES.includes(family);
+  const FAMILY_TOOL_IMG = {
+    authority: { img:"https://images.unsplash.com/photo-1522071820081-009f0129c71c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,45,.72)" },
+    owner: { img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,25,10,.72)" },
+    freelancer: { img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
+    home_role: { img:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,20,30,.72)" },
+    transitional: { img:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,25,45,.72)" },
+  };
   const professionalTools = [
-    { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا" },
-    { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
-    { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية" },
-    ...(showExecutivePrep ? [{ key:"executive_prep", onclick:"openExecutivePrepScreen()", icon:"📄", title:"جهّزني تنفيذيًا", sub:"سيرتك الذاتية، المقابلة، والتفاوض على الراتب" }] : []),
-    ...(showBusinessPrep ? [{ key:"business_prep", onclick:"openBusinessPrepScreen()", icon:"🧾", title:"جهّزني تجاريًا", sub:"التسعير، التفاوض، وعرضك التجاري" }] : []),
-    { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub },
-    { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية" },
-    { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك" },
-    { key:"professional_report", onclick:"openProfessionalReport()", icon:"📊", title:"تقريرك المهني", sub:"تقدمك، أهدافك، ونتايجها لحد دلوقتي" },
+    { key:"field_discovery", onclick:"startFieldDiscovery()", icon:"🧭", title:"اكتشف مجالك", sub:"أنهي نوع مجالات يناسب طبيعتك فعلًا", img:"https://images.unsplash.com/photo-1566341013452-946caa457784?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,20,55,.72)" },
+    { key:"professional_circle", onclick:"startProfessionalCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مهنية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح", img:"https://images.unsplash.com/photo-1752223638233-4c9545333f89?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(45,30,60,.72)" },
+    { key:"first_step", onclick:"openFirstStepScreen()", icon:"🚪", title:"خطوة أول ميل", sub:"تجاوز الخوف من البداية", img:"https://images.unsplash.com/photo-1683027279045-d2722b1bb44a?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,20,35,.7)" },
+    ...(showExecutivePrep ? [{ key:"executive_prep", onclick:"openExecutivePrepScreen()", icon:"📄", title:"جهّزني تنفيذيًا", sub:"سيرتك الذاتية، المقابلة، والتفاوض على الراتب", img:"https://images.unsplash.com/photo-1522071820081-009f0129c71c?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,45,.72)" }] : []),
+    ...(showBusinessPrep ? [{ key:"business_prep", onclick:"openBusinessPrepScreen()", icon:"🧾", title:"جهّزني تجاريًا", sub:"التسعير، التفاوض، وعرضك التجاري", img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,25,10,.72)" }] : []),
+    { key:FAMILY_TOOL_KEY[family], onclick:familyToolMap.fn, icon:familyToolMap.icon, title:familyToolMap.label, sub:familyToolMap.sub, img:FAMILY_TOOL_IMG[family].img, overlay:FAMILY_TOOL_IMG[family].overlay },
+    { key:"growth_plan", onclick:"openGrowthPlanScreen()", icon:"🌱", title:"خطة نموك المهني", sub:"إنت فين دلوقتي، وإيه الخطوة الجاية", img:"https://images.unsplash.com/photo-1633158829875-e5316a358c6f?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,45,30,.68)" },
+    { key:"ambition", onclick:"openAmbitionScreen()", icon:"🎯", title:"طموحك ورضاك الوظيفي", sub:"المقارنة، التأخر المُتخيَّل، والرضا عن مسارك", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
+    { key:"professional_report", onclick:"openProfessionalReport()", icon:"📊", title:"تقريرك المهني", sub:"تقدمك، أهدافك، ونتايجها لحد دلوقتي", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,25,35,.75)" },
   ];
   const startIdx = firstUntriedIndex(professionalTools);
   body.innerHTML = `
     <p style="font-size:12px; color:var(--muted); margin:14px 0 4px;">نوع عملك: ${EMPLOYMENT_TYPE_LABELS[profile.employmentType]} <span style="color:var(--gold); cursor:pointer;" onclick="clearEmploymentType()">(غيّره)</span></p>
     <p style="font-size:12.5px; color:var(--muted); margin:0 0 10px; line-height:1.7;">جزء من مشاكل الشغل جذرها مش في الشغل نفسه — لو التشخيص وجّهك لركن تاني، ده مقصود.</p>
     ${professionalTools.map((t,idx) => `
-      <div class="tool-row" style="border:${idx===startIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===startIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
         ${idx===startIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
-        <div class="icon-circle" style="font-size:18px;">${t.icon}</div>
-        <div><div class="card-title" style="font-size:14px;">${t.title}</div><div class="card-sub">${t.sub}</div></div>
-        <div class="arrow">‹</div>
+        <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
+        <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
+        <div class="arrow" style="color:#fff;">‹</div>
       </div>
     `).join('')}
   `;
@@ -3764,9 +3771,9 @@ function markFinancialApplied(category, label, goal, deadline){
 
 // ---------- ١) علاقتك بالفلوس ----------
 const MONEY_RELATIONSHIP_BANK = [
-  { emoji:"😰", label:"خايف من الفقر باستمرار حتى لو وضعي كويس", psych:"الخوف الدائم من الفقر بيخليك تعيش قلق مستمر حتى وقت الاستقرار الفعلي، وده استنزاف نفسي بلا داعي موضوعي.", quran:"﴿الشَّيْطَانُ يَعِدُكُمُ الْفَقْرَ وَيَأْمُرُكُم بِالْفَحْشَاءِ﴾ (سورة البقرة ٢٦٨)", action:"اكتب 3 مواقف ربنا وفّر لك فيها من غير ما تتوقع، وارجعلهم كل ما القلق يزيد." },
-  { emoji:"🛍️", label:"بستخدم الشراء عشان أثبت نفسي أو أحس بقيمتي", psych:"ربط قيمتك الذاتية بالامتلاك أو الإنفاق بيخليك في سباق مالي مفتوح النهاية، مهما وصلت.", quran:"﴿وَمَا أَمْوَالُكُمْ وَلَا أَوْلَادُكُم بِالَّتِي تُقَرِّبُكُمْ عِندَنَا زُلْفَىٰ﴾ (سورة سبأ ٣٧)", action:"قبل أي عملية شراء غير أساسية، اسأل نفسك: «بشتري ده عشان محتاجه، ولا عشان حد يشوفني؟»" },
-  { emoji:"😔", label:"بحس بذنب لما بصرف على نفسي حتى في حاجات أساسية", psych:"الشعور بالذنب من الإنفاق المعتدل على النفس بيقلب لحرمان مستمر مش مبرر شرعًا ولا نفسيًا.", quran:"﴿قُلْ مَنْ حَرَّمَ زِينَةَ اللَّهِ الَّتِي أَخْرَجَ لِعِبَادِهِ﴾ (سورة الأعراف ٣٢)", action:"خصص مبلغ صغير شهريًا لنفسك بلا ذنب — الاعتدال مطلوب مش الحرمان الكامل." },
+  { emoji:"😰", label:"خايف من الفقر باستمرار حتى لو وضعي كويس", psych:"الخوف الدائم من الفقر بيخليك تعيش قلق مستمر حتى وقت الاستقرار الفعلي، وده استنزاف نفسي بلا داعي موضوعي.", quran:"﴿الشَّيْطَانُ يَعِدُكُمُ الْفَقْرَ وَيَأْمُرُكُم بِالْفَحْشَاءِ﴾ (سورة البقرة ٢٦٨)", action:"اكتب 3 مواقف ربنا وفّر لك فيها من غير ما تتوقع، وارجعلهم كل ما القلق يزيد.", linkFn:"openAsmaByName('الرزاق')", linkLabel:"اطّلع على اسم الله «الرزاق» ومعناه ←" },
+  { emoji:"🛍️", label:"بستخدم الشراء عشان أثبت نفسي أو أحس بقيمتي", psych:"ربط قيمتك الذاتية بالامتلاك أو الإنفاق بيخليك في سباق مالي مفتوح النهاية، مهما وصلت.", quran:"﴿وَمَا أَمْوَالُكُمْ وَلَا أَوْلَادُكُم بِالَّتِي تُقَرِّبُكُمْ عِندَنَا زُلْفَىٰ﴾ (سورة سبأ ٣٧)", action:"قبل أي عملية شراء غير أساسية، اسأل نفسك: «بشتري ده عشان محتاجه، ولا عشان حد يشوفني؟»", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج تبني قيمتك بمعزل عن الامتلاك؟ شوف اعرف نفسك ←" },
+  { emoji:"😔", label:"بحس بذنب لما بصرف على نفسي حتى في حاجات أساسية", psych:"الشعور بالذنب من الإنفاق المعتدل على النفس بيقلب لحرمان مستمر مش مبرر شرعًا ولا نفسيًا.", quran:"﴿قُلْ مَنْ حَرَّمَ زِينَةَ اللَّهِ الَّتِي أَخْرَجَ لِعِبَادِهِ﴾ (سورة الأعراف ٣٢)", action:"خصص مبلغ صغير شهريًا لنفسك بلا ذنب — الاعتدال مطلوب مش الحرمان الكامل.", linkFn:"openAsmaByName('الرحيم')", linkLabel:"اطّلع على اسم الله «الرحيم» ومعناه ←" },
 ];
 function openMoneyRelationshipScreen(){
   markToolOpened('money_relationship');
@@ -3795,15 +3802,16 @@ function showMoneyRelationshipDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${m.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'money_relationship', '${m.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
+    ${m.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${m.linkFn}">${m.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openMoneyRelationshipScreen()">رجوع للقائمة</button>
   `;
 }
 
 // ---------- ٢) إدارة ميزانيتك ----------
 const BUDGET_BANK = [
-  { emoji:"❓", label:"مش عارف فلوسي بتروح فين بالظبط", psych:"غياب التتبع بيخلي القلق المالي مستمر حتى لو الوضع الفعلي مش سيء، لأن الغموض نفسه مقلق.", quran:"﴿وَلَا تُبَذِّرْ تَبْذِيرًا﴾ (سورة الإسراء ٢٦)", action:"سجّل كل مصروفاتك لمدة أسبوع واحد بس (حتى ورقة وقلم)، من غير حكم على نفسك — المعرفة الأول." },
-  { emoji:"💸", label:"بصرف الأول وبفكر في الادخار لو فضل حاجة", psych:"الادخار «لو فضل حاجة» بيخليه دايمًا آخر أولوية، وده بيمنع أي تراكم حقيقي.", quran:"«ابدأ بنفسك ثم بمن تعول» (رواه مسلم) — الترتيب الصحيح للأولويات أساسي", action:"اقلب الترتيب: خصص نسبة للادخار وقت ما يوصل الدخل مباشرة، قبل أي صرف." },
-  { emoji:"🧭", label:"مفيش خطة واضحة لأولوياتي المالية", psych:"غياب الأولويات الواضحة بيخلي كل قرار مالي عشوائي ومرهق ذهنيًا.", action:"رتّب أولوياتك في 3 فئات بس: أساسي (سكن/أكل)، التزامات (ديون/فواتير)، اختياري — وابدأ بالأول دايمًا." },
+  { emoji:"❓", label:"مش عارف فلوسي بتروح فين بالظبط", psych:"غياب التتبع بيخلي القلق المالي مستمر حتى لو الوضع الفعلي مش سيء، لأن الغموض نفسه مقلق.", quran:"﴿وَلَا تُبَذِّرْ تَبْذِيرًا﴾ (سورة الإسراء ٢٦)", action:"سجّل كل مصروفاتك لمدة أسبوع واحد بس (حتى ورقة وقلم)، من غير حكم على نفسك — المعرفة الأول.", linkFn:"startMerat()", linkLabel:"محتاج تفهم نمط تفكيرك في تجنب المواجهة؟ شوف مرآة العقل ←" },
+  { emoji:"💸", label:"بصرف الأول وبفكر في الادخار لو فضل حاجة", psych:"الادخار «لو فضل حاجة» بيخليه دايمًا آخر أولوية، وده بيمنع أي تراكم حقيقي.", quran:"«ابدأ بنفسك ثم بمن تعول» (رواه مسلم) — الترتيب الصحيح للأولويات أساسي", action:"اقلب الترتيب: خصص نسبة للادخار وقت ما يوصل الدخل مباشرة، قبل أي صرف.", linkFn:"openAsmaByName('الحفيظ')", linkLabel:"اطّلع على اسم الله «الحفيظ» ومعناه ←" },
+  { emoji:"🧭", label:"مفيش خطة واضحة لأولوياتي المالية", psych:"غياب الأولويات الواضحة بيخلي كل قرار مالي عشوائي ومرهق ذهنيًا.", action:"رتّب أولوياتك في 3 فئات بس: أساسي (سكن/أكل)، التزامات (ديون/فواتير)، اختياري — وابدأ بالأول دايمًا.", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج توضّح أولوياتك في حياتك عمومًا؟ شوف اعرف نفسك ←" },
 ];
 function openBudgetScreen(){
   markToolOpened('budget');
@@ -3832,15 +3840,16 @@ function showBudgetDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${b.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'budget', '${b.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
+    ${b.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${b.linkFn}">${b.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openBudgetScreen()">رجوع للقائمة</button>
   `;
 }
 
 // ---------- ٣) التعامل مع الديون ----------
 const DEBT_BANK = [
-  { emoji:"😞", label:"حاسس بعار أو خجل من إني مديون", psych:"الشعور بالعار من الدين بيمنعك تتعامل معاه بوضوح وممكن يخليك تخبيه بدل حله.", quran:"﴿وَإِن كَانَ ذُو عُسْرَةٍ فَنَظِرَةٌ إِلَىٰ مَيْسَرَةٍ﴾ (سورة البقرة ٢٨٠) — الإسلام راعى حالة العسر أصلًا", action:"افصل بين «أنا مديون» و«أنا فاشل» — دي جملتين مختلفتين تمامًا، والدين ظرف مش حكم عليك." },
+  { emoji:"😞", label:"حاسس بعار أو خجل من إني مديون", psych:"الشعور بالعار من الدين بيمنعك تتعامل معاه بوضوح وممكن يخليك تخبيه بدل حله.", quran:"﴿وَإِن كَانَ ذُو عُسْرَةٍ فَنَظِرَةٌ إِلَىٰ مَيْسَرَةٍ﴾ (سورة البقرة ٢٨٠) — الإسلام راعى حالة العسر أصلًا", action:"افصل بين «أنا مديون» و«أنا فاشل» — دي جملتين مختلفتين تمامًا، والدين ظرف مش حكم عليك.", linkFn:"openSocialSkillsScreen()", linkLabel:"محتاج تتكلم مع صاحب الدين بوضوح؟ شوف مهارات التواصل ←" },
   { emoji:"🙈", label:"بتجنب التفكير في ديوني عشان الموضوع مقلقني", psych:"التجاهل بيكبّر القلق بمرور الوقت بدل ما يقلله، لأن الغموض عن حجم المشكلة أخطر من مواجهتها.", quran:"﴿فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ﴾ (سورة آل عمران ١٥٩)", action:"اكتب كل ديونك في ورقة واحدة (المبلغ + لمين) — التجاهل بيكبّر القلق مش بيقلله.", linkFn:"openAsmaByName('اللطيف')", linkLabel:"اطّلع على اسم الله «اللطيف» ومعناه ←" },
-  { emoji:"🔄", label:"بتاخد دين جديد عشان تسدد دين قديم", psych:"الاستدانة لتغطية دين سابق بتأجل المشكلة وبتكبّرها غالبًا، بدل ما تحلها فعليًا.", action:"قبل أي دين جديد، اسأل: «ده بيحل المشكلة ولا بيأجلها بس؟» — لو الجواب تأجيل، دوّر على حل تاني." },
+  { emoji:"🔄", label:"بتاخد دين جديد عشان تسدد دين قديم", psych:"الاستدانة لتغطية دين سابق بتأجل المشكلة وبتكبّرها غالبًا، بدل ما تحلها فعليًا.", action:"قبل أي دين جديد، اسأل: «ده بيحل المشكلة ولا بيأجلها بس؟» — لو الجواب تأجيل، دوّر على حل تاني.", linkFn:"startMerat()", linkLabel:"محتاج تفهم نمط تكرار القرار ده؟ شوف مرآة العقل ←" },
 ];
 function openDebtScreen(){
   markToolOpened('debt');
@@ -3876,9 +3885,9 @@ function showDebtDetail(i){
 
 // ---------- ٤) الادخار واحتياطي الطوارئ ----------
 const SAVINGS_BANK = [
-  { emoji:"😅", label:"بحس إن الادخار مستحيل بدخلي الحالي", psych:"فكرة «مستحيل أدخر» غالبًا بتمنعك تجرب أصلًا، حتى بمبلغ صغير جدًا.", quran:"﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا﴾ (سورة الطلاق ٢)", action:"ابدأ بمبلغ صغير جدًا (حتى لو رمزي) بانتظام — العادة أهم من المبلغ في البداية." },
-  { emoji:"🏃", label:"بادخر بس أول ظرف بسحب كل حاجة", psych:"سهولة الوصول للمدخرات بتخليها عمليًا زي أي حساب عادي، مش احتياطي حقيقي.", action:"افتح حساب أو مكان ادخار منفصل تمامًا عن حسابك اليومي، صعب توصله بسهولة." },
-  { emoji:"🎯", label:"معنديش هدف واضح للادخار فمش بحس بالحافز", psych:"الادخار «عمومًا» بلا هدف ملموس بيفقد قيمته التحفيزية بسرعة.", action:"حدد هدف واحد ملموس (احتياطي 3 شهور مصاريف، أو حاجة محددة) بدل «أدخر عمومًا»." },
+  { emoji:"😅", label:"بحس إن الادخار مستحيل بدخلي الحالي", psych:"فكرة «مستحيل أدخر» غالبًا بتمنعك تجرب أصلًا، حتى بمبلغ صغير جدًا.", quran:"﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا﴾ (سورة الطلاق ٢)", action:"ابدأ بمبلغ صغير جدًا (حتى لو رمزي) بانتظام — العادة أهم من المبلغ في البداية.", linkFn:"goToPillar(5)", linkLabel:"محتاج تزود دخلك الأساسي؟ شوف الركن المهني ←" },
+  { emoji:"🏃", label:"بادخر بس أول ظرف بسحب كل حاجة", psych:"سهولة الوصول للمدخرات بتخليها عمليًا زي أي حساب عادي، مش احتياطي حقيقي.", action:"افتح حساب أو مكان ادخار منفصل تمامًا عن حسابك اليومي، صعب توصله بسهولة.", linkFn:"startMerat()", linkLabel:"محتاج تفهم نمط الاندفاع في القرار ده؟ شوف مرآة العقل ←" },
+  { emoji:"🎯", label:"معنديش هدف واضح للادخار فمش بحس بالحافز", psych:"الادخار «عمومًا» بلا هدف ملموس بيفقد قيمته التحفيزية بسرعة.", action:"حدد هدف واحد ملموس (احتياطي 3 شهور مصاريف، أو حاجة محددة) بدل «أدخر عمومًا».", linkFn:"openGrowthPlanScreen()", linkLabel:"محتاج تتدرب على تحديد أهداف واضحة؟ شوف خطة نموك المهني ←" },
 ];
 function openSavingsScreen(){
   markToolOpened('savings');
@@ -3907,15 +3916,16 @@ function showSavingsDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${s.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'savings', '${s.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
+    ${s.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${s.linkFn}">${s.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openSavingsScreen()">رجوع للقائمة</button>
   `;
 }
 
 // ---------- ٥) الزكاة والعطاء ----------
 const GIVING_BANK = [
-  { emoji:"📅", label:"مش متابع صح إمتى وكام الزكاة المفروضة عليّا", psych:"غياب التتبع بيخلي فريضة الزكاة تتأجل أو تتحسب بتقريب مش دقيق.", quran:"﴿وَآتُوا الزَّكَاةَ﴾ (سورة البقرة ٤٣)", action:"حدد تاريخ ثابت في السنة (هجري) تحسب فيه زكاتك بدقة، بدل ما تفضل مؤجلها." },
-  { emoji:"😟", label:"بحس إن الصدقة هتقلل من فلوسي", psych:"الخوف من نقصان المال بسبب العطاء بيمنع بركة حقيقية موعود بيها.", quran:"﴿وَمَا أَنفَقْتُم مِّن شَيْءٍ فَهُوَ يُخْلِفُهُ﴾ (سورة سبأ ٣٩)", action:"جرّب صدقة صغيرة منتظمة (حتى لو رمزية) لمدة شهر وراقب أثرها على طمأنينتك، مش على رصيدك بس." },
-  { emoji:"👀", label:"بديها بس لما حد يشوفني", psych:"العطاء المرتبط بنظر الناس بيفقد جزء كبير من قيمته النفسية والروحية.", quran:"﴿الَّذِينَ يُنفِقُونَ أَمْوَالَهُم بِاللَّيْلِ وَالنَّهَارِ سِرًّا وَعَلَانِيَةً﴾ (سورة البقرة ٢٧٤)", action:"جرّب صدقة سرية تمامًا محدش يعرف بيها غير الله — راقب الفرق في إحساسك." },
+  { emoji:"📅", label:"مش متابع صح إمتى وكام الزكاة المفروضة عليّا", psych:"غياب التتبع بيخلي فريضة الزكاة تتأجل أو تتحسب بتقريب مش دقيق.", quran:"﴿وَآتُوا الزَّكَاةَ﴾ (سورة البقرة ٤٣)", action:"حدد تاريخ ثابت في السنة (هجري) تحسب فيه زكاتك بدقة، بدل ما تفضل مؤجلها.", linkFn:"openWorshipScreen()", linkLabel:"محتاج تتابع عباداتك عمومًا؟ شوف متابعة عباداتك ←" },
+  { emoji:"😟", label:"بحس إن الصدقة هتقلل من فلوسي", psych:"الخوف من نقصان المال بسبب العطاء بيمنع بركة حقيقية موعود بيها.", quran:"﴿وَمَا أَنفَقْتُم مِّن شَيْءٍ فَهُوَ يُخْلِفُهُ﴾ (سورة سبأ ٣٩)", action:"جرّب صدقة صغيرة منتظمة (حتى لو رمزية) لمدة شهر وراقب أثرها على طمأنينتك، مش على رصيدك بس.", linkFn:"openAsmaByName('الشكور')", linkLabel:"اطّلع على اسم الله «الشكور» ومعناه ←" },
+  { emoji:"👀", label:"بديها بس لما حد يشوفني", psych:"العطاء المرتبط بنظر الناس بيفقد جزء كبير من قيمته النفسية والروحية.", quran:"﴿الَّذِينَ يُنفِقُونَ أَمْوَالَهُم بِاللَّيْلِ وَالنَّهَارِ سِرًّا وَعَلَانِيَةً﴾ (سورة البقرة ٢٧٤)", action:"جرّب صدقة سرية تمامًا محدش يعرف بيها غير الله — راقب الفرق في إحساسك.", linkFn:"openRabbekScreen()", linkLabel:"محتاج تراجع إخلاص علاقتك بربك عمومًا؟ شوف علاقتك بربك ←" },
 ];
 function openGivingScreen(){
   markToolOpened('giving');
@@ -3944,15 +3954,16 @@ function showGivingDetail(i){
       <p class="layer-text" style="color:#fff; margin-top:8px;">${g.action}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="showSmartGoalForm(this, 'giving', '${g.label.replace(/'/g,"\\'")}')">حدد هدفك وطبّقها ✅</div>
     </div>
+    ${g.linkFn ? `<div class="choice-btn" style="text-align:center;" onclick="${g.linkFn}">${g.linkLabel}</div>` : ''}
     <button class="btn-ghost" onclick="openGivingScreen()">رجوع للقائمة</button>
   `;
 }
 
 // ---------- ٦) القناعة والرضا المادي ----------
 const CONTENTMENT_BANK = [
-  { emoji:"👀", label:"بقارن وضعي المادي بالناس اللي حواليا باستمرار", psych:"المقارنة المستمرة بمستوى غيرك بتخليك تعيش دايمًا حاسس بالنقص، مهما تحسّن وضعك فعليًا.", quran:"﴿وَلَا تَمُدَّنَّ عَيْنَيْكَ إِلَىٰ مَا مَتَّعْنَا بِهِ أَزْوَاجًا مِّنْهُمْ﴾ (سورة طه ١٣١)", action:"قارن وضعك بنفسك من سنة، مش بحد تاني — ده المقياس الوحيد العادل." },
+  { emoji:"👀", label:"بقارن وضعي المادي بالناس اللي حواليا باستمرار", psych:"المقارنة المستمرة بمستوى غيرك بتخليك تعيش دايمًا حاسس بالنقص، مهما تحسّن وضعك فعليًا.", quran:"﴿وَلَا تَمُدَّنَّ عَيْنَيْكَ إِلَىٰ مَا مَتَّعْنَا بِهِ أَزْوَاجًا مِّنْهُمْ﴾ (سورة طه ١٣١)", action:"قارن وضعك بنفسك من سنة، مش بحد تاني — ده المقياس الوحيد العادل.", linkFn:"openAmbitionScreen()", linkLabel:"محتاج تواجه المقارنة في مسارك المهني كمان؟ شوف طموحك ورضاك الوظيفي ←" },
   { emoji:"😟", label:"قلقان جدًا على مستقبلي المادي (تقاعد، أولاد)", psych:"القلق على المستقبل طبيعي، لكن لو بقى دائم ومُقعِد بيمنعك من أي خطوة فعلية للأمام دلوقتي.", quran:"﴿وَمَا مِن دَابَّةٍ فِي الْأَرْضِ إِلَّا عَلَى اللَّهِ رِزْقُهَا﴾ (سورة هود ٦)", action:"حدد خطوة عملية واحدة تجاه القلق ده (ادخار بسيط، تعلم مهارة) بدل القلق المجرد بلا فعل.", linkFn:"openGrowthPlanScreen()", linkLabel:"محتاج تطور مسارك المهني كمان؟ شوف خطة نموك المهني ←" },
-  { emoji:"🏷️", label:"حاسس إن قيمتي مرتبطة بمقدار اللي أملكه", psych:"ربط قيمتك الذاتية الكاملة بالممتلكات بيخليك عرضة دايمة للقلق مع أي تقلب مادي.", quran:"﴿وَلَقَدْ كَرَّمْنَا بَنِي آدَمَ﴾ (سورة الإسراء ٧٠)", action:"اكتب 3 صفات فيك مالهاش علاقة بالفلوس خالص، وذكّر نفسك بيهم دوريًا." },
+  { emoji:"🏷️", label:"حاسس إن قيمتي مرتبطة بمقدار اللي أملكه", psych:"ربط قيمتك الذاتية الكاملة بالممتلكات بيخليك عرضة دايمة للقلق مع أي تقلب مادي.", quran:"﴿وَلَقَدْ كَرَّمْنَا بَنِي آدَمَ﴾ (سورة الإسراء ٧٠)", action:"اكتب 3 صفات فيك مالهاش علاقة بالفلوس خالص، وذكّر نفسك بيهم دوريًا.", linkFn:"openSelfKnowScreen()", linkLabel:"محتاج تبني قيمتك بمعزل عن الممتلكات؟ شوف اعرف نفسك ←" },
 ];
 function openContentmentScreen(){
   markToolOpened('contentment');
@@ -4824,24 +4835,24 @@ function goToPillar(id){
     renderProfessionalPillar(body);
   } else if(id === 6){
     const financialTools = [
-      { key:"financial_circle", onclick:"startFinancialCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مادية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح" },
-      { key:"money_relationship", onclick:"openMoneyRelationshipScreen()", icon:"💭", title:"علاقتك بالفلوس", sub:"الخوف، الذنب، وربط قيمتك بيها" },
-      { key:"budget", onclick:"openBudgetScreen()", icon:"📊", title:"إدارة ميزانيتك", sub:"مبادئ عملية للتتبع والتوزيع" },
-      { key:"debt", onclick:"openDebtScreen()", icon:"📉", title:"التعامل مع الديون", sub:"العار من الدين، والتعامل معاه بوضوح" },
-      { key:"savings", onclick:"openSavingsScreen()", icon:"🏦", title:"الادخار واحتياطي الطوارئ", sub:"بناء عادة الادخار خطوة بخطوة" },
-      { key:"giving", onclick:"openGivingScreen()", icon:"🤲", title:"الزكاة والعطاء", sub:"العطاء كطمأنينة مش عبء" },
-      { key:"contentment", onclick:"openContentmentScreen()", icon:"🌿", title:"القناعة والرضا المادي", sub:"مواجهة المقارنة والقلق على المستقبل" },
-      { key:"financial_report", onclick:"openFinancialReport()", icon:"📋", title:"تقريرك المادي", sub:"تقدمك، أهدافك، ونتايجها لحد دلوقتي" },
+      { key:"financial_circle", onclick:"startFinancialCircleAssessment()", icon:"🗺️", title:"أضعف نقطة مادية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح", img:"https://images.unsplash.com/photo-1566341013452-946caa457784?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(55,45,15,.72)" },
+      { key:"money_relationship", onclick:"openMoneyRelationshipScreen()", icon:"💭", title:"علاقتك بالفلوس", sub:"الخوف، الذنب، وربط قيمتك بيها", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,10,.72)" },
+      { key:"budget", onclick:"openBudgetScreen()", icon:"📊", title:"إدارة ميزانيتك", sub:"مبادئ عملية للتتبع والتوزيع", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(35,25,15,.7)" },
+      { key:"debt", onclick:"openDebtScreen()", icon:"📉", title:"التعامل مع الديون", sub:"العار من الدين، والتعامل معاه بوضوح", img:"https://images.unsplash.com/photo-1508165821229-7be282c31b6e?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,15,20,.75)" },
+      { key:"savings", onclick:"openSavingsScreen()", icon:"🏦", title:"الادخار واحتياطي الطوارئ", sub:"بناء عادة الادخار خطوة بخطوة", img:"https://images.unsplash.com/photo-1633158829875-e5316a358c6f?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,45,30,.65)" },
+      { key:"giving", onclick:"openGivingScreen()", icon:"🤲", title:"الزكاة والعطاء", sub:"العطاء كطمأنينة مش عبء", img:"https://images.unsplash.com/photo-1509062522246-3755977927d7?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(40,30,10,.68)" },
+      { key:"contentment", onclick:"openContentmentScreen()", icon:"🌿", title:"القناعة والرضا المادي", sub:"مواجهة المقارنة والقلق على المستقبل", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,35,.7)" },
+      { key:"financial_report", onclick:"openFinancialReport()", icon:"📋", title:"تقريرك المادي", sub:"تقدمك، أهدافك، ونتايجها لحد دلوقتي", img:"https://images.unsplash.com/vector-1755687051831-9a75263dbf81?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(50,40,15,.75)" },
     ];
     const financialStartIdx = firstUntriedIndex(financialTools);
     body.innerHTML = `
       <p style="font-size:12.5px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">الركن ده بيركّز على علاقتك النفسية بالفلوس ومبادئ عامة للتعامل معاها — مش استشارة استثمارية. لزيادة دخلك نفسه، شوف الركن المهني.</p>
       ${financialTools.map((t,idx) => `
-      <div class="tool-row" style="border:${idx===financialStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
+      <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===financialStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
         ${idx===financialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
-        <div class="icon-circle" style="font-size:18px;">${t.icon}</div>
-        <div><div class="card-title" style="font-size:14px;">${t.title}</div><div class="card-sub">${t.sub}</div></div>
-        <div class="arrow">‹</div>
+        <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
+        <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
+        <div class="arrow" style="color:#fff;">‹</div>
       </div>
     `).join('')}
     `;
@@ -7351,6 +7362,12 @@ const COMPASS_PILLAR_QUESTIONS = [
   { pillar:'professional', q:"شغلك بياخد من صحتك النفسية أو وقتك الشخصي؟", options:[
     { label:"لأ", score:0 }, { label:"أحيانًا", score:1 }, { label:"آه كتير", score:2 },
   ]},
+  { pillar:'financial', q:"علاقتك النفسية بالفلوس إزاي؟", options:[
+    { label:"مرتاح ومتوازن", score:0 }, { label:"أحيانًا قلقان بس مش دايمًا", score:1 }, { label:"خايف من الفقر باستمرار أو بستخدم الفلوس لإثبات نفسي", score:2 },
+  ]},
+  { pillar:'financial', q:"حاسس بضغط من الديون أو غياب أي مدخرات للطوارئ؟", options:[
+    { label:"لأ، وضعي مستقر", score:0 }, { label:"ضغط متوسط", score:1 }, { label:"آه، ضغط مستمر", score:2 },
+  ]},
 ];
 const PILLAR_ENTRY_TOOL = {
   spiritual: { fn:"openRabbekScreen()", label:"علاقتك بربك", pillarName:"الركن الروحاني" },
@@ -7358,6 +7375,7 @@ const PILLAR_ENTRY_TOOL = {
   personal: { fn:"openSelfKnowScreen()", label:"اعرف نفسك", pillarName:"الركن الشخصي" },
   social: { fn:"startCircleAssessment()", label:"دائرتك الاجتماعية", pillarName:"الركن الاجتماعي" },
   professional: { fn:"goToPillar(5)", label:"الركن المهني", pillarName:"الركن المهني" },
+  financial: { fn:"startFinancialCircleAssessment()", label:"أضعف نقطة مادية عندك", pillarName:"الركن المادي" },
 };
 const COMPASS_ALL_QUESTIONS = [...COMPASS_JOURNEY_QUESTIONS.map(q => ({...q, type:'journey'})), ...COMPASS_PILLAR_QUESTIONS.map(q => ({...q, type:'pillar'}))];
 let compassAnswers = [];
@@ -7401,7 +7419,7 @@ function computeCombinedJourneyStages(){
   });
 }
 function revealCompassResult(){
-  const pillarScores = { spiritual:0, family:0, personal:0, social:0, professional:0 };
+  const pillarScores = { spiritual:0, family:0, personal:0, social:0, professional:0, financial:0 };
   compassAnswers.filter(a => a.type === 'pillar').forEach(a => { pillarScores[a.pillar] += a.score; });
   const weakestPillar = Object.entries(pillarScores).sort((a,b) => b[1]-a[1])[0][0];
   const stages = computeCombinedJourneyStages();
