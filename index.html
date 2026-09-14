@@ -1167,6 +1167,7 @@ async function syncSocialSummaryFromCloud(){
 // دالتين عامتين تستخدمهم كل الأركان، بدل ما نكرر نفس الكود لكل ركن
 function pushPillarSummary(collectionName, fieldsObj){
   if(!isLoggedIn()) return; // زي ما اتفقنا: الضيف (uid مؤقت) مش بيتزامن، لأنه مالوش قيمة عبر الأجهزة
+  if(localStorage.getItem('eihyaha_auto_sync') === 'off') return;
   firestoreSetDoc(collectionName, getUserId(), fieldsObj);
 }
 async function pullPillarSummary(collectionName, restoreFn){
@@ -1870,15 +1871,55 @@ function renderSettingsSection(){
   const currentTheme = localStorage.getItem('eihyaha_theme') || 'classic';
   const currentLang = localStorage.getItem('eihyaha_lang') || 'ar';
   const notifOn = localStorage.getItem('eihyaha_task_notifications') !== 'off';
+  const journalReminder = localStorage.getItem('eihyaha_notif_journal_reminder') || '';
+  const worshipReminder = localStorage.getItem('eihyaha_notif_worship_reminder') || '';
+  const compassReminder = localStorage.getItem('eihyaha_notif_compass') !== 'off';
+  const soundOn = localStorage.getItem('eihyaha_notif_sound') !== 'off';
+  const vibrationOn = localStorage.getItem('eihyaha_notif_vibration') !== 'off';
+  const quietStart = localStorage.getItem('eihyaha_quiet_start') || '';
+  const quietEnd = localStorage.getItem('eihyaha_quiet_end') || '';
+  const autoSyncOn = localStorage.getItem('eihyaha_auto_sync') !== 'off';
   return `
     <div class="card">
-      <p class="card-title" style="margin-bottom:10px;">إشعارات المهام</p>
-      <div style="display:flex; gap:8px;">
+      <p class="card-title" style="margin-bottom:10px;">🔔 التذكيرات</p>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${notifOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setTaskNotifications('on')">مفعّلة</div>
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${!notifOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setTaskNotifications('off')">مقفولة</div>
       </div>
-      <p style="font-size:13px; color:var(--muted); margin-top:10px;">إشعارات محلية تشتغل بس لو التطبيق مفتوح — الإشعارات الحقيقية للتطبيق المقفول هتتضاف لاحقًا.</p>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">إشعارات محلية تشتغل بس لو التطبيق مفتوح — الإشعارات الحقيقية للتطبيق المقفول هتتضاف لاحقًا.</p>
+
+      <label class="flabel">تذكير "مرآتي اليومية"</label>
+      <input type="time" value="${journalReminder}" onchange="setReminderTime('eihyaha_notif_journal_reminder', this.value)">
+      <label class="flabel" style="margin-top:10px;">تذكير "متابعة عباداتك"</label>
+      <input type="time" value="${worshipReminder}" onchange="setReminderTime('eihyaha_notif_worship_reminder', this.value)">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px;">
+        <span style="font-size:14px;">تذكير دوري بـ"بوصلتك" (كل شهر)</span>
+        <div class="choice-btn" style="margin:0; padding:6px 14px; ${compassReminder ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="toggleSetting('eihyaha_notif_compass', ${compassReminder})">${compassReminder ? 'مفعّل' : 'مقفول'}</div>
+      </div>
     </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🔊 الصوت والاهتزاز</p>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:14px;">صوت الإشعار</span>
+        <div class="choice-btn" style="margin:0; padding:6px 14px; ${soundOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="toggleSetting('eihyaha_notif_sound', ${soundOn})">${soundOn ? 'مفعّل' : 'مقفول'}</div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <span style="font-size:14px;">الاهتزاز</span>
+        <div class="choice-btn" style="margin:0; padding:6px 14px; ${vibrationOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="toggleSetting('eihyaha_notif_vibration', ${vibrationOn})">${vibrationOn ? 'مفعّل' : 'مقفول'}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🌙 ساعات الهدوء</p>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">مفيش إشعارات في الفترة دي (سيبها فاضية للإيقاف)</p>
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1;"><label class="flabel">من</label><input type="time" value="${quietStart}" onchange="setReminderTime('eihyaha_quiet_start', this.value)"></div>
+        <div style="flex:1;"><label class="flabel">لحد</label><input type="time" value="${quietEnd}" onchange="setReminderTime('eihyaha_quiet_end', this.value)"></div>
+      </div>
+    </div>
+
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">${t('theme_title')}</p>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
@@ -1901,7 +1942,30 @@ function renderSettingsSection(){
       </div>
       ${currentLang === 'en' ? `<p style="font-size:13px; color:var(--muted); margin-top:10px;">${t('lang_note')}</p>` : ''}
     </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🔒 الخصوصية والبيانات</p>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <span style="font-size:14px;">المزامنة التلقائية مع السحابة</span>
+        <div class="choice-btn" style="margin:0; padding:6px 14px; ${autoSyncOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="toggleSetting('eihyaha_auto_sync', ${autoSyncOn})">${autoSyncOn ? 'مفعّلة' : 'مقفولة'}</div>
+      </div>
+      <div class="choice-btn" style="text-align:center; margin-bottom:8px;" onclick="exportUserData()">⬇️ تصدير بياناتي</div>
+      <div class="choice-btn" style="text-align:center; color:var(--danger); border-color:var(--danger);" onclick="confirmDeleteLocalData()">🗑️ حذف بياناتي المحلية</div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">ℹ️ عن التطبيق</p>
+      <p style="font-size:13px; color:var(--muted); line-height:1.7;">إحياها باستمتاع — تطبيق تنمية نفسية بمنظور قرآني.<br>محتوى الركن الروحاني ومرآة العقل مبني على كتب "مرآة الأنبياء" و"الاختيار الخفي" و"بوصلة التسليم".</p>
+    </div>
   `;
+}
+function toggleSetting(key, currentOn){
+  localStorage.setItem(key, currentOn ? 'off' : 'on');
+  openSettingsScreen();
+}
+function setReminderTime(key, value){
+  if(value) localStorage.setItem(key, value);
+  else localStorage.removeItem(key);
 }
 
 function renderAccountScreen(){
@@ -2903,6 +2967,7 @@ function renderCoworkerBurnoutResultFromScore(score, freeText){
     </div>
     ${renderProphetLinkCard(catLink, linkPositive)}
     ${(freeMatch && freeMatch.id !== (catLink && catLink.id)) ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch, false)}` : ''}
+    ${score > 6 ? `<div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="openSpecialistsDirectory()">مين المختص المناسب ليك؟ ←</div>` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openCoworkerBoundariesScreen()">جرب أداة «حدودك مع الزملاء» ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="restartCoworkerBurnout()">🔄 أعد التقييم</div>
     <button class="btn-ghost" onclick="openCoworkersScreen()">رجوع لزملاء العمل</button>
@@ -6860,12 +6925,14 @@ function renderFlashList(){
 function showFlashDetail(id){
   const f = FLASH_BANK.find(x => x.id === id);
   const wrap = document.getElementById('flashListWrap');
+  const mentionsSpecialist = f.script.includes('المختص') || f.script.includes('مختص');
   wrap.innerHTML = `
     <div class="layer-card l3">
       <p class="layer-title" style="color:var(--navy-dark);">✨ ${f.title}</p>
       <p class="layer-text" style="margin-top:8px;">${f.script}</p>
       <p style="font-size:13px; color:var(--muted); margin-top:8px;">${f.ref}</p>
     </div>
+    ${mentionsSpecialist ? `<div class="choice-btn" style="text-align:center; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="openSpecialistsDirectory()">مين المختص المناسب ليك؟ ←</div>` : ''}
     <button class="btn-ghost" onclick="renderFlashList()">رجوع للقائمة</button>
   `;
 }
@@ -9147,6 +9214,7 @@ async function generateReport(){
       <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:10px;">هذا التقرير أداة تحضيرية للمساعدة في التواصل مع المتخصص، وليس تشخيصًا طبيًا.</p>
     </div>
     <button class="btn-primary" style="margin-top:14px;" onclick="window.print()">🖨️ اطبع أو احفظ PDF</button>
+    <div class="choice-btn" style="text-align:center; margin-top:10px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="openSpecialistsDirectory()">مين المختص المناسب ليك؟ دور عليه ←</div>
   `;
 }
 
@@ -9658,11 +9726,34 @@ function deleteTask(id){
 }
 
 // ---------- إشعارات محلية (تعمل بس لو التطبيق مفتوح) ----------
+function isWithinQuietHours(){
+  const start = localStorage.getItem('eihyaha_quiet_start');
+  const end = localStorage.getItem('eihyaha_quiet_end');
+  if(!start || !end) return false;
+  const now = new Date();
+  const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  if(start <= end) return hhmm >= start && hhmm < end; // فترة عادية زي 22:00-23:59
+  return hhmm >= start || hhmm < end; // فترة بتعدّي منتصف الليل زي 23:00-07:00
+}
+function playNotificationSound(){
+  if(localStorage.getItem('eihyaha_notif_sound') === 'off') return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; gain.gain.value = 0.08;
+    osc.start(); osc.stop(ctx.currentTime + 0.15);
+  } catch(e){}
+}
 function showLocalNotification(title, body){
   if(localStorage.getItem('eihyaha_task_notifications') === 'off') return;
+  if(isWithinQuietHours()) return;
   if(!('Notification' in window)) return;
   if(Notification.permission === 'granted'){
     try{ new Notification(title, { body }); }catch(e){}
+    playNotificationSound();
+    if(localStorage.getItem('eihyaha_notif_vibration') !== 'off' && navigator.vibrate) navigator.vibrate(200);
   } else if(Notification.permission !== 'denied'){
     Notification.requestPermission();
   }
@@ -9686,6 +9777,74 @@ function checkDueTasks(){
   if(changed) saveTasksLocal(tasks);
 }
 setInterval(checkDueTasks, 30000);
+
+// ---------- تذكيرات دورية (مرآتي اليومية، متابعة العبادات، بوصلتك) ----------
+function checkDailyReminders(){
+  const now = new Date();
+  const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const todayKey = formatDateKey(now);
+  const firedKey = 'eihyaha_reminders_fired_' + todayKey;
+  const firedToday = JSON.parse(localStorage.getItem(firedKey) || '{}');
+
+  const journalTime = localStorage.getItem('eihyaha_notif_journal_reminder');
+  if(journalTime && journalTime !== 'off' && hhmm === journalTime && !firedToday.journal){
+    const journal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
+    const loggedToday = journal.some(e => e.dateKey === todayKey);
+    if(!loggedToday){
+      showLocalNotification('📓 مرآتي اليومية', 'سجّلت يومك النهاردة؟ دقيقتين بس.');
+      firedToday.journal = true;
+    }
+  }
+
+  const worshipTime = localStorage.getItem('eihyaha_notif_worship_reminder');
+  if(worshipTime && worshipTime !== 'off' && hhmm === worshipTime && !firedToday.worship){
+    showLocalNotification('🕌 متابعة عباداتك', 'وقت تسجيل عباداتك النهاردة.');
+    firedToday.worship = true;
+  }
+
+  localStorage.setItem(firedKey, JSON.stringify(firedToday));
+}
+function checkCompassReminder(){
+  if(localStorage.getItem('eihyaha_notif_compass') === 'off') return;
+  const result = JSON.parse(localStorage.getItem('eihyaha_compass_result') || 'null');
+  if(!result) return;
+  const daysSince = Math.floor((Date.now() - new Date(result.date).getTime()) / 86400000);
+  const lastFired = localStorage.getItem('eihyaha_compass_reminder_fired');
+  if(daysSince >= 30 && lastFired !== result.date){
+    showLocalNotification('🧭 بوصلتك', 'مرّ شهر على آخر تقييم — تحب تاخد بوصلتك تاني؟');
+    localStorage.setItem('eihyaha_compass_reminder_fired', result.date);
+  }
+}
+setInterval(() => { checkDailyReminders(); checkCompassReminder(); }, 30000);
+
+// ---------- الخصوصية والبيانات: تصدير أو حذف بيانات المستخدم المحلية ----------
+function exportUserData(){
+  const data = {};
+  for(let i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key.startsWith('eihyaha_')) data[key] = localStorage.getItem(key);
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'eihyaha-my-data-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function confirmDeleteLocalData(){
+  if(!confirm('هيتم مسح كل بياناتك المحفوظة على الجهاز ده (اليوميات، التقييمات، تقدمك) نهائيًا. متأكد؟')) return;
+  const keys = [];
+  for(let i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key.startsWith('eihyaha_')) keys.push(key);
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+  alert('اتمسحت بياناتك المحلية. هيتم إعادة تحميل التطبيق.');
+  location.reload();
+}
 
 function setTaskNotifications(state){
   localStorage.setItem('eihyaha_task_notifications', state);
