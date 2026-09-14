@@ -8,6 +8,7 @@
   :root{
     --navy:#0B3D3A; --navy-dark:#072B28; --sand:#F2EEE3; --gold:#C9A24B;
     --white:#FFFFFF; --text:#1C2B29; --muted:#5B6C69; --danger:#B23A34; --danger-bg:#F7E4E2;
+    --layer-l2-bg:#FBF3E3; --layer-l2-border:#EFDBAE; --layer-l3-bg:#E6F0EE; --layer-l3-border:#C7DED9;
     --app-bg-overlay: rgba(242,238,227,.88);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -30,7 +31,7 @@
   /* ===== Top bar ===== */
   .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 8px;}
   .topbar h1{font-size:19px; margin:0; font-weight:600;}
-  .backbtn{width:48px; height:48px; border-radius:50%; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--gold); font-size:24px; font-weight:700; color:var(--navy-dark); box-shadow:inset 0 -3px 5px rgba(0,0,0,.18), inset 0 2px 3px rgba(255,255,255,.65), 0 2px 4px rgba(0,0,0,.15);}
+  .backbtn{width:48px; height:48px; border-radius:50%; background:radial-gradient(circle at 32% 28%, #ffffff, var(--white) 55%, var(--gold) 130%); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--gold); font-size:24px; font-weight:700; color:var(--text); box-shadow:inset 0 -3px 5px rgba(0,0,0,.18), inset 0 2px 3px rgba(255,255,255,.65), 0 2px 4px rgba(0,0,0,.15);}
   .sos{padding:8px 14px; border-radius:20px; background:var(--danger-bg); color:var(--danger); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; font-size:14px; white-space:nowrap;}
 
   /* ===== Cards ===== */
@@ -73,7 +74,7 @@
   /* ===== Bottom nav ===== */
   .bottomnav{position:fixed; bottom:0; left:0; right:0; background:var(--white); border-top:1px solid #EDE8D8; display:flex; justify-content:space-around; padding:10px 0 14px; max-width:480px; margin:0 auto; z-index:50;}
   .navitem{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:12px; color:var(--muted); cursor:pointer;}
-  .navitem.active{color:var(--navy-dark); font-weight:700;}
+  .navitem.active{color:var(--text); font-weight:700;}
   .navitem .navicon{font-size:22px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
 
   /* ===== Tools grid (pillar detail) ===== */
@@ -92,7 +93,7 @@
   .bubble.bot{align-self:flex-start; background:var(--white); border:1px solid #EDE8D8; border-bottom-right-radius:4px;}
   .bubble.user{align-self:flex-end; background:var(--navy-dark); color:var(--white); border-bottom-left-radius:4px;}
   .choices{display:flex; flex-direction:column; gap:8px; margin-top:6px;}
-  .choice-btn{background:var(--white); border:1px solid var(--gold); color:var(--navy-dark); padding:10px 14px; border-radius:12px; font-size:15px; text-align:right; cursor:pointer; font-weight:600;}
+  .choice-btn{background:var(--white); border:1px solid var(--gold); color:var(--text); padding:10px 14px; border-radius:12px; font-size:15px; text-align:right; cursor:pointer; font-weight:600;}
   .choice-btn:active{background:var(--sand);}
 
   /* ===== Forms ===== */
@@ -103,13 +104,13 @@
   textarea{min-height:70px; resize:none;}
   .btn-primary{width:100%; background:var(--navy-dark); color:var(--white); border:none; padding:13px; border-radius:12px; font-size:17px; font-weight:700; cursor:pointer; margin-top:14px;}
   .btn-primary:active{opacity:.85;}
-  .btn-ghost{width:100%; background:transparent; color:var(--navy-dark); border:1px solid var(--navy-dark); padding:13px; border-radius:12px; font-size:17px; font-weight:600; cursor:pointer; margin-top:10px;}
+  .btn-ghost{width:100%; background:transparent; color:var(--text); border:1px solid var(--gold); padding:13px; border-radius:12px; font-size:17px; font-weight:600; cursor:pointer; margin-top:10px;}
 
   /* ===== Result layers (مرآة العقل) ===== */
   .layer-card{border-radius:14px; padding:14px 16px; margin-bottom:10px;}
   .layer-card.l1{background:var(--white); border:1px solid #EDE8D8;}
-  .layer-card.l2{background:#FBF3E3; border:1px solid #EFDBAE;}
-  .layer-card.l3{background:#E6F0EE; border:1px solid #C7DED9;}
+  .layer-card.l2{background:var(--layer-l2-bg); border:1px solid var(--layer-l2-border);}
+  .layer-card.l3{background:var(--layer-l3-bg); border:1px solid var(--layer-l3-border);}
   .layer-title{font-size:14px; font-weight:700; margin:0 0 6px;}
   .layer-text{font-size:15px; line-height:1.7; margin:0; color:var(--text);}
 
@@ -243,7 +244,7 @@
         </div>
       </div>
 
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:20px;">
+      <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-bottom:20px;">
         <p class="card-title">📌 ملاحظة سريعة</p>
         <textarea id="homeStickyInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:44px;"></textarea>
         <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('homeStickyInput','homeStickyChooserWrap')">حفظ</button>
@@ -339,7 +340,7 @@
       <button class="btn-ghost" onclick="loadFullHistory()">📂 عرض السجلات</button>
       <div id="fullHistoryWrap" style="margin-top:14px;"></div>
 
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-top:20px;">
+      <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-top:20px;">
         <p class="card-title">📌 ملاحظة سريعة</p>
         <textarea id="stickyNoteInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:50px;"></textarea>
         <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('stickyNoteInput','stickyChooserWrap')">حفظ</button>
@@ -1448,6 +1449,7 @@ const SPECIALIST_CATEGORIES = [
     whenNeeded:['عايز تطوّر نفسك أو تبني عادة جديدة', 'محتاج خطة واضحة لهدف أو مرحلة جديدة في حياتك أو شغلك', 'بتتغلب على التسويف أو محتاج دفعة تحفيزية'],
     important:'مش بديل عن علاج نفسي — لو عندك اضطراب نفسي حقيقي (قلق شديد، اكتئاب)، الكوتش مش الجهة المناسبة.',
     keywords:['كوتش','لايف كوتش','مدرب حياة','كوتشينج'],
+    img:'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?fm=jpg&q=70&w=900&auto=format&fit=crop', overlay:'rgba(20,45,30,.5)',
   },
   {
     key:'therapist', icon:'💬', title:'استشاري نفسي', subtitle:'معالج / أخصائي نفسي',
@@ -1455,6 +1457,7 @@ const SPECIALIST_CATEGORIES = [
     whenNeeded:['قلق أو ضيق نفسي مستمر بيأثر على حياتك اليومية', 'صعوبة في التعامل مع صدمة، حزن، أو خسارة', 'مشاكل متكررة في العلاقات أو أنماط تفكير وسلوك محتاجة شغل أعمق'],
     important:'الفرق الجوهري بينه وبين الدكتور النفسي: العلاج بالكلام والتقنيات النفسية، مش بالدواء.',
     keywords:['استشاري نفسي','معالج نفسي','أخصائي نفسي','مرشد نفسي','معالجة نفسية','أخصائية نفسية'],
+    img:'https://images.unsplash.com/photo-1573497491208-6b1acb260507?fm=jpg&q=70&w=900&auto=format&fit=crop', overlay:'rgba(20,30,45,.5)',
   },
   {
     key:'psychiatrist', icon:'🩺', title:'دكتور نفسي', subtitle:'طبيب نفسي (طبيب بشري)',
@@ -1462,6 +1465,7 @@ const SPECIALIST_CATEGORIES = [
     whenNeeded:['أعراض شديدة أو مستمرة (اكتئاب حاد، قلق معطّل، اضطراب ثنائي القطب)', 'حالات محتاجة تقييم دوائي أو تشخيص طبي رسمي', 'لو استشاري نفسي حوّلك له لأنك محتاج علاج دوائي بجانب الجلسات'],
     important:'هو الوحيد من التلاتة اللي يقدر يوصف دواء — لأنه طبيب بشري بالدرجة الأولى.',
     keywords:['دكتور نفسي','طبيب نفسي','طبيب نفساني','استشاري طب نفسي'],
+    img:'https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=900&auto=format&fit=crop', overlay:'rgba(10,25,35,.5)',
   },
 ];
 function openSpecialistsDirectory(){
@@ -1469,13 +1473,17 @@ function openSpecialistsDirectory(){
   wrap.innerHTML = `
     <p style="font-size:12.5px; color:var(--muted); margin:14px 0 14px; line-height:1.7;">التلاتة مختلفين في التدريب والدور — اختار الوصف الأقرب لحالتك دلوقتي.</p>
     ${SPECIALIST_CATEGORIES.map(c => `
-      <div class="layer-card l2" style="margin-bottom:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">${c.icon} ${c.title} <span style="font-size:12px; color:var(--muted); font-weight:400;">(${c.subtitle})</span></p>
-        <p class="layer-text" style="margin-top:8px;">${c.definition}</p>
-        <p style="font-size:12px; color:#8A6A1E; font-weight:700; margin:10px 0 4px;">إمتى تحتاجه؟</p>
-        ${c.whenNeeded.map(w => `<p class="layer-text" style="margin-top:3px; font-size:13px;">• ${w}</p>`).join('')}
-        <p style="font-size:11.5px; color:var(--muted); margin-top:8px; font-style:italic;">⚠️ ${c.important}</p>
-        <div class="choice-btn" style="text-align:center; margin-top:12px;" onclick="browseSpecialistsByCategory('${c.key}')">تصفح ${c.title} المسجّلين ←</div>
+      <div class="layer-card l2" style="margin-bottom:14px; padding:0; overflow:hidden;">
+        <div style="height:110px; background:linear-gradient(${c.overlay}, ${c.overlay}), url('${c.img}') center/cover no-repeat; display:flex; align-items:flex-end; padding:12px;">
+          <p style="font-size:17px; font-weight:700; color:#fff; margin:0; text-shadow:0 1px 4px rgba(0,0,0,.4);">${c.icon} ${c.title} <span style="font-size:12px; color:rgba(255,255,255,.85); font-weight:400;">(${c.subtitle})</span></p>
+        </div>
+        <div style="padding:14px;">
+          <p class="layer-text">${c.definition}</p>
+          <p style="font-size:12px; color:#8A6A1E; font-weight:700; margin:10px 0 4px;">إمتى تحتاجه؟</p>
+          ${c.whenNeeded.map(w => `<p class="layer-text" style="margin-top:3px; font-size:13px;">• ${w}</p>`).join('')}
+          <p style="font-size:11.5px; color:var(--muted); margin-top:8px; font-style:italic;">⚠️ ${c.important}</p>
+          <div class="choice-btn" style="text-align:center; margin-top:12px;" onclick="browseSpecialistsByCategory('${c.key}')">تصفح ${c.title} المسجّلين ←</div>
+        </div>
       </div>
     `).join('')}
   `;
@@ -1504,7 +1512,7 @@ async function browseSpecialistsByCategory(categoryKey){
   if(matched.length === 0){
     wrap.innerHTML = `
       <div class="layer-card l1" style="margin-top:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">مفيش ${category.title} مسجّلين لحد دلوقتي</p>
+        <p class="layer-title" style="color:var(--text);">مفيش ${category.title} مسجّلين لحد دلوقتي</p>
         <p class="layer-text" style="margin-top:8px;">هنضيفهم أول ما ينضموا للتطبيق — تقدر تتابع "مساعدة فورية" لحد ما نلاقيلك حد مناسب.</p>
       </div>
     `;
@@ -1830,23 +1838,23 @@ function renderStatsScreen(){
   body.innerHTML = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${moodEntries.length}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${moodEntries.length}</p>
         <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">تسجيلات مزاج</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${doneTasks}/${tasks.length}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${doneTasks}/${tasks.length}</p>
         <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">مهام منجزة</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${journal.length}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${journal.length}</p>
         <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">تسجيلات في رحلتي</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${stickyCount}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${stickyCount}</p>
         <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">ملاحظات سريعة</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${getTawbaCount()}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${getTawbaCount()}</p>
         <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">مرات رجوعك في "التوبة والعودة" — كل مرة خطوة، مش رقم بيتحاسب عليه</p>
       </div>
     </div>
@@ -2133,7 +2141,7 @@ function renderLifeBalanceCard(){
   const neglected = engagement.filter(e => e.openedCount === 0);
   return `
     <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:default; background:var(--white);">
-      <p style="font-size:13px; font-weight:700; color:var(--navy-dark); margin:0 0 10px;">⚖️ ميزان حياتك</p>
+      <p style="font-size:13px; font-weight:700; color:var(--text); margin:0 0 10px;">⚖️ ميزان حياتك</p>
       ${engagement.map(e => `
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
           <span style="font-size:15px; width:22px;">${e.icon}</span>
@@ -2150,10 +2158,10 @@ function renderLifeBalanceCard(){
 
 // ================= نظام الألوان المتعددة (Premium Themes) =================
 const THEMES = {
-  classic:  { label:"الأصلي",        navy:"#0B3D3A", navyDark:"#072B28", sand:"#F2EEE3", gold:"#C9A24B", white:"#FFFFFF", text:"#1C2B29", muted:"#5B6C69" },
-  midnight: { label:"الليلي الفاخر", navy:"#154A43", navyDark:"#0B2B27", sand:"#081F1C", gold:"#D4AF6A", white:"#102F2A", text:"#F0EAD6", muted:"#8FA39D" },
-  wine:     { label:"النبيذي",       navy:"#7A2B3D", navyDark:"#5C1E2B", sand:"#F4EBE7", gold:"#D9A441", white:"#FFFFFF", text:"#3A1F26", muted:"#8A6153" },
-  charcoal: { label:"الفحمي الفضي",  navy:"#3A3A3A", navyDark:"#2B2B2B", sand:"#EDEDED", gold:"#B8B8B8", white:"#FFFFFF", text:"#232323", muted:"#6B6B6B" },
+  classic:  { label:"الأصلي",        navy:"#0B3D3A", navyDark:"#072B28", sand:"#F2EEE3", gold:"#C9A24B", white:"#FFFFFF", text:"#1C2B29", muted:"#5B6C69", l2Bg:"#FBF3E3", l2Border:"#EFDBAE", l3Bg:"#E6F0EE", l3Border:"#C7DED9" },
+  midnight: { label:"الليلي الفاخر", navy:"#154A43", navyDark:"#0B2B27", sand:"#081F1C", gold:"#D4AF6A", white:"#102F2A", text:"#F0EAD6", muted:"#8FA39D", l2Bg:"#2A2417", l2Border:"#5A4A2A", l3Bg:"#12302A", l3Border:"#2E5850" },
+  wine:     { label:"النبيذي",       navy:"#7A2B3D", navyDark:"#5C1E2B", sand:"#F4EBE7", gold:"#D9A441", white:"#FFFFFF", text:"#3A1F26", muted:"#8A6153", l2Bg:"#FBF3E3", l2Border:"#EFDBAE", l3Bg:"#E6F0EE", l3Border:"#C7DED9" },
+  charcoal: { label:"الفحمي الفضي",  navy:"#3A3A3A", navyDark:"#2B2B2B", sand:"#EDEDED", gold:"#B8B8B8", white:"#FFFFFF", text:"#232323", muted:"#6B6B6B", l2Bg:"#FBF3E3", l2Border:"#EFDBAE", l3Bg:"#E6F0EE", l3Border:"#C7DED9" },
 };
 
 function hexToRgba(hex, alpha){
@@ -2175,6 +2183,10 @@ function applyTheme(name){
   root.setProperty('--white', th.white);
   root.setProperty('--text', th.text);
   root.setProperty('--muted', th.muted);
+  root.setProperty('--layer-l2-bg', th.l2Bg);
+  root.setProperty('--layer-l2-border', th.l2Border);
+  root.setProperty('--layer-l3-bg', th.l3Bg);
+  root.setProperty('--layer-l3-border', th.l3Border);
   root.setProperty('--app-bg-overlay', hexToRgba(th.sand, .88));
 }
 
@@ -2360,7 +2372,7 @@ function renderSpiritualDashboard(){
   let alertHtml = '';
   if(consistency !== null && previousConsistency !== null && (previousConsistency - consistency) >= 25){
     alertHtml = `
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:10px;">
+      <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-bottom:10px;">
         <p style="font-size:15px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن انتظامك نزل من <b>${previousConsistency}٪</b> لـ<b>${consistency}٪</b> الأسبوع ده. مفيش لوم، بس يستاهل تسأل نفسك: فيه حاجة تغيّرت؟</p>
         <div style="display:flex; gap:8px; margin-top:10px;">
           <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openRabbekScreen()">علاقتك بربك</div>
@@ -2533,7 +2545,7 @@ function renderCircleResult(result, freeText){
   const weakestLink = getProphetLinkById(CIRCLE_PROPHET_MAP[weakest], false);
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🗺️ خريطة دائرتك الإجتماعية</p>
+      <p class="layer-title" style="color:var(--text);">🗺️ خريطة دائرتك الإجتماعية</p>
       <p class="layer-text" style="margin-top:6px;">أضعف دايرة عندك دلوقتي: <b>${CIRCLE_LABELS[weakest]}</b> — مش عشان تحكم على نفسك، لكن عشان تعرف تركّز مجهودك فين.</p>
     </div>
     ${Object.entries(normalized).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
@@ -2599,7 +2611,7 @@ function showRahmDetail(i){
   const wrap = document.getElementById('rahmBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${r.emoji} ${r.label}</p>
+      <p class="layer-title" style="color:var(--text);">${r.emoji} ${r.label}</p>
       <p class="layer-text" style="margin-top:8px;">${r.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -2645,7 +2657,7 @@ function showNeighborDetail(i){
   const wrap = document.getElementById('neighborBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${n.emoji} ${n.label}</p>
+      <p class="layer-title" style="color:var(--text);">${n.emoji} ${n.label}</p>
       <p class="layer-text" style="margin-top:8px;">${n.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -2691,7 +2703,7 @@ function showSocialSkillDetail(i){
   const wrap = document.getElementById('socialSkillsBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p>
+      <p class="layer-title" style="color:var(--text);">${s.emoji} ${s.label}</p>
       <p class="layer-text" style="margin-top:8px;">${s.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -2815,7 +2827,7 @@ function renderCoworkerExchangeResultFromCategory(category, freeText){
   const wrap = document.getElementById('coworkerExchangeBody');
   wrap.innerHTML = `
     <div class="layer-card ${c.cardClass}" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${c.title}</p>
+      <p class="layer-title" style="color:var(--text);">${c.title}</p>
       <p class="layer-text" style="margin-top:8px;">${c.text}</p>
     </div>
     ${renderProphetLinkCard(catLink, linkPositive)}
@@ -2867,7 +2879,7 @@ function showCoworkerBoundaryDetail(i){
   const wrap = document.getElementById('coworkerBoundariesBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p>
+      <p class="layer-title" style="color:var(--text);">${b.emoji} ${b.label}</p>
       <p class="layer-text" style="margin-top:8px;">${b.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -2962,7 +2974,7 @@ function renderCoworkerBurnoutResultFromScore(score, freeText){
   const wrap = document.getElementById('coworkerBurnoutBody');
   wrap.innerHTML = `
     <div class="layer-card ${cardClass}" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${level}</p>
+      <p class="layer-title" style="color:var(--text);">${level}</p>
       <p class="layer-text" style="margin-top:8px;">${text}</p>
     </div>
     ${renderProphetLinkCard(catLink, linkPositive)}
@@ -3002,7 +3014,7 @@ function renderProfessionalPillar(body){
   if(!profile.employmentType){
     body.innerHTML = `
       <div class="layer-card l2" style="margin-top:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">قبل ما نبدأ، شغلك إيه؟</p>
+        <p class="layer-title" style="color:var(--text);">قبل ما نبدأ، شغلك إيه؟</p>
         <p class="layer-text" style="margin-top:6px;">تحديد نوع شغلك بيخلّي الأسئلة والأدوات هنا مناسبة فعلًا لحالتك، مش أسئلة عامة.</p>
       </div>
       ${Object.entries(EMPLOYMENT_FAMILY_LABELS).map(([famKey, famLabel]) => `
@@ -3045,7 +3057,7 @@ function renderProfessionalPillar(body){
     <p style="font-size:12.5px; color:var(--muted); margin:0 0 10px; line-height:1.7;">جزء من مشاكل الشغل جذرها مش في الشغل نفسه — لو التشخيص وجّهك لركن تاني، ده مقصود.</p>
     ${professionalTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===startIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-        ${idx===startIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        ${idx===startIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -3212,7 +3224,7 @@ function renderProfessionalCircleResult(result, freeText){
   const weakestLink = getProphetLinkById(PROFESSIONAL_PROPHET_MAP_BY_FAMILY[result.family][weakest], false);
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🗺️ أضعف نقطة مهنية عندك دلوقتي</p>
+      <p class="layer-title" style="color:var(--text);">🗺️ أضعف نقطة مهنية عندك دلوقتي</p>
       <p class="layer-text" style="margin-top:6px;">نقطة تركيز منطقية: <b>${PROFESSIONAL_CIRCLE_LABELS[weakest]}</b></p>
     </div>
     ${Object.entries(result.scores).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
@@ -3298,7 +3310,7 @@ function showBossDetail(i){
   const b = getBossBank()[i];
   const wrap = document.getElementById('bossBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${b.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3337,7 +3349,7 @@ function showOwnerDetail(i){
   const o = OWNER_BANK[i];
   const wrap = document.getElementById('ownerBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${o.emoji} ${o.label}</p><p class="layer-text" style="margin-top:8px;">${o.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${o.emoji} ${o.label}</p><p class="layer-text" style="margin-top:8px;">${o.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p><p class="layer-text" style="margin-top:8px;">${o.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3376,7 +3388,7 @@ function showFreelancerDetail(i){
   const f = FREELANCER_BANK[i];
   const wrap = document.getElementById('freelancerBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${f.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3415,7 +3427,7 @@ function showHomeRoleDetail(i){
   const h = HOME_ROLE_BANK[i];
   const wrap = document.getElementById('homeRoleBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${h.emoji} ${h.label}</p><p class="layer-text" style="margin-top:8px;">${h.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${h.emoji} ${h.label}</p><p class="layer-text" style="margin-top:8px;">${h.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${h.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3454,7 +3466,7 @@ function showTransitionDetail(i){
   const t = TRANSITION_BANK[i];
   const wrap = document.getElementById('transitionBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${t.emoji} ${t.label}</p><p class="layer-text" style="margin-top:8px;">${t.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${t.emoji} ${t.label}</p><p class="layer-text" style="margin-top:8px;">${t.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${t.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3493,7 +3505,7 @@ function showAmbitionDetail(i){
   const a = AMBITION_BANK[i];
   const wrap = document.getElementById('ambitionBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${a.emoji} ${a.label}</p><p class="layer-text" style="margin-top:8px;">${a.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${a.emoji} ${a.label}</p><p class="layer-text" style="margin-top:8px;">${a.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${a.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3579,7 +3591,7 @@ function revealFieldDiscoveryResult(){
     const wrap = document.getElementById('fieldDiscoveryBody');
     wrap.innerHTML = `
       <div class="layer-card l1" style="margin-top:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">محتاجين إجابة واحدة على الأقل من الاختيارات</p>
+        <p class="layer-title" style="color:var(--text);">محتاجين إجابة واحدة على الأقل من الاختيارات</p>
         <p class="layer-text" style="margin-top:8px;">كتبت كل إجاباتك بكلامك الحر، وده تمام، لكن مش هيكفي نحدد بيه نمطك — جرب تاني واختار من الاختيارات في سؤال واحد على الأقل.</p>
       </div>
       <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="restartFieldDiscovery()">🔄 حاول تاني</div>
@@ -3600,7 +3612,7 @@ function renderFieldDiscoveryResult(dominant){
   const wrap = document.getElementById('fieldDiscoveryBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${c.title}</p>
+      <p class="layer-title" style="color:var(--text);">${c.title}</p>
       <p class="layer-text" style="margin-top:8px;">${c.desc}</p>
     </div>
     <div class="layer-card l2">
@@ -3699,7 +3711,7 @@ function renderGrowthPlanResult(family, index, savedDate){
       <p class="layer-text" style="margin-top:6px;">مش لازم يكون فيه تغيير، لكن يستاهل تراجع: لسه في نفس المرحلة فعليًا، ولا الوقت جه تتقدم للي بعدها؟</p>
     </div>` : ''}
     <div class="layer-card l1" style="margin-top:${showReviewReminder ? '10px' : '14px'};">
-      <p class="layer-title" style="color:var(--navy-dark);">مرحلتك الحالية: ${current.title}</p>
+      <p class="layer-title" style="color:var(--text);">مرحلتك الحالية: ${current.title}</p>
       <p class="layer-text" style="margin-top:8px;">${current.desc}</p>
     </div>
     ${next ? `
@@ -3708,7 +3720,7 @@ function renderGrowthPlanResult(family, index, savedDate){
       <p class="layer-text" style="margin-top:8px;"><b>${next.title}</b> — ${next.desc}</p>
     </div>` : `
     <div class="layer-card l3">
-      <p class="layer-title" style="color:var(--navy-dark);">وصلت لأعلى مرحلة في المسار ده 🎉</p>
+      <p class="layer-title" style="color:var(--text);">وصلت لأعلى مرحلة في المسار ده 🎉</p>
       <p class="layer-text" style="margin-top:8px;">التركيز دلوقتي على الثبات والحفاظ على المكتسب، مش البحث عن مرحلة تانية بالضرورة.</p>
     </div>`}
     <div class="layer-card" style="background:var(--navy-dark);">
@@ -3747,7 +3759,7 @@ function showFirstStepDetail(i){
   const f = FIRST_STEP_BANK[i];
   const wrap = document.getElementById('firstStepBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${f.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -3786,7 +3798,7 @@ function showExecutivePrepDetail(i){
   const e = EXECUTIVE_PREP_BANK[i];
   const wrap = document.getElementById('executivePrepBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${e.emoji} ${e.label}</p><p class="layer-text" style="margin-top:8px;">${e.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${e.emoji} ${e.label}</p><p class="layer-text" style="margin-top:8px;">${e.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${e.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ الخطوات العملية</p>
@@ -3825,7 +3837,7 @@ function showBusinessPrepDetail(i){
   const b = BUSINESS_PREP_BANK[i];
   const wrap = document.getElementById('businessPrepBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${b.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ الخطوات العملية</p>
@@ -3855,19 +3867,19 @@ function openProfessionalReport(){
   if(log.length === 0){
     toneHtml = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">لسه ماحددتش أي هدف في الركن المهني</p>
+        <p class="layer-title" style="color:var(--text);">لسه ماحددتش أي هدف في الركن المهني</p>
         <p class="layer-text" style="margin-top:8px;">ابدأ بأي أداة في الركن، ولما توصل لخطوة عملية، حدد هدفك بالظبط وإمتى هتحققه — وهنا هنقدر نتابع معاك.</p>
       </div>`;
   } else if(didntWork > worked && didntWork >= 2){
     toneHtml = `
       <div class="layer-card l3">
-        <p class="layer-title" style="color:var(--navy-dark);">⚠️ ملاحظة تستاهل وقفة</p>
+        <p class="layer-title" style="color:var(--text);">⚠️ ملاحظة تستاهل وقفة</p>
         <p class="layer-text" style="margin-top:8px;">أكتر من هدف حددته قلت إنه «ماحصلش». ده مش فشل، لكنه مؤشر إن الأهداف كانت أكبر من اللي تقدر عليه دلوقتي، أو محتاجة صياغة أوضح. جرب المرة الجاية هدف أصغر بكتير وموعد أقرب.</p>
       </div>`;
   } else if(worked > 0 && worked >= didntWork){
     toneHtml = `
       <div class="layer-card l1" style="border-color:var(--gold);">
-        <p class="layer-title" style="color:var(--navy-dark);">✨ تقدم حقيقي وملموس</p>
+        <p class="layer-title" style="color:var(--text);">✨ تقدم حقيقي وملموس</p>
         <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
       </div>`;
   } else if(overdueUnresolved >= 2){
@@ -3879,7 +3891,7 @@ function openProfessionalReport(){
   } else {
     toneHtml = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">بداية كويسة</p>
+        <p class="layer-title" style="color:var(--text);">بداية كويسة</p>
         <p class="layer-text" style="margin-top:8px;">حددت ${log.length} هدف لحد دلوقتي — استمر وهنقدر نديك صورة أوضح عن تقدمك مع الوقت.</p>
       </div>`;
   }
@@ -3897,7 +3909,7 @@ function openProfessionalReport(){
 
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">ملخص سريع</p>
+      <p class="layer-title" style="color:var(--text);">ملخص سريع</p>
       <p class="layer-text" style="margin-top:8px;">🎯 أهداف حددتها: <b>${log.length}</b> &nbsp; | &nbsp; ✅ فرّقت: <b>${worked}</b> &nbsp; | &nbsp; 🔄 لسه بتجرب: <b>${trying}</b> &nbsp; | &nbsp; ⚠️ ماحصلتش: <b>${didntWork}</b></p>
       ${stillPending > 0 ? `<p class="layer-text" style="margin-top:6px; font-size:12px; color:var(--muted);">${stillPending} هدف لسه معاد متابعته ماجاش.</p>` : ''}
     </div>
@@ -4046,7 +4058,7 @@ function renderFinancialCircleResult(result, freeText){
   const weakestLink = getProphetLinkById(FINANCIAL_PROPHET_MAP[weakest], false);
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🗺️ أضعف نقطة مادية عندك دلوقتي</p>
+      <p class="layer-title" style="color:var(--text);">🗺️ أضعف نقطة مادية عندك دلوقتي</p>
       <p class="layer-text" style="margin-top:6px;">نقطة تركيز منطقية: <b>${FINANCIAL_CIRCLE_LABELS[weakest]}</b>${weakest === 'income' ? ' — وده فعليًا جذره في الركن المهني، مش الركن المادي نفسه.' : ''}</p>
     </div>
     ${Object.entries(result.scores).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
@@ -4102,7 +4114,7 @@ function showMoneyRelationshipDetail(i){
   const m = MONEY_RELATIONSHIP_BANK[i];
   const wrap = document.getElementById('moneyRelationshipBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${m.emoji} ${m.label}</p><p class="layer-text" style="margin-top:8px;">${m.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${m.emoji} ${m.label}</p><p class="layer-text" style="margin-top:8px;">${m.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${m.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4141,7 +4153,7 @@ function showBudgetDetail(i){
   const b = BUDGET_BANK[i];
   const wrap = document.getElementById('budgetBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
     ${b.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p><p class="layer-text" style="margin-top:8px;">${b.quran}</p></div>` : ''}
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4180,7 +4192,7 @@ function showDebtDetail(i){
   const d = DEBT_BANK[i];
   const wrap = document.getElementById('debtBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${d.emoji} ${d.label}</p><p class="layer-text" style="margin-top:8px;">${d.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${d.emoji} ${d.label}</p><p class="layer-text" style="margin-top:8px;">${d.psych}</p></div>
     ${d.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${d.quran}</p></div>` : ''}
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4219,7 +4231,7 @@ function showSavingsDetail(i){
   const s = SAVINGS_BANK[i];
   const wrap = document.getElementById('savingsBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p><p class="layer-text" style="margin-top:8px;">${s.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${s.emoji} ${s.label}</p><p class="layer-text" style="margin-top:8px;">${s.psych}</p></div>
     ${s.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${s.quran}</p></div>` : ''}
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4258,7 +4270,7 @@ function showGivingDetail(i){
   const g = GIVING_BANK[i];
   const wrap = document.getElementById('givingBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${g.emoji} ${g.label}</p><p class="layer-text" style="margin-top:8px;">${g.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${g.emoji} ${g.label}</p><p class="layer-text" style="margin-top:8px;">${g.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${g.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4297,7 +4309,7 @@ function showContentmentDetail(i){
   const c = CONTENTMENT_BANK[i];
   const wrap = document.getElementById('contentmentBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${c.emoji} ${c.label}</p><p class="layer-text" style="margin-top:8px;">${c.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${c.emoji} ${c.label}</p><p class="layer-text" style="margin-top:8px;">${c.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${c.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4326,19 +4338,19 @@ function openFinancialReport(){
   if(log.length === 0){
     toneHtml = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">لسه ماحددتش أي هدف في الركن المادي</p>
+        <p class="layer-title" style="color:var(--text);">لسه ماحددتش أي هدف في الركن المادي</p>
         <p class="layer-text" style="margin-top:8px;">ابدأ بأي أداة في الركن، ولما توصل لخطوة عملية، حدد هدفك بالظبط وإمتى هتحققه.</p>
       </div>`;
   } else if(didntWork > worked && didntWork >= 2){
     toneHtml = `
       <div class="layer-card l3">
-        <p class="layer-title" style="color:var(--navy-dark);">⚠️ ملاحظة تستاهل وقفة</p>
+        <p class="layer-title" style="color:var(--text);">⚠️ ملاحظة تستاهل وقفة</p>
         <p class="layer-text" style="margin-top:8px;">أكتر من هدف حددته قلت إنه «ماحصلش». جرب المرة الجاية هدف أصغر وأوضح، بميعاد أقرب.</p>
       </div>`;
   } else if(worked > 0 && worked >= didntWork){
     toneHtml = `
       <div class="layer-card l1" style="border-color:var(--gold);">
-        <p class="layer-title" style="color:var(--navy-dark);">✨ تقدم حقيقي وملموس</p>
+        <p class="layer-title" style="color:var(--text);">✨ تقدم حقيقي وملموس</p>
         <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
       </div>`;
   } else if(overdueUnresolved >= 2){
@@ -4350,7 +4362,7 @@ function openFinancialReport(){
   } else {
     toneHtml = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">بداية كويسة</p>
+        <p class="layer-title" style="color:var(--text);">بداية كويسة</p>
         <p class="layer-text" style="margin-top:8px;">حددت ${log.length} هدف لحد دلوقتي — استمر وهنقدر نديك صورة أوضح مع الوقت.</p>
       </div>`;
   }
@@ -4364,7 +4376,7 @@ function openFinancialReport(){
 
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">ملخص سريع</p>
+      <p class="layer-title" style="color:var(--text);">ملخص سريع</p>
       <p class="layer-text" style="margin-top:8px;">🎯 أهداف حددتها: <b>${log.length}</b> &nbsp; | &nbsp; ✅ فرّقت: <b>${worked}</b> &nbsp; | &nbsp; 🔄 لسه بتجرب: <b>${trying}</b> &nbsp; | &nbsp; ⚠️ ماحصلتش: <b>${didntWork}</b></p>
       ${stillPending > 0 ? `<p class="layer-text" style="margin-top:6px; font-size:12px; color:var(--muted);">${stillPending} هدف لسه معاد متابعته ماجاش.</p>` : ''}
     </div>
@@ -4499,7 +4511,7 @@ function renderHealthCircleResult(result, freeText){
   const weakestLink = getProphetLinkById(HEALTH_PROPHET_MAP[weakest], false);
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🗺️ أضعف نقطة صحية عندك دلوقتي</p>
+      <p class="layer-title" style="color:var(--text);">🗺️ أضعف نقطة صحية عندك دلوقتي</p>
       <p class="layer-text" style="margin-top:6px;">نقطة تركيز منطقية: <b>${HEALTH_CIRCLE_LABELS[weakest]}</b></p>
     </div>
     ${Object.entries(result.scores).sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
@@ -4554,7 +4566,7 @@ function showEatingDetail(i){
   const e = EATING_BANK[i];
   const wrap = document.getElementById('eatingBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${e.emoji} ${e.label}</p><p class="layer-text" style="margin-top:8px;">${e.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${e.emoji} ${e.label}</p><p class="layer-text" style="margin-top:8px;">${e.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p><p class="layer-text" style="margin-top:8px;">${e.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4592,7 +4604,7 @@ function showDoctorDetail(i){
   const d = DOCTOR_BANK[i];
   const wrap = document.getElementById('doctorBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${d.emoji} ${d.label}</p><p class="layer-text" style="margin-top:8px;">${d.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${d.emoji} ${d.label}</p><p class="layer-text" style="margin-top:8px;">${d.psych}</p></div>
     <div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p><p class="layer-text" style="margin-top:8px;">${d.quran}</p></div>
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4630,7 +4642,7 @@ function showSleepDetail(i){
   const s = SLEEP_BANK[i];
   const wrap = document.getElementById('sleepBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p><p class="layer-text" style="margin-top:8px;">${s.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${s.emoji} ${s.label}</p><p class="layer-text" style="margin-top:8px;">${s.psych}</p></div>
     ${s.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني</p><p class="layer-text" style="margin-top:8px;">${s.quran}</p></div>` : ''}
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4668,7 +4680,7 @@ function showMovementDetail(i){
   const m = MOVEMENT_BANK[i];
   const wrap = document.getElementById('movementBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${m.emoji} ${m.label}</p><p class="layer-text" style="margin-top:8px;">${m.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${m.emoji} ${m.label}</p><p class="layer-text" style="margin-top:8px;">${m.psych}</p></div>
     ${m.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور نبوي</p><p class="layer-text" style="margin-top:8px;">${m.quran}</p></div>` : ''}
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4706,7 +4718,7 @@ function showFatigueDetail(i){
   const f = FATIGUE_BANK[i];
   const wrap = document.getElementById('fatigueBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${f.emoji} ${f.label}</p><p class="layer-text" style="margin-top:8px;">${f.psych}</p></div>
     ${f.quran ? `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">📖 منظور قرآني ونبوي</p><p class="layer-text" style="margin-top:8px;">${f.quran}</p></div>` : ''}
     <div class="layer-card" style="background:var(--navy-dark);">
       <p class="layer-title" style="color:var(--gold);">✅ خطوة عملية دلوقتي</p>
@@ -4746,7 +4758,7 @@ function showBodySignalDetail(i){
   const b = BODY_SIGNAL_BANK[i];
   const wrap = document.getElementById('bodySignalsBody');
   wrap.innerHTML = `
-    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--navy-dark);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
+    <div class="layer-card l1" style="margin-top:14px;"><p class="layer-title" style="color:var(--text);">${b.emoji} ${b.label}</p><p class="layer-text" style="margin-top:8px;">${b.psych}</p></div>
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${b.linkFn}">${b.linkLabel}</div>
     <div class="layer-card l2" style="margin-top:14px;">
       <p class="layer-text" style="font-size:11.5px;">⚠️ لو العرض ده مستمر أو بيزيد أو حاسس إنه شديد، لازم يتابع مع طبيب فعليًا — الربط النفسي هنا مكمّل مش بديل عن الفحص الطبي.</p>
@@ -4797,7 +4809,7 @@ function openHealthReport(){
   if(doctorUnresolvedOrFailed >= 2){
     escalationHtml = `
       <div class="layer-card l3">
-        <p class="layer-title" style="color:var(--navy-dark);">🔔 لاحظنا نمط متكرر في تأجيل متابعة الطبيب</p>
+        <p class="layer-title" style="color:var(--text);">🔔 لاحظنا نمط متكرر في تأجيل متابعة الطبيب</p>
         <p class="layer-text" style="margin-top:8px;">حددت متابعة طبية أكتر من مرة ولسه مش بتتحقق فعليًا. ده وقت مناسب تاخد خطوة حاسمة بدل ما يتكرر.</p>
         <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.15); border-color:var(--gold);" onclick="startReport()">جهّز نفسك للزيارة دلوقتي ←</div>
       </div>`;
@@ -4820,19 +4832,19 @@ function openHealthReport(){
   if(log.length === 0){
     toneHtml = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">لسه ماحددتش أي هدف في الركن الصحي</p>
+        <p class="layer-title" style="color:var(--text);">لسه ماحددتش أي هدف في الركن الصحي</p>
         <p class="layer-text" style="margin-top:8px;">ابدأ بأي أداة في الركن، ولما توصل لخطوة عملية، حدد هدفك بالظبط وإمتى هتحققه.</p>
       </div>`;
   } else if(didntWork > worked && didntWork >= 2){
     toneHtml = `
       <div class="layer-card l3">
-        <p class="layer-title" style="color:var(--navy-dark);">⚠️ ملاحظة تستاهل وقفة</p>
+        <p class="layer-title" style="color:var(--text);">⚠️ ملاحظة تستاهل وقفة</p>
         <p class="layer-text" style="margin-top:8px;">أكتر من هدف حددته قلت إنه «ماحصلش». جرب المرة الجاية هدف أصغر وأوضح، بميعاد أقرب.</p>
       </div>`;
   } else if(worked > 0 && worked >= didntWork){
     toneHtml = `
       <div class="layer-card l1" style="border-color:var(--gold);">
-        <p class="layer-title" style="color:var(--navy-dark);">✨ تقدم حقيقي وملموس</p>
+        <p class="layer-title" style="color:var(--text);">✨ تقدم حقيقي وملموس</p>
         <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
       </div>`;
   } else if(overdueUnresolved >= 2){
@@ -4844,7 +4856,7 @@ function openHealthReport(){
   } else {
     toneHtml = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">بداية كويسة</p>
+        <p class="layer-title" style="color:var(--text);">بداية كويسة</p>
         <p class="layer-text" style="margin-top:8px;">حددت ${log.length} هدف لحد دلوقتي — استمر وهنقدر نديك صورة أوضح مع الوقت.</p>
       </div>`;
   }
@@ -4891,7 +4903,7 @@ function openHealthReport(){
       <p style="font-size:11px; color:var(--muted); margin-top:6px;">مستوى الطاقة المسجّل في كل يوم — كل عمود يوم.</p>
     </div>` : `
     <div class="layer-card l1">
-      <p class="layer-title" style="color:var(--navy-dark);">سجّل يومك في مرآتي اليومية</p>
+      <p class="layer-title" style="color:var(--text);">سجّل يومك في مرآتي اليومية</p>
       <p class="layer-text" style="margin-top:6px;">بتسجّل هناك مستوى طاقتك ونومك أصلًا — هنستخدم نفس البيانات هنا بدل ما تكررها في مكانين.</p>
       <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="openDaftarScreen()">روح لمرآتي اليومية (الركن الشخصي) ←</div>
     </div>`;
@@ -4901,7 +4913,7 @@ function openHealthReport(){
   wrap.innerHTML = `
     ${journalTrendHtml}
     <div class="layer-card l2" style="margin-top:10px;">
-      <p class="layer-title" style="color:var(--navy-dark);">ملخص سريع</p>
+      <p class="layer-title" style="color:var(--text);">ملخص سريع</p>
       <p class="layer-text" style="margin-top:8px;">🎯 أهداف حددتها: <b>${log.length}</b> &nbsp; | &nbsp; ✅ فرّقت: <b>${worked}</b> &nbsp; | &nbsp; 🔄 لسه بتجرب: <b>${trying}</b> &nbsp; | &nbsp; ⚠️ ماحصلتش: <b>${didntWork}</b></p>
       ${stillPending > 0 ? `<p class="layer-text" style="margin-top:6px; font-size:12px; color:var(--muted);">${stillPending} هدف لسه معاد متابعته ماجاش.</p>` : ''}
     </div>
@@ -5035,11 +5047,11 @@ function openSocialReport(){
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${rahmCount}</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--text);">${rahmCount}</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة تواصلت مع رحم</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckCount}</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--text);">${relcheckCount}</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة قيّمت صحبتك</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
@@ -5218,7 +5230,7 @@ function renderFamilyCircleResult(result, freeText){
   if(entries.length === 0){
     wrap.innerHTML = `
       <div class="layer-card l1" style="margin-top:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">🌱 كل العلاقات دي مش منطبقة عليك دلوقتي</p>
+        <p class="layer-title" style="color:var(--text);">🌱 كل العلاقات دي مش منطبقة عليك دلوقتي</p>
         <p class="layer-text" style="margin-top:6px;">ما فيش داعي تقلق — ركّز بس على «علاقتك بالأب والأم» و«الإخوة» لو منطبقة، هي الأساس دايمًا.</p>
       </div>
       <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="restartFamilyCircleAssessment()">🔄 أعد التقييم</div>
@@ -5232,7 +5244,7 @@ function renderFamilyCircleResult(result, freeText){
   const weakestLink = getProphetLinkById(FAMILY_CIRCLE_PROPHET_MAP[weakest], false);
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🗺️ أضعف علاقة عائلية عندك دلوقتي</p>
+      <p class="layer-title" style="color:var(--text);">🗺️ أضعف علاقة عائلية عندك دلوقتي</p>
       <p class="layer-text" style="margin-top:6px;">دي مش حكم نهائي، لكن نقطة تركيز منطقية: <b>${FAMILY_CIRCLE_LABELS[weakest]}</b></p>
     </div>
     ${entries.sort((a,b)=>b[1]-a[1]).map(([circle,val]) => `
@@ -5350,7 +5362,7 @@ function showSpouseDetail(i){
   const wrap = document.getElementById('spouseBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p>
+      <p class="layer-title" style="color:var(--text);">${s.emoji} ${s.label}</p>
       <p class="layer-text" style="margin-top:8px;">${s.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -5398,7 +5410,7 @@ function showChildDetail(i){
   const wrap = document.getElementById('childrenBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${c.emoji} ${c.label}</p>
+      <p class="layer-title" style="color:var(--text);">${c.emoji} ${c.label}</p>
       <p class="layer-text" style="margin-top:8px;">${c.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -5446,7 +5458,7 @@ function showSiblingDetail(i){
   const wrap = document.getElementById('siblingsBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${s.emoji} ${s.label}</p>
+      <p class="layer-title" style="color:var(--text);">${s.emoji} ${s.label}</p>
       <p class="layer-text" style="margin-top:8px;">${s.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -5493,7 +5505,7 @@ function showExtendedFamilyDetail(i){
   const wrap = document.getElementById('extendedFamilyBody');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${e.emoji} ${e.label}</p>
+      <p class="layer-title" style="color:var(--text);">${e.emoji} ${e.label}</p>
       <p class="layer-text" style="margin-top:8px;">${e.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -5538,11 +5550,11 @@ function openFamilyReport(){
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${woundDone ? '✓' : '—'}</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--text);">${woundDone ? '✓' : '—'}</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">حللت جرح الأبوين</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${relcheckCount}</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--text);">${relcheckCount}</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">مرة قيّمت شريك حياتك</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
@@ -5638,7 +5650,7 @@ function goToPillar(id){
       ${renderSpiritualDashboard()}
       ${spiritualTools.map((t,idx) => `
         <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===spiritStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-          ${idx===spiritStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:12px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+          ${idx===spiritStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:12px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
           <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
           <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
           <div class="arrow" style="color:#fff;">‹</div>
@@ -5659,7 +5671,7 @@ function goToPillar(id){
     const familyStartIdx = firstUntriedIndex(familyTools);
     body.innerHTML = renderFamilyEnvironmentCard() + familyTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===familyStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-        ${idx===familyStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        ${idx===familyStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -5679,7 +5691,7 @@ function goToPillar(id){
     const socialStartIdx = firstUntriedIndex(socialTools);
     body.innerHTML = renderSocialSummaryCard() + socialTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===socialStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-        ${idx===socialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        ${idx===socialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -5703,7 +5715,7 @@ function goToPillar(id){
       <p style="font-size:12.5px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">الركن ده بيركّز على علاقتك النفسية بالفلوس ومبادئ عامة للتعامل معاها — مش استشارة استثمارية. لزيادة دخلك نفسه، شوف الركن المهني.</p>
       ${financialTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===financialStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-        ${idx===financialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        ${idx===financialStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -5726,7 +5738,7 @@ function goToPillar(id){
       <p style="font-size:12.5px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">الركن ده بيركّز على علاقتك النفسية بجسدك وصحتك — مش تشخيص طبي ولا نظام غذائي. أي قلق صحي حقيقي، المتخصص هو المرجع.</p>
       ${healthTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===healthStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-        ${idx===healthStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        ${idx===healthStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -5747,7 +5759,7 @@ function goToPillar(id){
     const personalStartIdx = firstUntriedIndex(personalTools);
     body.innerHTML = renderPersonalDashboard() + personalTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===personalStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
-        ${idx===personalStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--navy-dark); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
+        ${idx===personalStartIdx ? `<span style="position:absolute; top:-9px; right:14px; background:var(--gold); color:var(--text); font-size:10px; font-weight:700; padding:2px 10px; border-radius:10px;">✨ ابدأ من هنا</span>` : ''}
         <div class="icon-circle" style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.5);">${t.icon}</div>
         <div><div class="card-title" style="color:#fff;">${t.title}</div><div class="card-sub" style="color:rgba(255,255,255,.85);">${t.sub}</div></div>
         <div class="arrow" style="color:#fff;">‹</div>
@@ -6071,7 +6083,7 @@ function renderWhoIsAllahContent(dominant){
     </div>
 
     <div class="layer-card l3" style="text-align:center; padding:22px 16px;">
-      <p style="font-size:18px; font-weight:700; color:var(--navy-dark); line-height:2; margin:0;">﴿اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ ۚ مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ ۖ الْمِصْبَاحُ فِي زُجَاجَةٍ ۖ الزُّجَاجَةُ كَأَنَّهَا كَوْكَبٌ دُرِّيٌّ يُوقَدُ مِن شَجَرَةٍ مُّبَارَكَةٍ زَيْتُونَةٍ لَّا شَرْقِيَّةٍ وَلَا غَرْبِيَّةٍ يَكَادُ زَيْتُهَا يُضِيءُ وَلَوْ لَمْ تَمْسَسْهُ نَارٌ ۚ نُّورٌ عَلَىٰ نُورٍ ۗ يَهْدِي اللَّهُ لِنُورِهِ مَن يَشَاءُ﴾</p>
+      <p style="font-size:18px; font-weight:700; color:var(--text); line-height:2; margin:0;">﴿اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ ۚ مَثَلُ نُورِهِ كَمِشْكَاةٍ فِيهَا مِصْبَاحٌ ۖ الْمِصْبَاحُ فِي زُجَاجَةٍ ۖ الزُّجَاجَةُ كَأَنَّهَا كَوْكَبٌ دُرِّيٌّ يُوقَدُ مِن شَجَرَةٍ مُّبَارَكَةٍ زَيْتُونَةٍ لَّا شَرْقِيَّةٍ وَلَا غَرْبِيَّةٍ يَكَادُ زَيْتُهَا يُضِيءُ وَلَوْ لَمْ تَمْسَسْهُ نَارٌ ۚ نُّورٌ عَلَىٰ نُورٍ ۗ يَهْدِي اللَّهُ لِنُورِهِ مَن يَشَاءُ﴾</p>
       <p style="font-size:13px; color:var(--muted); margin-top:10px;">سورة النور ٣٥</p>
     </div>
     <p style="font-size:14px; color:var(--muted); margin:10px 0 20px; line-height:1.7;">ربنا وصف نفسه بالنور — مش ظلمة ولا رعب ولا بُعد. النور بيهدي ومريح ومرشد للطريق، مش بيعاقب أو يخوّف. لو صورتك عن ربنا مليانة ظلمة أو خوف بس، الآية دي نقطة بداية تصحيح.</p>
@@ -6187,11 +6199,11 @@ function showAsmaDetail(i){
   const body = document.getElementById('asmaBody');
   body.innerHTML = `
     <div class="layer-card l3" style="text-align:center; padding:20px 16px;">
-      <p style="font-size:24px; font-weight:700; color:var(--navy-dark); margin:0;">${a.name}</p>
+      <p style="font-size:24px; font-weight:700; color:var(--text); margin:0;">${a.name}</p>
       ${a.note ? `<p style="font-size:12px; color:var(--muted); margin-top:6px;">${a.note}</p>` : ''}
     </div>
     <div class="layer-card l1">
-      <p class="layer-title" style="color:var(--navy-dark);">📖 المعنى</p>
+      <p class="layer-title" style="color:var(--text);">📖 المعنى</p>
       <p class="layer-text" style="margin-top:6px;">${a.meaning}</p>
     </div>
     <div class="layer-card l2">
@@ -6313,7 +6325,7 @@ async function analyzeRabbekText(){
     const c = CLOSENESS_BANK[matchedIndex];
     result.innerHTML = `
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">${c.emoji} أقرب حاجة لكلامك: ${c.label}</p>
+        <p class="layer-title" style="color:var(--text);">${c.emoji} أقرب حاجة لكلامك: ${c.label}</p>
         <p class="layer-text" style="margin-top:8px;">${c.psych}</p>
       </div>
       <div class="layer-card l2">
@@ -6360,7 +6372,7 @@ function showClosenessDetail(i){
   const body = document.getElementById('rabbekBody');
   body.innerHTML = `
     <div class="layer-card l1">
-      <p class="layer-title" style="color:var(--navy-dark);">${c.emoji} ${c.label}</p>
+      <p class="layer-title" style="color:var(--text);">${c.emoji} ${c.label}</p>
       <p class="layer-text" style="margin-top:8px;">${c.psych}</p>
     </div>
     <div class="layer-card l2">
@@ -6558,19 +6570,19 @@ async function openSpiritualReport(){
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${consistency30 !== null ? consistency30 + '٪' : '—'}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${consistency30 !== null ? consistency30 + '٪' : '—'}</p>
         <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">انتظام العبادة (٣٠ يوم)</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${tawbaLog.length}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${tawbaLog.length}</p>
         <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">مرات التوبة والعودة</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${readProphets}/22</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${readProphets}/22</p>
         <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">قصص أنبياء قريتها</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--navy-dark);">${readAsma}/${ASMA_ALLAH_BANK.length}</p>
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${readAsma}/${ASMA_ALLAH_BANK.length}</p>
         <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">أسماء الله قريتها</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
@@ -6645,8 +6657,8 @@ async function openWorshipInsights(){
     correlationHtml = `
       <div class="card">
         <p class="card-title" style="margin-bottom:10px;">📊 لاحظنا نمط في بياناتك</p>
-        <p class="layer-text">الأيام اللي صليت فيها ٤ صلوات أو أكتر، متوسط مزاجك كان <b style="color:var(--navy-dark);">${avgHigh} من ٥</b></p>
-        <p class="layer-text" style="margin-top:6px;">الأيام اللي صليت فيها ٣ صلوات أو أقل، متوسط مزاجك كان <b style="color:var(--navy-dark);">${avgLow} من ٥</b></p>
+        <p class="layer-text">الأيام اللي صليت فيها ٤ صلوات أو أكتر، متوسط مزاجك كان <b style="color:var(--text);">${avgHigh} من ٥</b></p>
+        <p class="layer-text" style="margin-top:6px;">الأيام اللي صليت فيها ٣ صلوات أو أقل، متوسط مزاجك كان <b style="color:var(--text);">${avgLow} من ٥</b></p>
         <p style="font-size:13px; color:var(--muted); margin-top:10px;">ده نمط لاحظناه في بياناتك إنت تحديدًا، مش قاعدة عامة — يستاهل تلاحظه بنفسك وتفكّر فيه.</p>
       </div>`;
   } else {
@@ -6660,7 +6672,7 @@ async function openWorshipInsights(){
   body.innerHTML = `
     <div class="card" style="text-align:center;">
       <p style="font-size:13px; color:var(--muted); margin:0 0 6px;">مؤشر انتظامك الروحاني (آخر ٣٠ يوم)</p>
-      <p style="font-size:38px; font-weight:700; color:var(--navy-dark); margin:0;">${consistencyPct}٪</p>
+      <p style="font-size:38px; font-weight:700; color:var(--text); margin:0;">${consistencyPct}٪</p>
       <div style="height:6px; background:var(--sand); border-radius:3px; margin-top:10px;">
         <div style="width:${consistencyPct}%; height:100%; background:var(--gold); border-radius:3px;"></div>
       </div>
@@ -6858,7 +6870,7 @@ async function saveTawba(){
     const c = CLOSENESS_BANK[matchedIndex];
     matchedHtml = `
       <div class="layer-card l1" style="margin-top:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">${c.emoji} أقرب حاجة لكلامك: ${c.label}</p>
+        <p class="layer-title" style="color:var(--text);">${c.emoji} أقرب حاجة لكلامك: ${c.label}</p>
         <p class="layer-text" style="margin-top:8px;">${c.action}</p>
       </div>`;
 
@@ -6875,7 +6887,7 @@ async function saveTawba(){
     // ---------- تنبيه لطيف لو نفس النمط تكرر 3 مرات أو أكتر ----------
     if(repeatCount >= 3){
       matchedHtml += `
-        <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-top:14px;">
+        <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-top:14px;">
           <p style="font-size:14px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن "${c.label}" رجع معاك كذا مرة قريّب من بعض. ده مش انتقاد، لكن أحيانًا النمط المتكرر محتاج مساحة أعمق نتكلم فيها — تحب تحكي عن اللي بيحصل بالتفصيل؟</p>
           <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startEhkily()">احكيلي عن اللي بيحصل ←</div>
         </div>`;
@@ -6887,7 +6899,7 @@ async function saveTawba(){
     ${prophetHtml}
     <div class="layer-card l3" style="text-align:center; padding:20px 16px; margin-top:14px;">
       <p style="font-size:13px; color:var(--muted); margin:0 0 8px;">استغفارك دلوقتي</p>
-      <p style="font-size:18px; font-weight:700; color:var(--navy-dark); line-height:1.9; margin:0;">أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ</p>
+      <p style="font-size:18px; font-weight:700; color:var(--text); line-height:1.9; margin:0;">أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ</p>
     </div>
     <div style="display:flex; gap:8px; margin-top:14px;">
       <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="openWorshipScreen()">سجّل استغفار/قيام في عباداتك ←</div>
@@ -6928,7 +6940,7 @@ function showFlashDetail(id){
   const mentionsSpecialist = f.script.includes('المختص') || f.script.includes('مختص');
   wrap.innerHTML = `
     <div class="layer-card l3">
-      <p class="layer-title" style="color:var(--navy-dark);">✨ ${f.title}</p>
+      <p class="layer-title" style="color:var(--text);">✨ ${f.title}</p>
       <p class="layer-text" style="margin-top:8px;">${f.script}</p>
       <p style="font-size:13px; color:var(--muted); margin-top:8px;">${f.ref}</p>
     </div>
@@ -7103,7 +7115,7 @@ function showSelfDimensionDetail(i){
   const wrap = document.getElementById('selfDimensionDetailWrap');
   wrap.innerHTML = `
     <div class="layer-card l1" style="margin-top:10px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${d.icon} ${d.title}</p>
+      <p class="layer-title" style="color:var(--text);">${d.icon} ${d.title}</p>
       <p class="layer-text" style="margin-top:6px;"><b>التعريف:</b> ${d.def}</p>
       <p class="layer-text" style="margin-top:6px;"><b>الأثر النفسي:</b> ${d.psych}</p>
     </div>
@@ -7186,7 +7198,7 @@ function renderMbtiResult(type){
   wrap.innerHTML = `
     <div class="layer-card l3" style="text-align:center; padding:18px 16px;">
       <p style="font-size:11px; color:var(--muted); margin:0 0 6px;">نمط شخصيتك</p>
-      <p style="font-size:22px; font-weight:700; color:var(--navy-dark); margin:0;">${type}</p>
+      <p style="font-size:22px; font-weight:700; color:var(--text); margin:0;">${type}</p>
       <p style="font-size:13px; color:var(--text); margin-top:4px;">${t.name}</p>
     </div>
     <div class="layer-card l1">
@@ -7224,7 +7236,7 @@ function computeCombinedInsightHtml(){
   return `
     <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0;"></div>
     <div class="layer-card l3">
-      <p class="layer-title" style="color:var(--navy-dark);">🔗 خلاصة تجمع الاتنين</p>
+      <p class="layer-title" style="color:var(--text);">🔗 خلاصة تجمع الاتنين</p>
       <p class="layer-text" style="margin-top:6px;">معرفتك بنفسك ${stateLabel}، ونمط شخصيتك ${mbtiType} (${t.name}). ${bridgeText}</p>
     </div>`;
 }
@@ -7382,7 +7394,7 @@ function renderProphetLinkCard(entry, positive){
   if(positive){
     return `
       <div class="layer-card l1" style="border-color:var(--gold);">
-        <p class="layer-title" style="color:var(--navy-dark);">✨ إجابتك قريبة من هدي نبوي حقيقي</p>
+        <p class="layer-title" style="color:var(--text);">✨ إجابتك قريبة من هدي نبوي حقيقي</p>
         <p class="layer-text" style="margin-top:8px; font-weight:700;">${entry.encourageMsg}</p>
       </div>
       <div style="display:flex; flex-direction:column; gap:8px; margin:10px 0;">
@@ -7579,7 +7591,7 @@ function renderWoundResult(result, freeText){
   if(!showMom && !showDad){
     html += `
       <div class="layer-card l3">
-        <p class="layer-title" style="color:var(--navy-dark);">🌱 فطرتك في المنطقة دي سليمة إلى حد كبير</p>
+        <p class="layer-title" style="color:var(--text);">🌱 فطرتك في المنطقة دي سليمة إلى حد كبير</p>
         <p class="layer-text" style="margin-top:6px;">إجاباتك بتقول إن علاقتك بأبويك كانت مصدر أمان غالبًا، مش جرح. «لا تبديل لخلق الله» — استمر تراقب نفسك، ده مش معناه إنك في مأمن دايمًا من التكرار في علاقاتك.</p>
       </div>`;
     html += renderProphetLinkCard(getProphetLinkById('positive_parent_love', true), true);
@@ -7593,15 +7605,15 @@ function renderWoundResult(result, freeText){
         <p class="layer-text" style="margin-top:6px;">${c.def}</p>
       </div>
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">أثره على سلوكك غالبًا</p>
+        <p class="layer-title" style="color:var(--text);">أثره على سلوكك غالبًا</p>
         <p class="layer-text" style="margin-top:6px;">${c.behavior}</p>
       </div>
       <div class="layer-card l1">
-        <p class="layer-title" style="color:var(--navy-dark);">انجذابك من غير وعي</p>
+        <p class="layer-title" style="color:var(--text);">انجذابك من غير وعي</p>
         <p class="layer-text" style="margin-top:6px;">${c.attraction}</p>
       </div>
       <div class="layer-card l3">
-        <p class="layer-title" style="color:var(--navy-dark);">نمط الارتباط الأقرب لك</p>
+        <p class="layer-title" style="color:var(--text);">نمط الارتباط الأقرب لك</p>
         <p class="layer-text" style="margin-top:6px;">${c.attachment}</p>
       </div>`;
     html += renderProphetLinkCard(getProphetLinkById(key === 'mom' ? 'jarh_alom' : 'jarh_alab', false), false);
@@ -7614,8 +7626,8 @@ function renderWoundResult(result, freeText){
     `;
   }
   html += `
-    <div class="layer-card l2" style="margin-top:10px; background:#E6F0EE; border-color:#C7DED9;">
-      <p class="layer-title" style="color:var(--navy-dark);">✨ خطوة الشفاء الأولى</p>
+    <div class="layer-card l2" style="margin-top:10px; background:var(--layer-l3-bg); border-color:var(--layer-l3-border);">
+      <p class="layer-title" style="color:var(--text);">✨ خطوة الشفاء الأولى</p>
       <p class="layer-text" style="margin-top:6px;">التسمية مش اتهام، هي تشخيص. جرب دلوقتي تكمّل الجملة: «أنا لاحظت إني بميل لـ...» — والخطوة اللي بعدها المحاسبة من غير جلد للذات، وبعدين مسامحة الأبوين: «أنا فاهم إنكم اتصرفتوا من مكان جرحكم إنتوا، وأنا مش هسيب جرحكم يبقى جرحي طول عمري».</p>
       <p style="font-size:10.5px; color:var(--muted); margin:8px 0 0;">الجرح مش هويتك. الجرح طبقة اتحطت فوق فطرة سليمة، وممكن تتشال.</p>
     </div>
@@ -7769,7 +7781,7 @@ function revealDarkTriadResult(){
   const dtFreeMatch = dtFreeText ? matchProphetLink(dtFreeText, false) : null;
   wrap.innerHTML = `
     <div class="layer-card ${cardClass}" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">${darkTriadPersonName ? 'بخصوص: ' + darkTriadPersonName : 'نتيجة التقييم'}</p>
+      <p class="layer-title" style="color:var(--text);">${darkTriadPersonName ? 'بخصوص: ' + darkTriadPersonName : 'نتيجة التقييم'}</p>
       <p class="layer-text" style="margin-top:6px; font-weight:700;">${level}</p>
       <p class="layer-text" style="margin-top:6px;">${text}</p>
     </div>
@@ -7888,7 +7900,7 @@ function renderHealingChallenge(){
   }).join('');
   const celebrationHtml = progress.length >= totalHealingDays ? `
     <div class="layer-card l3" style="text-align:center; margin-bottom:14px;">
-      <p style="font-size:15px; font-weight:700; color:var(--navy-dark); margin:0 0 6px;">🎉 ما شاء الله — خلّصت الرحلة كاملة!</p>
+      <p style="font-size:15px; font-weight:700; color:var(--text); margin:0 0 6px;">🎉 ما شاء الله — خلّصت الرحلة كاملة!</p>
       <p class="layer-text">قطعت الـ٣٠ يوم كلهم من التسمية للمسامحة للاختيار الواعي. الشفاء مش نقطة نهاية، هو مسار بترجع فيه لورا أحيانًا لكن بتفضل ماشي — رجّع نظرة على أي يوم وقتما حبيت.</p>
     </div>` : '';
   wrap.innerHTML = `
@@ -7934,7 +7946,7 @@ async function analyzeSelfKnowText(){
     const p = MERAT_PATTERNS.find(x => x.id === matchedId);
     result.innerHTML = `
       <div class="layer-card l1" style="margin-top:14px;">
-        <p class="layer-title" style="color:var(--navy-dark);">أقرب نمط لكلامك</p>
+        <p class="layer-title" style="color:var(--text);">أقرب نمط لكلامك</p>
         <p class="layer-text" style="margin-top:8px;">${p.psych}</p>
       </div>
       <div class="choice-btn" style="text-align:center;" onclick="openMeratPattern('${matchedId}')">شوف التحليل الكامل في مرآة العقل ←</div>${buildWoundSuggestionHtml(woundKey)}`;
@@ -8033,7 +8045,7 @@ function renderPersonalDashboard(){
   let alertHtml = '';
   if(consistency !== null && previousConsistency !== null && (previousConsistency - consistency) >= 25){
     alertHtml = `
-      <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; margin-bottom:10px;">
+      <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-bottom:10px;">
         <p style="font-size:13px; color:var(--text); line-height:1.7; margin:0;">لاحظنا إن متابعتك لمزاجك نزلت من <b>${previousConsistency}٪</b> لـ<b>${consistency}٪</b> الأسبوع ده. مفيش لوم، بس يستاهل تسأل نفسك: فيه حاجة تغيّرت؟</p>
         <div style="display:flex; gap:8px; margin-top:10px;">
           <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="showScreen('screen-daftar');">مرآتي اليومية</div>
@@ -8096,11 +8108,11 @@ async function openPersonalReport(){
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${moodEntries.length}</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--text);">${moodEntries.length}</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">تسجيلات مزاج</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
-        <p style="font-size:22px; font-weight:700; margin:0; color:var(--navy-dark);">${moodStreak}</p>
+        <p style="font-size:22px; font-weight:700; margin:0; color:var(--text);">${moodStreak}</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">يوم متتالي من المتابعة</p>
       </div>
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2; background:var(--navy-dark);">
@@ -8109,7 +8121,7 @@ async function openPersonalReport(){
       </div>
       ${healingCount > 0 ? `
       <div class="card" style="text-align:center; margin:0; grid-column: 1 / span 2;">
-        <p style="font-size:20px; font-weight:700; margin:0; color:var(--navy-dark);">${healingCount} / ٣٠</p>
+        <p style="font-size:20px; font-weight:700; margin:0; color:var(--text);">${healingCount} / ٣٠</p>
         <p style="font-size:10.5px; color:var(--muted); margin:4px 0 0;">📆 تقدمك في تحدي الشفاء</p>
       </div>` : ''}
     </div>
@@ -8177,7 +8189,7 @@ function openJourneyScreen(){
   body.innerHTML = `
     <p style="font-size:11px; color:var(--muted); margin-bottom:4px;">مبنية على ترتيب نزول القرآن كرحلة نفسية-تربوية (مرجع: بوصلة التسليم وعلم النفس القرآني)</p>
     <div class="card" style="text-align:center; margin-bottom:16px;">
-      <p style="font-size:26px; font-weight:700; color:var(--navy-dark); margin:0;">${doneCount}/${stages.length}</p>
+      <p style="font-size:26px; font-weight:700; color:var(--text); margin:0;">${doneCount}/${stages.length}</p>
       <p style="font-size:11px; color:var(--muted); margin:4px 0 0;">مراحل قطعتها في الرحلة</p>
     </div>
 
@@ -8197,7 +8209,7 @@ function openJourneyScreen(){
     <p style="font-size:13px; font-weight:700; margin-bottom:10px;">خط الرحلة الكامل</p>
     ${stages.map((s,i) => `
       <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #F0EDE2;">
-        <div style="width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; ${s.done ? 'background:var(--gold); color:var(--navy-dark);' : i === currentIndex ? 'border:2px solid var(--gold); color:var(--gold);' : 'background:var(--sand); color:var(--muted);'}">${s.done ? '✓' : (i+1)}</div>
+        <div style="width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; ${s.done ? 'background:var(--gold); color:var(--text);' : i === currentIndex ? 'border:2px solid var(--gold); color:var(--gold);' : 'background:var(--sand); color:var(--muted);'}">${s.done ? '✓' : (i+1)}</div>
         <div style="flex:1;">
           <p style="font-size:13px; font-weight:700; margin:0; color:${s.done ? 'var(--navy-dark)' : 'var(--muted)'};">${s.key} — ${s.label}</p>
         </div>
@@ -8345,7 +8357,7 @@ function renderCompassResult(result, stages, currentIndex, previous){
   }
   wrap.innerHTML = `
     <div class="layer-card l2" style="margin-top:14px;">
-      <p class="layer-title" style="color:var(--navy-dark);">🧭 ابدأ من هنا</p>
+      <p class="layer-title" style="color:var(--text);">🧭 ابدأ من هنا</p>
       <p class="layer-text" style="margin-top:8px; font-size:16px; font-weight:700;">${tool.pillarName} — ${tool.label}</p>
       ${stageInfo ? `<p class="layer-text" style="margin-top:8px;">وده هيقدّمك خطوة في رحلتك النفسية كمان: إنت واقف عند مرحلة «${stageInfo.key} — ${stageInfo.label}».</p>` : `<p class="layer-text" style="margin-top:8px;">وقطعت كل المراحل المتاحة حاليًا في رحلتك النفسية 🎉</p>`}
       ${comparisonHtml}
@@ -9037,12 +9049,12 @@ function showMeratResult(id){
   const body = document.getElementById('meratBody');
   body.innerHTML = `
     <div class="layer-card l1">
-      <p class="layer-title" style="color:var(--navy-dark);">🧠 الوصف النفسي</p>
+      <p class="layer-title" style="color:var(--text);">🧠 الوصف النفسي</p>
       <p class="layer-text">${p.psych}</p>
     </div>
     ${p.causes ? `
     <div class="layer-card" style="background:#F2EEE3; border:1px solid #E4DFCF;">
-      <p class="layer-title" style="color:var(--navy-dark);">🔍 الأسباب المحتملة</p>
+      <p class="layer-title" style="color:var(--text);">🔍 الأسباب المحتملة</p>
       <ul style="margin:4px 0 0; padding-right:18px;">
         ${p.causes.map(c => `<li class="layer-text" style="margin-bottom:4px;">${c}</li>`).join('')}
       </ul>
@@ -9524,7 +9536,7 @@ function renderStickyNotes(targetId, limit){
   if(!wrap) return;
   if(notes.length === 0){ wrap.innerHTML = ''; return; }
   wrap.innerHTML = notes.slice(0, limit || 10).map(n => `
-    <div class="card" style="background:#FBF3E3; border-color:#EFDBAE; padding:10px 14px; margin-bottom:6px;">
+    <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); padding:10px 14px; margin-bottom:6px;">
       <p style="font-size:13px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
       <p style="font-size:15px; color:var(--text); margin:0;">${n.text}</p>
     </div>`).join('');
@@ -9608,7 +9620,7 @@ function renderTaskCalendar(){
     const isToday = key === todayKey;
     const isSelected = key === selectedKey;
     let style = 'text-align:center; padding:6px 0; border-radius:8px; cursor:pointer; font-size:14px; position:relative;';
-    if(isSelected) style += 'background:var(--gold); color:var(--navy-dark); font-weight:700;';
+    if(isSelected) style += 'background:var(--gold); color:var(--text); font-weight:700;';
     else if(isToday) style += 'border:1px solid var(--gold); color:var(--text);';
     else style += 'color:var(--text);';
     const dot = hasTasks ? `<div style="width:4px; height:4px; border-radius:50%; background:${isSelected ? 'var(--navy-dark)' : 'var(--gold)'}; margin:2px auto 0;"></div>` : '';
@@ -9650,7 +9662,7 @@ function renderTaskList(){
   }
   wrap.innerHTML = tasks.map(t => `
     <div class="card" style="display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:8px;">
-      <div onclick="toggleTaskDone('${t.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:15px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <div onclick="toggleTaskDone('${t.id}')" style="width:24px; height:24px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:15px; color:var(--text); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
       <div style="flex:1;">
         <p style="font-size:15px; font-weight:600; margin:0; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
         ${t.time ? `<p style="font-size:13px; color:var(--muted); margin:2px 0 0;">🕐 ${t.time}</p>` : ''}
@@ -9701,7 +9713,7 @@ function renderHomeTasksPreview(){
   }
   wrap.innerHTML = tasks.map(t => `
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #F0EDE2;">
-      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--text); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
       <p style="font-size:14px; margin:0; flex:1; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
       ${t.time ? `<span style="font-size:12px; color:var(--muted);">🕐 ${t.time}</span>` : ''}
     </div>`).join('');
@@ -9928,7 +9940,7 @@ async function loadFullHistory(){
       <p class="card-title" style="margin-bottom:8px;">📅 سنة ${y}</p>
       ${Object.keys(tree[y]).sort((a,b) => b - a).map(m => `
         <div style="margin-bottom:8px; padding-right:8px; border-right:2px solid #EFDBAE;">
-          <p style="font-size:15px; font-weight:600; color:var(--navy-dark); margin:6px 0;">${ARABIC_MONTHS[m]}</p>
+          <p style="font-size:15px; font-weight:600; color:var(--text); margin:6px 0;">${ARABIC_MONTHS[m]}</p>
           ${Object.keys(tree[y][m]).sort((a,b) => b - a).map(day => `
             <div style="margin-bottom:6px; padding-right:8px;">
               <p style="font-size:14px; font-weight:600; color:var(--muted); margin:0 0 4px;">يوم ${day}</p>
