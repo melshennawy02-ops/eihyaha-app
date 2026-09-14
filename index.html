@@ -210,6 +210,15 @@
         <div style="font-size:19px; color:var(--gold);">‹</div>
       </div>
 
+      <div class="quick-help-card" onclick="openSpecialistsDirectory()" style="margin-top:8px;">
+        <div class="icon-circle" style="width:38px; height:38px; font-size:20px;">🧑‍⚕️</div>
+        <div style="flex:1;">
+          <p style="font-size:15px; font-weight:700; margin:0;">مين المختص المناسب ليك؟</p>
+          <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">لايف كوتش، استشاري نفسي، أو دكتور نفسي — إيه الفرق؟</p>
+        </div>
+        <div style="font-size:19px; color:var(--gold);">‹</div>
+      </div>
+
       <p class="section-title">كيف حالك اليوم؟</p>
       <p class="section-sub">اختر حالتك المزاجية لنمنحك تجربة مناسبة لك</p>
       <div class="mood-row" id="moodRow">
@@ -876,6 +885,26 @@
     <div style="padding:0 16px;" id="bodySignalsBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: SPECIALISTS DIRECTORY (مين المختص المناسب ليك؟) ===================== -->
+  <div class="screen" id="screen-specialists-directory">
+    <div class="topbar">
+      <div class="backbtn" onclick="goHome()">→</div>
+      <h1>مين المختص المناسب ليك؟</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="specialistsDirectoryBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SPECIALISTS BY CATEGORY ===================== -->
+  <div class="screen" id="screen-specialists-browse">
+    <div class="topbar">
+      <div class="backbtn" onclick="openSpecialistsDirectory()">→</div>
+      <h1 id="specialistsBrowseTitle">المتخصصون</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="specialistsBrowseBody"></div>
+  </div>
+
 
   <!-- ===================== SCREEN: QURANIC JOURNEY (أين أنت في الرحلة؟) ===================== -->
   <div class="screen" id="screen-journey">
@@ -1406,6 +1435,88 @@ async function loadPillarOrder(){
 async function reviewSpecialist(uid, decision){
   await firestoreSetDoc('specialists', uid, { status: decision });
   renderAdminScreen();
+}
+
+// ============================================================
+// مين المختص المناسب ليك؟ — دليل توضيحي للفرق بين لايف كوتش / استشاري نفسي / دكتور نفسي
+// ============================================================
+const SPECIALIST_CATEGORIES = [
+  {
+    key:'coach', icon:'🎯', title:'لايف كوتش', subtitle:'مدرب حياة',
+    definition:'مدرّب متخصص في مساعدتك تحدد أهدافك وتوصل لها بخطوات عملية — مش معالج ومش بيشخّص أي حالة نفسية.',
+    whenNeeded:['عايز تطوّر نفسك أو تبني عادة جديدة', 'محتاج خطة واضحة لهدف أو مرحلة جديدة في حياتك أو شغلك', 'بتتغلب على التسويف أو محتاج دفعة تحفيزية'],
+    important:'مش بديل عن علاج نفسي — لو عندك اضطراب نفسي حقيقي (قلق شديد، اكتئاب)، الكوتش مش الجهة المناسبة.',
+    keywords:['كوتش','لايف كوتش','مدرب حياة','كوتشينج'],
+  },
+  {
+    key:'therapist', icon:'💬', title:'استشاري نفسي', subtitle:'معالج / أخصائي نفسي',
+    definition:'متخصص مؤهل في الصحة النفسية، مدرّب على تقييم وعلاج المشاعر والسلوكيات عن طريق جلسات علاج نفسي (زي العلاج المعرفي السلوكي) — مش طبيب ومبيصفش أدوية.',
+    whenNeeded:['قلق أو ضيق نفسي مستمر بيأثر على حياتك اليومية', 'صعوبة في التعامل مع صدمة، حزن، أو خسارة', 'مشاكل متكررة في العلاقات أو أنماط تفكير وسلوك محتاجة شغل أعمق'],
+    important:'الفرق الجوهري بينه وبين الدكتور النفسي: العلاج بالكلام والتقنيات النفسية، مش بالدواء.',
+    keywords:['استشاري نفسي','معالج نفسي','أخصائي نفسي','مرشد نفسي','معالجة نفسية','أخصائية نفسية'],
+  },
+  {
+    key:'psychiatrist', icon:'🩺', title:'دكتور نفسي', subtitle:'طبيب نفسي (طبيب بشري)',
+    definition:'طبيب بشري متخصص في الطب النفسي، بيقدر يشخّص الاضطرابات النفسية طبيًا ويصف علاج دوائي — وده أهم فرق بينه وبين الاستشاري النفسي.',
+    whenNeeded:['أعراض شديدة أو مستمرة (اكتئاب حاد، قلق معطّل، اضطراب ثنائي القطب)', 'حالات محتاجة تقييم دوائي أو تشخيص طبي رسمي', 'لو استشاري نفسي حوّلك له لأنك محتاج علاج دوائي بجانب الجلسات'],
+    important:'هو الوحيد من التلاتة اللي يقدر يوصف دواء — لأنه طبيب بشري بالدرجة الأولى.',
+    keywords:['دكتور نفسي','طبيب نفسي','طبيب نفساني','استشاري طب نفسي'],
+  },
+];
+function openSpecialistsDirectory(){
+  const wrap = document.getElementById('specialistsDirectoryBody');
+  wrap.innerHTML = `
+    <p style="font-size:12.5px; color:var(--muted); margin:14px 0 14px; line-height:1.7;">التلاتة مختلفين في التدريب والدور — اختار الوصف الأقرب لحالتك دلوقتي.</p>
+    ${SPECIALIST_CATEGORIES.map(c => `
+      <div class="layer-card l2" style="margin-bottom:14px;">
+        <p class="layer-title" style="color:var(--navy-dark);">${c.icon} ${c.title} <span style="font-size:12px; color:var(--muted); font-weight:400;">(${c.subtitle})</span></p>
+        <p class="layer-text" style="margin-top:8px;">${c.definition}</p>
+        <p style="font-size:12px; color:#8A6A1E; font-weight:700; margin:10px 0 4px;">إمتى تحتاجه؟</p>
+        ${c.whenNeeded.map(w => `<p class="layer-text" style="margin-top:3px; font-size:13px;">• ${w}</p>`).join('')}
+        <p style="font-size:11.5px; color:var(--muted); margin-top:8px; font-style:italic;">⚠️ ${c.important}</p>
+        <div class="choice-btn" style="text-align:center; margin-top:12px;" onclick="browseSpecialistsByCategory('${c.key}')">تصفح ${c.title} المسجّلين ←</div>
+      </div>
+    `).join('')}
+  `;
+  showScreen('screen-specialists-directory');
+}
+async function browseSpecialistsByCategory(categoryKey){
+  const category = SPECIALIST_CATEGORIES.find(c => c.key === categoryKey);
+  document.getElementById('specialistsBrowseTitle').textContent = category.title;
+  const wrap = document.getElementById('specialistsBrowseBody');
+  wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; margin-top:20px;">جاري التحميل...</p>`;
+  showScreen('screen-specialists-browse');
+
+  let specialists = [];
+  try {
+    const docs = await firestoreListAll('specialists');
+    specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  } catch(e){ specialists = []; }
+
+  const rawNorm = s => (s || '').toLowerCase();
+  const matched = specialists.filter(s => {
+    if(s.status !== 'approved') return false;
+    const specialtyText = rawNorm(s.specialty);
+    return category.keywords.some(k => specialtyText.includes(k));
+  });
+
+  if(matched.length === 0){
+    wrap.innerHTML = `
+      <div class="layer-card l1" style="margin-top:14px;">
+        <p class="layer-title" style="color:var(--navy-dark);">مفيش ${category.title} مسجّلين لحد دلوقتي</p>
+        <p class="layer-text" style="margin-top:8px;">هنضيفهم أول ما ينضموا للتطبيق — تقدر تتابع "مساعدة فورية" لحد ما نلاقيلك حد مناسب.</p>
+      </div>
+    `;
+    return;
+  }
+  wrap.innerHTML = matched.map(s => `
+    <div class="card" style="margin-top:14px;">
+      <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
+      <p class="card-sub">${s.specialty || ''}${s.experience ? ' — ' + s.experience + ' سنة خبرة' : ''}</p>
+      ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-top:8px;">${s.bio}</p>` : ''}
+      ${s.email ? `<p style="font-size:13px; color:var(--muted); margin-top:8px;">للتواصل: ${s.email}</p>` : ''}
+    </div>
+  `).join('');
 }
 
 function saveAuthSession(uid, username, email){
@@ -6151,7 +6262,15 @@ async function analyzeRabbekText(){
       ${c.prophetId ? `<div class="choice-btn" style="text-align:center;" onclick="showProphetDetail('${c.prophetId}'); showScreen('screen-prophets');">اقرأ قصة ${MERAT_PATTERNS.find(x=>x.id===c.prophetId).prophetTitle.split(' —')[0]} 📖</div>` : ''}
       ${c.asmaName ? `<div class="choice-btn" style="text-align:center;" onclick="openAsmaByName('${c.asmaName}')">تعرّف على اسم الله «${c.asmaName}» المناسب لحالتك 📿</div>` : ''}`;
   } else {
-    result.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية، لكن مش لاقي نمط مطابق بالظبط — جرب تختار من القائمة تحت أقرب حاجة لإحساسك.</p>`;
+    const crossMatch = matchProphetLinkBest(text);
+    if(crossMatch){
+      result.innerHTML = `
+        <p style="font-size:12px; color:var(--gold); font-weight:700; margin:0 0 6px;">كلامك قريب من موقف في ركن تاني في التطبيق:</p>
+        ${renderProphetLinkCard(crossMatch.entry, crossMatch.positive)}
+      `;
+    } else {
+      result.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية، لكن مش لاقي نمط مطابق بالظبط — جرب تختار من القائمة تحت أقرب حاجة لإحساسك.</p>`;
+    }
   }
   input.value = '';
 }
@@ -8459,9 +8578,26 @@ function sendFreeText(){
       choicesWrap.appendChild(btn2);
       win.appendChild(choicesWrap);
     } else {
-      bot.textContent = "مش لاقي نمط مطابق بالظبط لكلامك دلوقتي (النظام لسه بيتعلم بالكلمات المفتاحية بس). جرب تختار من القائمة دي أقرب حاجة لإحساسك:";
-      win.appendChild(bot);
-      renderEhkilyNode('start');
+      const crossMatch = matchProphetLinkBest(text);
+      if(crossMatch){
+        bot.textContent = "كلامك قريب من موقف في ركن تاني في التطبيق:";
+        win.appendChild(bot);
+        const cardWrap = document.createElement('div');
+        cardWrap.innerHTML = renderProphetLinkCard(crossMatch.entry, crossMatch.positive);
+        win.appendChild(cardWrap);
+        const choicesWrap = document.createElement('div');
+        choicesWrap.className = 'choices';
+        const btn2 = document.createElement('div');
+        btn2.className = 'choice-btn';
+        btn2.textContent = 'ارجع للقائمة';
+        btn2.onclick = () => { choicesWrap.remove(); ehkilyCurrent = 'start'; renderEhkilyNode('start'); };
+        choicesWrap.appendChild(btn2);
+        win.appendChild(choicesWrap);
+      } else {
+        bot.textContent = "مش لاقي نمط مطابق بالظبط لكلامك دلوقتي (النظام لسه بيتعلم بالكلمات المفتاحية بس). جرب تختار من القائمة دي أقرب حاجة لإحساسك:";
+        win.appendChild(bot);
+        renderEhkilyNode('start');
+      }
     }
   }
   win.scrollTop = win.scrollHeight;
