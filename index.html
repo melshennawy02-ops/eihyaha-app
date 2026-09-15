@@ -387,6 +387,16 @@
     <div style="padding:0 16px;" id="subscriptionBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: MY SPECIALIST SESSIONS (جلساتك كمتخصص) ===================== -->
+  <div class="screen" id="screen-my-sessions">
+    <div class="topbar">
+      <div class="backbtn" onclick="openSettingsScreen()">→</div>
+      <h1>جلساتك كمتخصص</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="mySessionsBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: DAFTAR ALNAFS ===================== -->
   <div class="screen" id="screen-daftar">
     <div class="topbar">
@@ -1512,6 +1522,10 @@ async function renderAdminScreen(){
       <div id="adminSubRequestsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
     </div>
     <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">📋 طلبات الجلسات (مين طلب من مين)</p>
+      <div id="adminSessionRequestsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
       <p class="card-title" style="margin-bottom:10px;">📢 إعلان للمستخدمين</p>
       <div id="adminAnnouncementWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
     </div>
@@ -1530,6 +1544,7 @@ async function renderAdminScreen(){
   loadAdminStats();
   loadAdminCommissionSubs();
   loadAdminSubscriptionRequests();
+  loadAdminSessionRequests();
   loadAdminAnnouncement();
   loadAdminFeedback();
   loadAdminUnmatchedQueries();
@@ -1792,6 +1807,33 @@ async function loadAdminSubscriptionRequests(){
     </div>
   `).join('');
 }
+async function loadAdminSessionRequests(){
+  const wrap = document.getElementById('adminSessionRequestsWrap');
+  const docs = await firestoreListAll('session_requests');
+  const requests = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+  if(!wrap) return;
+  if(requests.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش طلبات جلسات لسه.</p>`; return; }
+  const grouped = {};
+  requests.forEach(r => {
+    const key = r.specialistName || r.specialistUid || 'غير معروف';
+    if(!grouped[key]) grouped[key] = [];
+    grouped[key].push(r);
+  });
+  wrap.innerHTML = Object.entries(grouped).map(([specialistName, list]) => `
+    <div style="margin-bottom:14px; border:1px solid var(--layer-l2-border); border-radius:10px; padding:10px;">
+      <p style="font-size:14px; font-weight:700; color:var(--text); margin:0 0 8px;">${specialistName} — <span style="color:var(--gold);">${list.length} طلب</span></p>
+      ${list.map(r => `
+        <div class="tool-row" style="cursor:default;">
+          <div>
+            <div class="card-title" style="font-size:13px;">${r.username || 'مستخدم'}</div>
+            <div class="card-sub">${r.sessionLabel || ''} — ${r.price || ''} جنيه</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
 async function confirmSubscriptionPayment(requestId, uid, tierKey){
   if(!confirm('اتأكدت إن التحويل وصل فعليًا في المحفظة/إنستاباي بتاعتك؟')) return;
   const tier = SUBSCRIPTION_TIERS.find(t => t.key === tierKey);
@@ -2016,20 +2058,25 @@ function isSpecialistDiscountLive(s){
   if(s.discountEnabled !== 'yes' || !s.discountEndDate) return false;
   return new Date(s.discountEndDate) >= new Date(new Date().toDateString());
 }
-function priceRowHtml(label, price, originalPrice, discountLive){
+function priceRowHtml(specialistId, specialistName, mode, label, price, originalPrice, discountLive){
   const showDiscount = discountLive && originalPrice && Number(originalPrice) > Number(price);
-  return `<p style="font-size:13.5px; color:var(--text); margin:4px 0 0;">${label}: ${showDiscount ? `<span style="text-decoration:line-through; color:var(--muted); font-size:12px;">${originalPrice} جنيه</span> ` : ''}<b>${price} جنيه</b></p>`;
+  const sessionLabel = (mode + ' - ' + label).replace(/'/g,"\\'");
+  return `
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px;">
+      <p style="font-size:13.5px; color:var(--text); margin:0;">${label}: ${showDiscount ? `<span style="text-decoration:line-through; color:var(--muted); font-size:12px;">${originalPrice} جنيه</span> ` : ''}<b>${price} جنيه</b></p>
+      <span style="font-size:12px; color:var(--gold); font-weight:700; cursor:pointer; white-space:nowrap;" onclick="requestSpecialistSession('${specialistId}', '${(specialistName||'').replace(/'/g,"\\'")}', '${sessionLabel}', '${price}')">احجز ←</span>
+    </div>`;
 }
 function buildSpecialistPricingCardHtml(s){
   const online = parseSpecialistTrack(s, 'Online');
   const offline = parseSpecialistTrack(s, 'Offline');
   const discountLive = isSpecialistDiscountLive(s);
-  const trackHtml = (track, label) => {
+  const trackHtml = (track, modeLabel) => {
     if(!track || !track.enabled) return '';
-    const sessions = (track.sessions || []).map(r => priceRowHtml('💵 جلسة ' + r.duration, r.price, r.originalPrice, discountLive)).join('');
-    const packages = (track.packages || []).map(r => priceRowHtml('📦 باقة ' + r.count + ' جلسة (' + r.duration + ')', r.price, r.originalPrice, discountLive)).join('');
+    const sessions = (track.sessions || []).map(r => priceRowHtml(s.id, s.fullName, modeLabel, '💵 جلسة ' + r.duration, r.price, r.originalPrice, discountLive)).join('');
+    const packages = (track.packages || []).map(r => priceRowHtml(s.id, s.fullName, modeLabel, '📦 باقة ' + r.count + ' جلسة (' + r.duration + ')', r.price, r.originalPrice, discountLive)).join('');
     if(!sessions && !packages) return '';
-    return `<p style="font-size:12.5px; color:#8A6A1E; font-weight:700; margin-top:8px;">${label}</p>${sessions}${packages}`;
+    return `<p style="font-size:12.5px; color:#8A6A1E; font-weight:700; margin-top:8px;">${modeLabel}</p>${sessions}${packages}`;
   };
   const html = trackHtml(online, '💻 أونلاين') + trackHtml(offline, '🏠 أوف لاين');
   if(!html) return '';
@@ -2735,6 +2782,12 @@ function renderSettingsSection(){
       <p class="card-title" style="margin-bottom:10px;">🧑‍⚕️ عايز تنضم كمتخصص؟</p>
       <p class="card-sub" style="margin-bottom:10px;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك تظهر للمستخدمين.</p>
       <div class="choice-btn" style="text-align:center;" onclick="openBecomeSpecialistScreen()">سجّل كمتخصص ←</div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">📋 جلساتك كمتخصص</p>
+      <p class="card-sub" style="margin-bottom:10px;">شوف كام حد طلب جلسة منك ومين هما بالاسم.</p>
+      <div class="choice-btn" style="text-align:center;" onclick="openMySpecialistSessions()">شوف طلباتك ←</div>
     </div>
 
     <div class="card">
@@ -10680,9 +10733,7 @@ function showFirebaseStatus(ok, label, collectionName){
 }
 function renderJournalHistory(){
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  const wrap = document.getElementById('journalHistory');
-  if(local.length === 0){ wrap.textContent = 'لسه معملتش تسجيل'; return; }
-  wrap.innerHTML = local.map(e => {
+  renderCompactHistory('journalHistory', 'journalHistory', local, e => {
     if(e.type === 'mood'){
       return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
         <div style="font-weight:600; color:var(--text);">${e.date} — مزاج: ${e.moodEmoji} ${e.subLabel || e.moodLabel}</div>
@@ -10699,7 +10750,56 @@ function renderJournalHistory(){
       <div style="font-weight:600; color:var(--text);">${e.date} — قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} ساعات</div>
       ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
     </div>`;
-  }).join('');
+  }, e => e.dateKey || null);
+}
+
+// حالة العرض الموسّع والفلترة بالتاريخ لكل قائمة سجلات — قابلة لإعادة الاستخدام في أي "نافذة تسجيل"
+const historyExpandState = {};
+const historyDateFilter = {};
+const historyRenderers = {};
+function toggleHistoryExpand(key){
+  historyExpandState[key] = !historyExpandState[key];
+  if(historyRenderers[key]) historyRenderers[key]();
+}
+function setHistoryDateFilter(key, which, value){
+  historyDateFilter[key + '_' + which] = value;
+  if(historyRenderers[key]) historyRenderers[key]();
+}
+// entries: مرتبة الأحدث أولًا. renderEntryFn(entry) بترجع HTML للسطر. getDateFn(entry) بترجع تاريخ YYYY-MM-DD أو null.
+function renderCompactHistory(containerId, stateKey, entries, renderEntryFn, getDateFn){
+  historyRenderers[stateKey] = () => renderCompactHistory(containerId, stateKey, entries, renderEntryFn, getDateFn);
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  if(entries.length === 0){ wrap.innerHTML = '<p style="font-size:14px; color:var(--muted);">لسه معملتش تسجيل</p>'; return; }
+  const expanded = !!historyExpandState[stateKey];
+  const filterFrom = historyDateFilter[stateKey + '_from'];
+  const filterTo = historyDateFilter[stateKey + '_to'];
+  let filtered = entries;
+  if(expanded && (filterFrom || filterTo)){
+    filtered = entries.filter(e => {
+      const d = getDateFn(e);
+      if(!d) return true;
+      if(filterFrom && d < filterFrom) return false;
+      if(filterTo && d > filterTo) return false;
+      return true;
+    });
+  }
+  const visible = expanded ? filtered : entries.slice(0,1);
+  let html = visible.map(renderEntryFn).join('');
+  if(visible.length === 0) html = '<p style="font-size:14px; color:var(--muted);">مفيش تسجيلات في الفترة دي.</p>';
+  if(entries.length > 1){
+    if(expanded){
+      html += `
+        <div style="display:flex; gap:6px; margin:10px 0;">
+          <input type="date" value="${filterFrom || ''}" style="flex:1;" onchange="setHistoryDateFilter('${stateKey}','from',this.value)">
+          <input type="date" value="${filterTo || ''}" style="flex:1;" onchange="setHistoryDateFilter('${stateKey}','to',this.value)">
+        </div>
+        <div class="choice-btn" style="text-align:center;" onclick="toggleHistoryExpand('${stateKey}')">▲ إخفاء</div>`;
+    } else {
+      html += `<div class="choice-btn" style="text-align:center;" onclick="toggleHistoryExpand('${stateKey}')">▼ عرض المزيد (${entries.length - 1})</div>`;
+    }
+  }
+  wrap.innerHTML = html;
 }
 
 // ================= ملاحظات سريعة (Sticky Notes) =================
@@ -10726,18 +10826,20 @@ async function finalizeSticky(inputId, chooserId, alsoJournal){
   const input = document.getElementById(inputId);
   const text = input.value.trim();
   if(!text) return;
-  const dateLabel = new Date().toLocaleDateString('ar-EG') + ' - ' + new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString('ar-EG') + ' - ' + now.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+  const dateKey = now.toISOString().slice(0,10);
 
   // 1) دايمًا تتخزن في الملاحظات السريعة محليًا
   const notes = getStickyNotes();
-  notes.unshift({ text, date: dateLabel });
+  notes.unshift({ text, date: dateLabel, dateKey });
   localStorage.setItem('eihyaha_sticky_notes', JSON.stringify(notes.slice(0,100)));
 
   // 2) لو اختار "مرآتي اليومية" كمان، تتسجل في Firebase وفي سجل الجورنال المحلي
   if(alsoJournal){
     await firestoreWrite('journal', { uid:getUserId(), note:text, source:'sticky', date:new Date().toISOString() });
     const localJournal = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-    localJournal.unshift({ type:'sticky', text, date: dateLabel });
+    localJournal.unshift({ type:'sticky', text, date: dateLabel, dateKey });
     localStorage.setItem('eihyaha_journal', JSON.stringify(localJournal.slice(0,200)));
     renderJournalHistory();
   }
@@ -10748,35 +10850,35 @@ async function finalizeSticky(inputId, chooserId, alsoJournal){
   renderStickyNotes('homeStickyNotesList', false);
 }
 
-// حالة "شوف المزيد" لكل قائمة طويلة في التطبيق — مفتاح فريد لكل قائمة
-const expandedLists = {};
-function toggleListExpand(listKey){
-  expandedLists[listKey] = !expandedLists[listKey];
-  if(listKey === 'stickyNotesList') renderStickyNotes('stickyNotesList', true);
-}
-
-const STICKY_PREVIEW_COUNT = 2;
 function renderStickyNotes(targetId, allowEdit){
   const notes = getStickyNotes();
-  const wrap = document.getElementById(targetId);
-  if(!wrap) return;
-  if(notes.length === 0){ wrap.innerHTML = ''; return; }
-  const expanded = !!expandedLists[targetId];
-  const visibleCount = allowEdit ? (expanded ? notes.length : STICKY_PREVIEW_COUNT) : 3;
-  wrap.innerHTML = notes.slice(0, visibleCount).map((n, i) => `
+  if(!allowEdit){
+    // معاينة الصفحة الرئيسية: آخر ملاحظة بس، من غير تعديل أو بحث
+    const wrap = document.getElementById(targetId);
+    if(!wrap) return;
+    if(notes.length === 0){ wrap.innerHTML = ''; return; }
+    const n = notes[0];
+    wrap.innerHTML = `
+      <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); padding:10px 14px; margin-bottom:6px;">
+        <p style="font-size:13px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
+        <p style="font-size:15px; color:var(--text); margin:0;">${n.text}</p>
+      </div>`;
+    return;
+  }
+  renderCompactHistory(targetId, targetId, notes, n => {
+    const i = notes.indexOf(n);
+    return `
     <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); padding:10px 14px; margin-bottom:6px;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start;">
         <p style="font-size:13px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
-        ${allowEdit ? `
         <div style="display:flex; gap:10px;">
           <span style="cursor:pointer;" onclick="editStickyNote(${i})">✏️</span>
           <span style="cursor:pointer;" onclick="deleteStickyNote(${i})">🗑️</span>
-        </div>` : ''}
+        </div>
       </div>
       <p style="font-size:15px; color:var(--text); margin:0;">${n.text}</p>
-    </div>`).join('') + (allowEdit && notes.length > STICKY_PREVIEW_COUNT ? `
-    <div class="choice-btn" style="text-align:center;" onclick="toggleListExpand('${targetId}')">${expanded ? '▲ اقفل' : '▼ شوف المزيد (' + (notes.length - STICKY_PREVIEW_COUNT) + ')'}</div>
-  ` : '');
+    </div>`;
+  }, n => n.dateKey || null);
 }
 function editStickyNote(index){
   const notes = getStickyNotes();
@@ -11380,6 +11482,56 @@ async function requestSubscription(tierKey, tierLabel){
   }catch(err){
     alert('حصل خطأ، حاول تاني.');
   }
+}
+
+// ---------- طلب جلسة من متخصص — بيسجّل مين طلب من مين، للمتخصص وللأدمن ----------
+async function requestSpecialistSession(specialistId, specialistName, sessionLabel, price){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(!auth){ alert('لازم تكون مسجّل دخول عشان تحجز جلسة'); return; }
+  if(!confirm(`تأكيد طلب: ${sessionLabel} — ${price} جنيه، مع ${specialistName}؟`)) return;
+  try{
+    await fetch(`${FIRESTORE_BASE}/session_requests?key=${FIREBASE_API_KEY}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ fields: {
+        specialistUid:{stringValue:specialistId}, specialistName:{stringValue:specialistName || ''},
+        userUid:{stringValue:auth.uid}, username:{stringValue:auth.username || auth.email || 'مستخدم'}, userEmail:{stringValue:auth.email || ''},
+        sessionLabel:{stringValue:sessionLabel}, price:{stringValue:String(price)},
+        date:{stringValue:new Date().toISOString()}, status:{stringValue:'pending'},
+      }})
+    });
+    alert(`تم إرسال طلبك لـ${specialistName}! هيتواصل معاك قريبًا لتأكيد الميعاد.`);
+  }catch(err){
+    alert('حصل خطأ، حاول تاني.');
+  }
+}
+async function openMySpecialistSessions(){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const wrap = document.getElementById('mySessionsBody');
+  wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; margin-top:20px;">جاري التحميل...</p>`;
+  showScreen('screen-my-sessions');
+  if(!auth){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; margin-top:20px;">لازم تكون مسجّل دخول.</p>`; return; }
+  const docs = await firestoreListAll('session_requests');
+  const mySessions = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
+    .filter(r => r.specialistUid === auth.uid)
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+  if(mySessions.length === 0){
+    wrap.innerHTML = `<div class="layer-card l1" style="margin-top:14px;"><p class="layer-text">لسه محدش طلب جلسة منك — لو مسجّل كمتخصص، الطلبات هتظهر هنا أول ما توصلك.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="card">
+      <p style="font-size:26px; font-weight:700; margin:0; color:var(--text); text-align:center;">${mySessions.length}</p>
+      <p style="font-size:13px; color:var(--muted); margin:4px 0 0; text-align:center;">إجمالي عدد الجلسات المطلوبة منك</p>
+    </div>
+    ${mySessions.map(r => `
+      <div class="tool-row" style="cursor:default;">
+        <div>
+          <div class="card-title" style="font-size:14px;">${r.username || 'مستخدم'}</div>
+          <div class="card-sub">${r.sessionLabel || ''} — ${r.price || ''} جنيه</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
 }
 
 function setFontScale(scale){
