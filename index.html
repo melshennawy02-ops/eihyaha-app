@@ -181,6 +181,7 @@
         <div style="width:34px; height:2px; background:var(--gold); position:relative;"></div>
       </div>
 
+      <div id="announcementBannerWrap"></div>
       <div id="followUpCardWrap"></div>
 
       <div class="quick-help-card" onclick="startCompassTest()" style="margin:0 0 14px; background:linear-gradient(135deg, rgba(10,15,25,.82), rgba(10,15,25,.55)), url('https://images.unsplash.com/photo-1508165821229-7be282c31b6e?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border-color:var(--gold);">
@@ -372,6 +373,16 @@
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="becomeSpecialistBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: SUBSCRIPTION (اشتراكك المميز) ===================== -->
+  <div class="screen" id="screen-subscription">
+    <div class="topbar">
+      <div class="backbtn" onclick="openSettingsScreen()">→</div>
+      <h1>اشتراكك المميز</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="subscriptionBody"></div>
   </div>
 
   <!-- ===================== SCREEN: DAFTAR ALNAFS ===================== -->
@@ -1479,10 +1490,36 @@ async function renderAdminScreen(){
       <p class="card-sub" style="margin-bottom:10px;">الترتيب ده هيتطبّق على كل المستخدمين في التطبيق — مش على جهازك بس.</p>
       <div id="adminPillarOrderList"></div>
     </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">👥 حسابات المستخدمين</p>
+      <div id="adminUsersWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">💰 العمولة والاشتراكات</p>
+      <div id="adminCommissionSubsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">📢 إعلان للمستخدمين</p>
+      <div id="adminAnnouncementWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">💬 صندوق البلاغات والمقترحات</p>
+      <div id="adminFeedbackWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🔍 عبارات بحث لم تجد نتيجة</p>
+      <p class="card-sub" style="margin-bottom:10px;">دليل على محتوى محتاج يتضاف للتطبيق.</p>
+      <div id="adminUnmatchedWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
     <p style="font-size:14px; color:var(--muted); text-align:center; margin:18px 0 10px;">جاري تحميل طلبات المتخصصين...</p>
   `;
   renderAdminPillarOrder();
   loadAdminStats();
+  loadAdminUsers();
+  loadAdminCommissionSubs();
+  loadAdminAnnouncement();
+  loadAdminFeedback();
+  loadAdminUnmatchedQueries();
 
   const docs = await firestoreListAll('specialists');
   const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
@@ -1491,8 +1528,8 @@ async function renderAdminScreen(){
   if(specialists.length === 0){
     specialistsWrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
   } else {
-    const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗' };
-    const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34' };
+    const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗', suspended:'موقوف مؤقتًا ⏸️' };
+    const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34', suspended:'#8A6153' };
     specialistsWrap.innerHTML = specialists.map(s => `
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
@@ -1505,6 +1542,7 @@ async function renderAdminScreen(){
         ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
         ${s.license ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
         <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
+        ${s.sessionPrice || s.packagePrice ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">${s.sessionPrice ? 'سعر الجلسة: ' + s.sessionPrice + ' جنيه' : ''}${s.packagePrice ? ' — الباقة الشهرية: ' + s.packagePrice + ' جنيه' : ''}</p>` : ''}
         ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
         ${s.status === 'pending' ? `
           <div style="display:flex; gap:8px;">
@@ -1512,6 +1550,8 @@ async function renderAdminScreen(){
             <button class="btn-ghost" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="reviewSpecialist('${s.id}','rejected')">✗ رفض</button>
           </div>
         ` : ''}
+        ${s.status === 'approved' ? `<button class="btn-ghost" style="margin:0; color:#8A6153; border-color:#8A6153;" onclick="reviewSpecialist('${s.id}','suspended')">⏸️ إيقاف مؤقت</button>` : ''}
+        ${s.status === 'suspended' ? `<button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">▶️ إعادة التفعيل</button>` : ''}
       </div>
     `).join('');
   }
@@ -1521,39 +1561,213 @@ async function renderAdminScreen(){
 // ---------- إحصائيات عامة للتطبيق: عدد الزيارات وعدد المستخدمين المسجّلين ----------
 async function loadAdminStats(){
   const wrap = document.getElementById('adminStatsWrap');
-  const [statsDoc, usersDocs] = await Promise.all([
-    firestoreGetDoc('app_stats', 'global'),
+  const [visitDocs, usersDocs, ...pillarDocs] = await Promise.all([
+    firestoreListAll('visit_log'),
     firestoreListAll('users'),
+    firestoreListAll('spiritual_summary'), firestoreListAll('family_summary'), firestoreListAll('social_summary'),
+    firestoreListAll('personal_summary'), firestoreListAll('professional_summary'), firestoreListAll('financial_summary'), firestoreListAll('health_summary'),
   ]);
-  const totalVisits = (statsDoc && statsDoc.total_visits) || 0;
+  const visits = visitDocs.map(d => ({ date: d.name.split('/').pop(), count: (parseFirestoreDoc(d).count || 0) }));
+  const totalVisits = visits.reduce((s,v) => s + v.count, 0);
   const totalUsers = usersDocs.length;
+  const conversionRate = totalVisits > 0 ? ((totalUsers / totalVisits) * 100).toFixed(1) : '0';
+
+  const now = new Date();
+  const todayKey = formatDateKey(now);
+  const sumSince = (daysAgo) => {
+    const cutoff = new Date(now); cutoff.setDate(now.getDate() - daysAgo);
+    return visits.filter(v => new Date(v.date) > cutoff).reduce((s,v) => s + v.count, 0);
+  };
+  const todayCount = visits.find(v => v.date === todayKey)?.count || 0;
+  const weekCount = sumSince(7);
+  const monthCount = sumSince(30);
+  const yearCount = sumSince(365);
+
+  const pillarLabels = ['الروحاني','العائلي','الاجتماعي','الشخصي','المهني','المادي','الصحي'];
+
   if(!wrap) return;
   wrap.innerHTML = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-      <div style="text-align:center;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalVisits}</p>
-        <p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي عدد الزيارات</p>
-      </div>
-      <div style="text-align:center;">
-        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalUsers}</p>
-        <p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي المستخدمين المسجّلين</p>
-      </div>
+      <div style="text-align:center;"><p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalVisits}</p><p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي الزيارات</p></div>
+      <div style="text-align:center;"><p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalUsers}</p><p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي المستخدمين</p></div>
     </div>
-    <p style="font-size:11px; color:var(--muted); margin-top:10px;">"الزيارات" = كل مرة يتفتح فيها التطبيق (سواء سجّل دخول أو لأ). "المستخدمين" = حسابات مسجّلة فعليًا.</p>
+    <p style="font-size:11px; color:var(--muted); margin-top:10px;">معدل التحويل (زيارة ← حساب): <b style="color:var(--text);">${conversionRate}٪</b></p>
+
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">الزيارات عبر الوقت</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <div style="text-align:center; background:var(--sand); border-radius:10px; padding:8px;"><p style="font-size:18px; font-weight:700; margin:0;">${todayCount}</p><p style="font-size:11px; color:var(--muted); margin:2px 0 0;">اليوم</p></div>
+      <div style="text-align:center; background:var(--sand); border-radius:10px; padding:8px;"><p style="font-size:18px; font-weight:700; margin:0;">${weekCount}</p><p style="font-size:11px; color:var(--muted); margin:2px 0 0;">آخر أسبوع</p></div>
+      <div style="text-align:center; background:var(--sand); border-radius:10px; padding:8px;"><p style="font-size:18px; font-weight:700; margin:0;">${monthCount}</p><p style="font-size:11px; color:var(--muted); margin:2px 0 0;">آخر شهر</p></div>
+      <div style="text-align:center; background:var(--sand); border-radius:10px; padding:8px;"><p style="font-size:18px; font-weight:700; margin:0;">${yearCount}</p><p style="font-size:11px; color:var(--muted); margin:2px 0 0;">آخر سنة</p></div>
+    </div>
+
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">استخدام الأركان (عدد المستخدمين اللي بدأوا كل ركن)</p>
+    ${pillarDocs.map((docs,i) => `
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+        <span>${pillarLabels[i]}</span><span style="color:var(--muted);">${docs.length}</span>
+      </div>
+    `).join('')}
+    <p style="font-size:11px; color:var(--muted); margin-top:10px;">"الزيارات" = كل مرة يتفتح فيها التطبيق. "استخدام الأركان" = عدد المستخدمين اللي عندهم ملخص محفوظ في الركن ده على الأقل مرة.</p>
   `;
 }
-// كل جلسة (تبويب/فتحة تطبيق) بتتحسب زيارة واحدة بس، حتى لو المستخدم نقل بين شاشات كتير
+// كل جلسة (تبويب/فتحة تطبيق) بتتحسب زيارة واحدة بس، وبتتسجل في سجل يومي عشان نقدر نحلل الاتجاه بمرور الوقت
 async function logAppVisit(){
   if(sessionStorage.getItem('eihyaha_visit_logged')) return;
   sessionStorage.setItem('eihyaha_visit_logged', '1');
   try{
-    const current = await firestoreGetDoc('app_stats', 'global');
-    const newCount = ((current && current.total_visits) || 0) + 1;
-    await firestoreSetDoc('app_stats', 'global', { total_visits: newCount });
+    const todayKey = formatDateKey(new Date());
+    const current = await firestoreGetDoc('visit_log', todayKey);
+    const newCount = ((current && current.count) || 0) + 1;
+    await firestoreSetDoc('visit_log', todayKey, { count: newCount });
   }catch(err){ /* فشل تسجيل الزيارة مش هيأثر على استخدام التطبيق */ }
 }
 
+// ---------- عمولة المنصة والاشتراكات: إعدادات يتحكم فيها الأدمن ----------
+async function getCommissionRate(){
+  try{
+    const doc = await firestoreGetDoc('app_config', 'commission');
+    return (doc && doc.rate) || 15; // 15٪ افتراضي لو الأدمن لسه محددش قيمة
+  }catch(e){ return 15; }
+}
+async function saveCommissionRate(){
+  const rate = Number(document.getElementById('adminCommissionRate').value);
+  if(!rate || rate < 0 || rate > 100){ alert('اكتب نسبة صحيحة بين 0 و100'); return; }
+  await firestoreSetDoc('app_config', 'commission', { rate });
+  alert('تم حفظ نسبة العمولة.');
+}
+const SUBSCRIPTION_TIERS = [
+  { key:'monthly', label:'شهري' }, { key:'quarterly', label:'ربع سنوي' },
+  { key:'semiannual', label:'نصف سنوي' }, { key:'annual', label:'سنوي' },
+];
+async function getSubscriptionConfig(){
+  try{
+    const doc = await firestoreGetDoc('app_config', 'subscriptions');
+    return doc || {};
+  }catch(e){ return {}; }
+}
+async function saveSubscriptionConfig(){
+  const config = {};
+  SUBSCRIPTION_TIERS.forEach(tier => {
+    config[tier.key + '_enabled'] = document.getElementById('subEnabled_' + tier.key).checked ? 'yes' : 'no';
+    config[tier.key + '_price'] = document.getElementById('subPrice_' + tier.key).value.trim() || '0';
+  });
+  config.offers_visible = document.getElementById('offersVisibleToggle').checked ? 'yes' : 'no';
+  await firestoreSetDoc('app_config', 'subscriptions', config);
+  alert('تم حفظ إعدادات الاشتراكات.');
+}
+
 const DEFAULT_PILLAR_ORDER = [1,2,3,4,5,6,7];
+
+// ---------- إدارة حسابات المستخدمين ----------
+async function loadAdminUsers(){
+  const wrap = document.getElementById('adminUsersWrap');
+  const docs = await firestoreListAll('users');
+  const users = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  if(!wrap) return;
+  if(users.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش مستخدمين لسه.</p>`; return; }
+  wrap.innerHTML = users.map(u => `
+    <div class="tool-row" style="cursor:default; flex-wrap:wrap;">
+      <div style="flex:1;">
+        <div class="card-title" style="font-size:14px;">${u.username || u.fullName || 'بدون اسم'} ${u.suspended === 'yes' ? '<span style="color:var(--danger); font-size:12px;">(موقوف)</span>' : ''}</div>
+        <div class="card-sub">${u.email || ''}${u.role ? ' — ' + u.role : ''}</div>
+      </div>
+      <div style="display:flex; gap:6px; margin-top:6px; width:100%;">
+        ${u.suspended === 'yes'
+          ? `<div class="choice-btn" style="margin:0; flex:1; text-align:center;" onclick="toggleSuspendUser('${u.id}', false)">إلغاء الإيقاف</div>`
+          : `<div class="choice-btn" style="margin:0; flex:1; text-align:center; color:#8A6153; border-color:#8A6153;" onclick="toggleSuspendUser('${u.id}', true)">تعليق الحساب</div>`}
+        <div class="choice-btn" style="margin:0; flex:1; text-align:center; color:var(--danger); border-color:var(--danger);" onclick="adminDeleteUser('${u.id}')">حذف نهائي</div>
+      </div>
+    </div>
+  `).join('');
+}
+async function toggleSuspendUser(uid, suspend){
+  const existing = await firestoreGetDoc('users', uid) || {};
+  await firestoreSetDoc('users', uid, { ...existing, suspended: suspend ? 'yes' : 'no' });
+  loadAdminUsers();
+}
+async function adminDeleteUser(uid){
+  if(!confirm('هيتم حذف بيانات المستخدم ده نهائيًا من كل الأركان. متأكد؟')) return;
+  const collections = ['users','social_summary','family_summary','spiritual_summary','personal_summary','professional_summary','financial_summary','health_summary'];
+  await Promise.all(collections.map(c =>
+    fetch(`${FIRESTORE_BASE}/${c}/${uid}?key=${FIREBASE_API_KEY}`, { method:'DELETE' }).catch(() => {})
+  ));
+  loadAdminUsers();
+}
+
+// ---------- العمولة والاشتراكات ----------
+async function loadAdminCommissionSubs(){
+  const wrap = document.getElementById('adminCommissionSubsWrap');
+  const [rate, subConfig] = await Promise.all([getCommissionRate(), getSubscriptionConfig()]);
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <label class="flabel">نسبة عمولة المنصة من المتخصصين (٪)</label>
+    <input type="number" id="adminCommissionRate" value="${rate}" min="0" max="100">
+    <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="saveCommissionRate()">حفظ نسبة العمولة</div>
+    <p style="font-size:11px; color:var(--muted); margin-top:6px;">15٪ متوسط معقول لمنصات التوجيه والحجز — أقل من منصات العلاج الكاملة (20-30٪) لأن دورنا هنا اكتشاف وربط بس.</p>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:10px;">باقات اشتراك المستخدمين</p>
+    ${SUBSCRIPTION_TIERS.map(tier => `
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <input type="checkbox" id="subEnabled_${tier.key}" style="width:auto;" ${subConfig[tier.key + '_enabled'] === 'yes' ? 'checked' : ''}>
+        <span style="font-size:14px; width:80px;">${tier.label}</span>
+        <input type="number" id="subPrice_${tier.key}" placeholder="السعر بالجنيه" value="${subConfig[tier.key + '_price'] || ''}" style="flex:1;">
+      </div>
+    `).join('')}
+    <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+      <input type="checkbox" id="offersVisibleToggle" style="width:auto;" ${subConfig.offers_visible === 'yes' ? 'checked' : ''}>
+      <span style="font-size:14px;">إظهار خانة العروض للمستخدمين</span>
+    </div>
+    <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="saveSubscriptionConfig()">حفظ إعدادات الاشتراكات</div>
+    <p style="font-size:11px; color:var(--muted); margin-top:8px;">⚠️ التبويب ده بيتحكم في الأسعار والتفعيل بس — التطبيق لسه مالوش بوابة دفع فعلية متكاملة (زي فوري أو باي موب)، فالمستخدم مش هيقدر يدفع فعليًا لحد ما نربط بوابة دفع حقيقية.</p>
+  `;
+}
+
+// ---------- إعلان للمستخدمين ----------
+async function loadAdminAnnouncement(){
+  const wrap = document.getElementById('adminAnnouncementWrap');
+  const doc = await firestoreGetDoc('app_config', 'announcement');
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <textarea id="adminAnnouncementText" placeholder="اكتب رسالة تظهر مرة واحدة لكل المستخدمين...">${(doc && doc.text) || ''}</textarea>
+    <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="saveAnnouncement()">نشر الإعلان</div>
+    <div class="choice-btn" style="text-align:center; margin-top:8px; color:var(--danger); border-color:var(--danger);" onclick="clearAnnouncement()">إلغاء الإعلان الحالي</div>
+  `;
+}
+async function saveAnnouncement(){
+  const text = document.getElementById('adminAnnouncementText').value.trim();
+  if(!text) return;
+  await firestoreSetDoc('app_config', 'announcement', { text, id: Date.now().toString() });
+  alert('تم نشر الإعلان.');
+}
+async function clearAnnouncement(){
+  await firestoreSetDoc('app_config', 'announcement', { text:'', id:'' });
+  loadAdminAnnouncement();
+}
+
+// ---------- صندوق البلاغات والمقترحات ----------
+async function loadAdminFeedback(){
+  const wrap = document.getElementById('adminFeedbackWrap');
+  const docs = await firestoreListAll('feedback');
+  if(!wrap) return;
+  if(docs.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش بلاغات لسه.</p>`; return; }
+  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
+  wrap.innerHTML = items.map(f => `
+    <div class="tool-row" style="cursor:default;">
+      <div><div class="card-title" style="font-size:13.5px;">${f.text}</div><div class="card-sub">${f.date ? new Date(f.date).toLocaleDateString('ar-EG') : ''}</div></div>
+    </div>
+  `).join('');
+}
+
+// ---------- عبارات بحث بدون تطابق ----------
+async function loadAdminUnmatchedQueries(){
+  const wrap = document.getElementById('adminUnmatchedWrap');
+  const docs = await firestoreListAll('unmatched_queries');
+  if(!wrap) return;
+  if(docs.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش عبارات مسجّلة لسه.</p>`; return; }
+  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 40);
+  wrap.innerHTML = items.map(q => `<p style="font-size:13.5px; color:var(--text); padding:6px 0; border-bottom:1px solid #EDE8D8;">"${q.text}"</p>`).join('');
+}
 
 // ---------- ترتيب الأركان في الصفحة الرئيسية (إعداد عام لكل المستخدمين، أدمن فقط) ----------
 function renderAdminPillarOrder(){
@@ -1696,6 +1910,12 @@ async function browseSpecialistsByCategory(categoryKey){
       <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
       <p class="card-sub">${s.specialty || ''}${s.experience ? ' — ' + s.experience + ' سنة خبرة' : ''}</p>
       ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-top:8px;">${s.bio}</p>` : ''}
+      ${(s.sessionPrice || s.packagePrice) ? `
+        <div style="background:var(--sand); border-radius:10px; padding:10px; margin-top:10px;">
+          ${s.sessionPrice ? `<p style="font-size:13.5px; color:var(--text); margin:0;">💵 الجلسة: <b>${s.sessionPrice} جنيه</b></p>` : ''}
+          ${s.packagePrice ? `<p style="font-size:13.5px; color:var(--text); margin:4px 0 0;">📦 باقة شهرية: <b>${s.packagePrice} جنيه</b></p>` : ''}
+        </div>` : ''}
+      ${s.offerActive === 'yes' && s.offerText ? `<p style="font-size:13px; color:var(--danger); font-weight:700; margin-top:8px;">🔥 عرض خاص: ${s.offerText}</p>` : ''}
       ${s.email ? `<p style="font-size:13px; color:var(--muted); margin-top:8px;">للتواصل: ${s.email}</p>` : ''}
     </div>
   `).join('');
@@ -1796,6 +2016,7 @@ async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
   await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
   await loadAdminEmails();
+  checkAnnouncement();
   await syncSocialSummaryFromCloud(); // مرة واحدة بس هنا، مش مع كل شاشة
   await syncFamilySummaryFromCloud();
   await syncSpiritualSummaryFromCloud();
@@ -1870,6 +2091,10 @@ async function doSignIn(){
     return;
   }
   const profile = await firestoreGetDoc('users', data.localId);
+  if(profile && profile.suspended === 'yes'){
+    showAuthError('حسابك موقوف مؤقتًا. تواصل مع الدعم لمزيد من التفاصيل.');
+    return;
+  }
   const username = (profile && profile.username) || email.split('@')[0];
   if(profile) localStorage.setItem('eihyaha_profile', JSON.stringify(profile));
   saveAuthSession(data.localId, username, email);
@@ -2314,9 +2539,21 @@ function renderSettingsSection(){
     </div>
 
     <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">💬 أبلغ عن مشكلة أو اقترح تحسين</p>
+      <textarea id="userFeedbackText" placeholder="اكتب ملاحظتك أو المشكلة اللي واجهتك..."></textarea>
+      <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="submitUserFeedback()">إرسال</div>
+    </div>
+
+    <div class="card">
       <p class="card-title" style="margin-bottom:10px;">🧑‍⚕️ عايز تنضم كمتخصص؟</p>
       <p class="card-sub" style="margin-bottom:10px;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك تظهر للمستخدمين.</p>
       <div class="choice-btn" style="text-align:center;" onclick="openBecomeSpecialistScreen()">سجّل كمتخصص ←</div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">✨ اشتراكك المميز</p>
+      <p class="card-sub" style="margin-bottom:10px;">شوف باقات الاشتراك المتاحة والعروض الحالية.</p>
+      <div class="choice-btn" style="text-align:center;" onclick="openSubscriptionScreen()">شوف الباقات ←</div>
     </div>
 
     <div class="card">
@@ -2326,6 +2563,36 @@ function renderSettingsSection(){
     </div>
   `;
 }
+async function submitUserFeedback(){
+  const text = document.getElementById('userFeedbackText').value.trim();
+  if(!text){ alert('اكتب ملاحظتك الأول'); return; }
+  await fetch(`${FIRESTORE_BASE}/feedback?key=${FIREBASE_API_KEY}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ fields: { text:{stringValue:text.slice(0,500)}, date:{stringValue:new Date().toISOString()} } })
+  }).catch(() => {});
+  document.getElementById('userFeedbackText').value = '';
+  alert('تم إرسال ملاحظتك، شكرًا ليك!');
+}
+async function checkAnnouncement(){
+  try{
+    const doc = await firestoreGetDoc('app_config', 'announcement');
+    const wrap = document.getElementById('announcementBannerWrap');
+    if(!wrap) return;
+    if(!doc || !doc.text || !doc.id){ wrap.innerHTML = ''; return; }
+    const lastSeen = localStorage.getItem('eihyaha_last_seen_announcement');
+    if(lastSeen === doc.id){ wrap.innerHTML = ''; return; }
+    wrap.innerHTML = `
+      <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:default; background:var(--navy-dark);">
+        <p style="font-size:14px; color:#fff; line-height:1.6; margin:0 0 8px;">📢 ${doc.text}</p>
+        <div class="choice-btn" style="text-align:center; margin:0; background:transparent; color:var(--gold); border-color:var(--gold);" onclick="dismissAnnouncement('${doc.id}')">تمام</div>
+      </div>`;
+  }catch(e){}
+}
+function dismissAnnouncement(id){
+  localStorage.setItem('eihyaha_last_seen_announcement', id);
+  document.getElementById('announcementBannerWrap').innerHTML = '';
+}
+
 function togglePillarVisibility(id){
   let hidden = JSON.parse(localStorage.getItem('eihyaha_hidden_pillars') || '[]');
   if(hidden.includes(id)) hidden = hidden.filter(x => x !== id);
@@ -7755,8 +8022,19 @@ function matchProphetLink(text, positive){
 function matchProphetLinkBest(text){
   const neg = scoreProphetLink(text, false);
   const pos = scoreProphetLink(text, true);
-  if(neg.score < PROPHET_LINK_MIN_SCORE && pos.score < PROPHET_LINK_MIN_SCORE) return null;
+  if(neg.score < PROPHET_LINK_MIN_SCORE && pos.score < PROPHET_LINK_MIN_SCORE){
+    logUnmatchedQuery(text);
+    return null;
+  }
   return pos.score > neg.score ? { entry:pos.entry, positive:true } : { entry:neg.entry, positive:false };
+}
+// تسجيل العبارات اللي محدش لاقيلها تطابق — عشان نعرف إيه المحتوى الناقص فعليًا (بدون أي بيانات شخصية)
+function logUnmatchedQuery(text){
+  if(!text || text.trim().length < 4) return;
+  fetch(`${FIRESTORE_BASE}/unmatched_queries?key=${FIREBASE_API_KEY}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ fields: { text:{stringValue:text.trim().slice(0,200)}, date:{stringValue:new Date().toISOString()} } })
+  }).catch(() => {});
 }
 function getProphetLinkById(id, positive){
   const table = positive ? PROPHET_LINK_TABLE_POSITIVE : PROPHET_LINK_TABLE;
@@ -10650,9 +10928,10 @@ async function confirmDeleteCloudAccount(){
   location.reload();
 }
 
-function openBecomeSpecialistScreen(){
+async function openBecomeSpecialistScreen(){
   if(!isLoggedIn()){ alert('لازم تكون مسجّل دخول الأول'); return; }
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const commissionRate = await getCommissionRate();
   const wrap = document.getElementById('becomeSpecialistBody');
   wrap.innerHTML = `
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك هنا عشان تظهر لمستخدمي التطبيق في "مين المختص المناسب ليك؟".</p>
@@ -10666,11 +10945,20 @@ function openBecomeSpecialistScreen(){
     <input type="text" id="becomeSpecLicense" placeholder="رقم الترخيص">
     <label class="flabel">نبذة مختصرة</label>
     <textarea id="becomeSpecBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;"></textarea>
+    <label class="flabel">سعر الجلسة (جنيه)</label>
+    <input type="number" id="becomeSpecSessionPrice" placeholder="مثال: 300">
+    <label class="flabel">سعر الباقة الشهرية (اختياري، جنيه)</label>
+    <input type="number" id="becomeSpecPackagePrice" placeholder="مثال: 1000">
+    <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px;">
+      <input type="checkbox" id="becomeSpecOfferActive" style="width:auto; margin-top:3px;">
+      <label for="becomeSpecOfferActive" style="font-size:14px; color:var(--text);">عندي عرض خاص لفترة محدودة</label>
+    </div>
+    <input type="text" id="becomeSpecOfferText" placeholder="مثال: خصم 20٪ على الجلسة الأولى" style="margin-top:8px;">
     <label class="flabel">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
     <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
     <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
       <input type="checkbox" id="becomeSpecCommissionAgree" style="width:auto; margin-top:3px;">
-      <label for="becomeSpecCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد <b>عمولة</b> على أي جلسة أو استشارة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
+      <label for="becomeSpecCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد عمولة <b>${commissionRate}٪</b> على أي جلسة أو باقة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
     </div>
     <p style="font-size:13px; color:var(--muted); margin-top:8px;">طلبك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
     <button class="btn-primary" onclick="submitSpecialistApplication()">إرسال الطلب</button>
@@ -10683,6 +10971,10 @@ async function submitSpecialistApplication(){
   const experience = document.getElementById('becomeSpecExperience').value.trim();
   const license = document.getElementById('becomeSpecLicense').value.trim();
   const bio = document.getElementById('becomeSpecBio').value.trim();
+  const sessionPrice = document.getElementById('becomeSpecSessionPrice').value.trim();
+  const packagePrice = document.getElementById('becomeSpecPackagePrice').value.trim();
+  const offerActive = document.getElementById('becomeSpecOfferActive').checked;
+  const offerText = document.getElementById('becomeSpecOfferText').value.trim();
   const agreedCommission = document.getElementById('becomeSpecCommissionAgree').checked;
   if(!fullName || !specialty){ alert('لازم تملأ الاسم والتخصص'); return; }
   if(!specialistImageBase64){ alert('لازم ترفع صورة شهادة أو بطاقة نقابية تثبت تخصصك'); return; }
@@ -10695,12 +10987,52 @@ async function submitSpecialistApplication(){
   await firestoreSetDoc('specialists', uid, {
     fullName, specialty, experience: experience || '', license: license || '',
     bio: bio || '', email: auth.email || '', certificateImage: specialistImageBase64, status:'pending', agreedCommission:'yes',
+    sessionPrice: sessionPrice || '', packagePrice: packagePrice || '',
+    offerActive: offerActive ? 'yes' : 'no', offerText: offerActive ? offerText : '',
   });
   specialistImageBase64 = '';
   alert('تم إرسال طلبك بنجاح! هيتم مراجعته من الإدارة قريبًا.');
   openSettingsScreen();
 }
 
+async function openSubscriptionScreen(){
+  const wrap = document.getElementById('subscriptionBody');
+  wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; margin-top:20px;">جاري التحميل...</p>`;
+  showScreen('screen-subscription');
+  const config = await getSubscriptionConfig();
+  const enabledTiers = SUBSCRIPTION_TIERS.filter(t => config[t.key + '_enabled'] === 'yes');
+  if(enabledTiers.length === 0){
+    wrap.innerHTML = `<div class="layer-card l1" style="margin-top:14px;"><p class="layer-text">مفيش باقات اشتراك متاحة حاليًا.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    ${config.offers_visible === 'yes' ? `<div class="layer-card l3" style="margin-top:14px;"><p class="layer-text" style="font-weight:700;">🔥 فيه عروض حالية على بعض الباقات — تواصل معانا لمعرفة التفاصيل.</p></div>` : ''}
+    ${enabledTiers.map(t => `
+      <div class="card">
+        <p class="card-title">${t.label}</p>
+        <p class="card-sub" style="margin-bottom:10px;">${config[t.key + '_price'] || '0'} جنيه</p>
+        <div class="choice-btn" style="text-align:center;" onclick="requestSubscription('${t.key}', '${t.label}')">اطلب الاشتراك ←</div>
+      </div>
+    `).join('')}
+    <p style="font-size:11.5px; color:var(--muted); text-align:center; margin-top:12px;">⚠️ التطبيق لسه مفيهوش بوابة دفع فعلية — طلبك هيتسجّل وهنتواصل معاك لإتمام الاشتراك يدويًا.</p>
+  `;
+}
+async function requestSubscription(tierKey, tierLabel){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(!auth){ alert('لازم تكون مسجّل دخول'); return; }
+  try{
+    await fetch(`${FIRESTORE_BASE}/subscription_requests?key=${FIREBASE_API_KEY}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ fields: {
+        uid:{stringValue:auth.uid}, email:{stringValue:auth.email || ''}, tier:{stringValue:tierKey},
+        date:{stringValue:new Date().toISOString()}, status:{stringValue:'pending'},
+      }})
+    });
+    alert(`تم تسجيل طلبك لباقة "${tierLabel}"! هنتواصل معاك قريبًا لإتمام الاشتراك.`);
+  }catch(err){
+    alert('حصل خطأ، حاول تاني.');
+  }
+}
 
 function setFontScale(scale){
   localStorage.setItem('eihyaha_font_scale', scale);
