@@ -1499,6 +1499,11 @@ async function renderAdminScreen(){
       <div id="adminCommissionSubsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
     </div>
     <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🧾 طلبات الاشتراك</p>
+      <p class="card-sub" style="margin-bottom:10px;">تأكد من وصول التحويل في محفظتك/إنستاباي قبل ما تفعّل أي طلب.</p>
+      <div id="adminSubRequestsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
       <p class="card-title" style="margin-bottom:10px;">📢 إعلان للمستخدمين</p>
       <div id="adminAnnouncementWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
     </div>
@@ -1517,6 +1522,7 @@ async function renderAdminScreen(){
   loadAdminStats();
   loadAdminUsers();
   loadAdminCommissionSubs();
+  loadAdminSubscriptionRequests();
   loadAdminAnnouncement();
   loadAdminFeedback();
   loadAdminUnmatchedQueries();
@@ -1636,8 +1642,8 @@ async function saveCommissionRate(){
   alert('تم حفظ نسبة العمولة.');
 }
 const SUBSCRIPTION_TIERS = [
-  { key:'monthly', label:'شهري' }, { key:'quarterly', label:'ربع سنوي' },
-  { key:'semiannual', label:'نصف سنوي' }, { key:'annual', label:'سنوي' },
+  { key:'monthly', label:'شهري', days:30 }, { key:'quarterly', label:'ربع سنوي', days:90 },
+  { key:'semiannual', label:'نصف سنوي', days:182 }, { key:'annual', label:'سنوي', days:365 },
 ];
 async function getSubscriptionConfig(){
   try{
@@ -1652,6 +1658,8 @@ async function saveSubscriptionConfig(){
     config[tier.key + '_price'] = document.getElementById('subPrice_' + tier.key).value.trim() || '0';
   });
   config.offers_visible = document.getElementById('offersVisibleToggle').checked ? 'yes' : 'no';
+  config.wallet_number = document.getElementById('subWalletNumber').value.trim();
+  config.instapay_handle = document.getElementById('subInstapayHandle').value.trim();
   await firestoreSetDoc('app_config', 'subscriptions', config);
   alert('تم حفظ إعدادات الاشتراكات.');
 }
@@ -1718,9 +1726,57 @@ async function loadAdminCommissionSubs(){
       <input type="checkbox" id="offersVisibleToggle" style="width:auto;" ${subConfig.offers_visible === 'yes' ? 'checked' : ''}>
       <span style="font-size:14px;">إظهار خانة العروض للمستخدمين</span>
     </div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:10px;">بيانات استقبال الدفع (محفظة / إنستاباي)</p>
+    <label class="flabel">رقم المحفظة (فودافون كاش / أورانج كاش..)</label>
+    <input type="text" id="subWalletNumber" placeholder="01xxxxxxxxx" value="${subConfig.wallet_number || ''}">
+    <label class="flabel">رابط أو معرّف إنستاباي</label>
+    <input type="text" id="subInstapayHandle" placeholder="مثال: mohamed@instapay" value="${subConfig.instapay_handle || ''}">
+
     <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="saveSubscriptionConfig()">حفظ إعدادات الاشتراكات</div>
-    <p style="font-size:11px; color:var(--muted); margin-top:8px;">⚠️ التبويب ده بيتحكم في الأسعار والتفعيل بس — التطبيق لسه مالوش بوابة دفع فعلية متكاملة (زي فوري أو باي موب)، فالمستخدم مش هيقدر يدفع فعليًا لحد ما نربط بوابة دفع حقيقية.</p>
+    <p style="font-size:11px; color:var(--muted); margin-top:8px;">⚠️ مفيش بوابة دفع فعلية تلقائية (زي فوري أو باي موب) — المستخدم بيحوّل يدويًا على الرقم/الرابط ده، بيبعت رقم العملية، وإنت بتأكدها من "طلبات الاشتراك" تحت عشان تفعّل اشتراكه.</p>
   `;
+}
+
+// ---------- مراجعة طلبات الاشتراك (دفع يدوي عبر محفظة/إنستاباي) ----------
+async function loadAdminSubscriptionRequests(){
+  const wrap = document.getElementById('adminSubRequestsWrap');
+  const docs = await firestoreListAll('subscription_requests');
+  const requests = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+  if(!wrap) return;
+  const pending = requests.filter(r => r.status === 'pending');
+  if(pending.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش طلبات اشتراك معلّقة دلوقتي.</p>`; return; }
+  const tierLabels = Object.fromEntries(SUBSCRIPTION_TIERS.map(t => [t.key, t.label]));
+  wrap.innerHTML = pending.map(r => `
+    <div class="tool-row" style="cursor:default; flex-wrap:wrap;">
+      <div style="flex:1;">
+        <div class="card-title" style="font-size:14px;">${r.email || r.uid}</div>
+        <div class="card-sub">الباقة: ${tierLabels[r.tier] || r.tier}${r.reference ? ' — رقم العملية: ' + r.reference : ' — لسه معملش تحويل'}</div>
+      </div>
+      <div style="display:flex; gap:6px; margin-top:6px; width:100%;">
+        <div class="choice-btn" style="margin:0; flex:1; text-align:center; background:var(--sand); border-color:var(--gold);" onclick="confirmSubscriptionPayment('${r.id}','${r.uid}','${r.tier}')">✅ تأكيد التحويل وتفعيل</div>
+        <div class="choice-btn" style="margin:0; flex:1; text-align:center; color:var(--danger); border-color:var(--danger);" onclick="rejectSubscriptionRequest('${r.id}')">رفض</div>
+      </div>
+    </div>
+  `).join('');
+}
+async function confirmSubscriptionPayment(requestId, uid, tierKey){
+  if(!confirm('اتأكدت إن التحويل وصل فعليًا في المحفظة/إنستاباي بتاعتك؟')) return;
+  const tier = SUBSCRIPTION_TIERS.find(t => t.key === tierKey);
+  const expiry = new Date(Date.now() + (tier ? tier.days : 30) * 86400000).toISOString();
+  const existingProfile = await firestoreGetDoc('users', uid) || {};
+  await firestoreSetDoc('users', uid, { ...existingProfile, subscription_active:'yes', subscription_tier:tierKey, subscription_expiry:expiry });
+  const existingRequest = await firestoreGetDoc('subscription_requests', requestId) || {};
+  await firestoreSetDoc('subscription_requests', requestId, { ...existingRequest, status:'confirmed' });
+  alert('تم تفعيل اشتراك المستخدم.');
+  loadAdminSubscriptionRequests();
+}
+async function rejectSubscriptionRequest(requestId){
+  const existingRequest = await firestoreGetDoc('subscription_requests', requestId) || {};
+  await firestoreSetDoc('subscription_requests', requestId, { ...existingRequest, status:'rejected' });
+  loadAdminSubscriptionRequests();
 }
 
 // ---------- إعلان للمستخدمين ----------
@@ -10995,40 +11051,61 @@ async function submitSpecialistApplication(){
   openSettingsScreen();
 }
 
+let cachedSubscriptionConfig = null;
 async function openSubscriptionScreen(){
   const wrap = document.getElementById('subscriptionBody');
   wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; margin-top:20px;">جاري التحميل...</p>`;
   showScreen('screen-subscription');
   const config = await getSubscriptionConfig();
+  cachedSubscriptionConfig = config;
   const enabledTiers = SUBSCRIPTION_TIERS.filter(t => config[t.key + '_enabled'] === 'yes');
   if(enabledTiers.length === 0){
     wrap.innerHTML = `<div class="layer-card l1" style="margin-top:14px;"><p class="layer-text">مفيش باقات اشتراك متاحة حاليًا.</p></div>`;
     return;
   }
   wrap.innerHTML = `
-    ${config.offers_visible === 'yes' ? `<div class="layer-card l3" style="margin-top:14px;"><p class="layer-text" style="font-weight:700;">🔥 فيه عروض حالية على بعض الباقات — تواصل معانا لمعرفة التفاصيل.</p></div>` : ''}
+    ${config.offers_visible === 'yes' ? `<div class="layer-card l3" style="margin-top:14px;"><p class="layer-text" style="font-weight:700;">🔥 فيه عروض حالية على بعض الباقات — هتلاقيها موضّحة بعد ما تختار الباقة.</p></div>` : ''}
     ${enabledTiers.map(t => `
       <div class="card">
         <p class="card-title">${t.label}</p>
         <p class="card-sub" style="margin-bottom:10px;">${config[t.key + '_price'] || '0'} جنيه</p>
-        <div class="choice-btn" style="text-align:center;" onclick="requestSubscription('${t.key}', '${t.label}')">اطلب الاشتراك ←</div>
+        <div class="choice-btn" style="text-align:center;" onclick="showPaymentStep('${t.key}', '${t.label}', '${config[t.key + '_price'] || '0'}')">اشترك الآن ←</div>
       </div>
     `).join('')}
-    <p style="font-size:11.5px; color:var(--muted); text-align:center; margin-top:12px;">⚠️ التطبيق لسه مفيهوش بوابة دفع فعلية — طلبك هيتسجّل وهنتواصل معاك لإتمام الاشتراك يدويًا.</p>
+  `;
+}
+function showPaymentStep(tierKey, tierLabel, price){
+  const config = cachedSubscriptionConfig || {};
+  const wrap = document.getElementById('subscriptionBody');
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:#8A6A1E;">حوّل ${price} جنيه لباقة "${tierLabel}" على واحدة من الطريقتين:</p>
+      ${config.wallet_number ? `<p class="layer-text" style="margin-top:8px;">📱 محفظة: <b>${config.wallet_number}</b></p>` : ''}
+      ${config.instapay_handle ? `<p class="layer-text" style="margin-top:4px;">🔗 إنستاباي: <b>${config.instapay_handle}</b></p>` : ''}
+      ${!config.wallet_number && !config.instapay_handle ? `<p class="layer-text" style="margin-top:8px; color:var(--danger);">لسه مفيش بيانات دفع متاحة، حاول تاني بعدين.</p>` : ''}
+    </div>
+    <label class="flabel">بعد التحويل، اكتب رقم العملية (لتأكيد الدفع بعدين)</label>
+    <input type="text" id="subReferenceInput" placeholder="رقم العملية أو مرجع التحويل">
+    <button class="btn-primary" onclick="requestSubscription('${tierKey}', '${tierLabel.replace(/'/g,"\\'")}')">تأكيد إني حوّلت ←</button>
+    <button class="btn-ghost" onclick="openSubscriptionScreen()">رجوع للباقات</button>
+    <p style="font-size:11.5px; color:var(--muted); text-align:center; margin-top:12px;">⚠️ التفعيل هيتم يدويًا بعد ما نتأكد من وصول التحويل — مش فوري، ومفيش بوابة دفع تلقائية دلوقتي.</p>
   `;
 }
 async function requestSubscription(tierKey, tierLabel){
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   if(!auth){ alert('لازم تكون مسجّل دخول'); return; }
+  const reference = document.getElementById('subReferenceInput').value.trim();
+  if(!reference){ alert('اكتب رقم العملية عشان نقدر نتأكد من التحويل'); return; }
   try{
     await fetch(`${FIRESTORE_BASE}/subscription_requests?key=${FIREBASE_API_KEY}`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ fields: {
         uid:{stringValue:auth.uid}, email:{stringValue:auth.email || ''}, tier:{stringValue:tierKey},
-        date:{stringValue:new Date().toISOString()}, status:{stringValue:'pending'},
+        reference:{stringValue:reference}, date:{stringValue:new Date().toISOString()}, status:{stringValue:'pending'},
       }})
     });
-    alert(`تم تسجيل طلبك لباقة "${tierLabel}"! هنتواصل معاك قريبًا لإتمام الاشتراك.`);
+    alert(`تم تسجيل طلبك لباقة "${tierLabel}"! هيتفعّل اشتراكك بعد ما نتأكد من التحويل، خلال وقت قصير.`);
+    openSettingsScreen();
   }catch(err){
     alert('حصل خطأ، حاول تاني.');
   }
