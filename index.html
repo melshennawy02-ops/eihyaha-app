@@ -364,6 +364,16 @@
     <div style="padding:0 16px;" id="supportGuideBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: BECOME A SPECIALIST (من داخل التطبيق) ===================== -->
+  <div class="screen" id="screen-become-specialist">
+    <div class="topbar">
+      <div class="backbtn" onclick="openSettingsScreen()">→</div>
+      <h1>سجّل كمتخصص</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="becomeSpecialistBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: DAFTAR ALNAFS ===================== -->
   <div class="screen" id="screen-daftar">
     <div class="topbar">
@@ -1397,11 +1407,43 @@ async function loginWithBiometric(){
 
 // ================= لوحة الأدمن — قبول أو رفض المتخصصين =================
 // عدّل الإيميل ده لإيميلك الحقيقي عشان تقدر توصل للوحة الأدمن بعد تسجيل الدخول
-const ADMIN_EMAILS = ["melshennawy02@gmail.com"];
+const ADMIN_EMAILS = ["melshennawy02@gmail.com"]; // أدمن أساسي ثابت، ما يتشالش أبدًا من الواجهة
+let DYNAMIC_ADMIN_EMAILS = [...ADMIN_EMAILS]; // بيتوسّع بأدمنز إضافيين من Firestore بعد التحميل
+async function loadAdminEmails(){
+  try{
+    const doc = await firestoreGetDoc('app_config', 'admins');
+    if(doc && doc.emails){
+      const extra = doc.emails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+      DYNAMIC_ADMIN_EMAILS = Array.from(new Set([...ADMIN_EMAILS, ...extra]));
+    }
+  }catch(err){ /* لو فشل التحميل، نفضل شغالين بالأدمن الأساسي بس */ }
+  checkAdminAccess();
+}
+async function saveAdminEmailsList(){
+  const managedOnly = DYNAMIC_ADMIN_EMAILS.filter(e => !ADMIN_EMAILS.includes(e));
+  await firestoreSetDoc('app_config', 'admins', { emails: managedOnly.join(',') });
+}
+async function addAdminEmail(){
+  const input = document.getElementById('newAdminEmail');
+  const email = input.value.trim().toLowerCase();
+  if(!email || !email.includes('@')){ alert('اكتب إيميل صحيح'); return; }
+  if(!DYNAMIC_ADMIN_EMAILS.includes(email)){
+    DYNAMIC_ADMIN_EMAILS.push(email);
+    await saveAdminEmailsList();
+  }
+  input.value = '';
+  renderAdminScreen();
+}
+async function removeAdminEmail(email){
+  if(ADMIN_EMAILS.includes(email)) return; // الأدمن الأساسي محمي
+  DYNAMIC_ADMIN_EMAILS = DYNAMIC_ADMIN_EMAILS.filter(e => e !== email);
+  await saveAdminEmailsList();
+  renderAdminScreen();
+}
 
 function checkAdminAccess(){
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
-  const isAdmin = auth && ADMIN_EMAILS.includes(auth.email);
+  const isAdmin = auth && DYNAMIC_ADMIN_EMAILS.includes((auth.email || '').toLowerCase());
   const navItem = document.getElementById('navitem-admin');
   if(navItem) navItem.style.display = isAdmin ? 'flex' : 'none';
   return isAdmin;
@@ -1417,6 +1459,22 @@ async function renderAdminScreen(){
   const body = document.getElementById('adminBody');
   body.innerHTML = `
     <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">📊 إحصائيات التطبيق</p>
+      <div id="adminStatsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🔑 إدارة صلاحيات الأدمن</p>
+      <p class="card-sub" style="margin-bottom:10px;">أضف إيميل مستخدم مسجّل عشان يقدر يدخل لوحة الأدمن دي زيك.</p>
+      ${DYNAMIC_ADMIN_EMAILS.map(email => `
+        <div class="tool-row" style="cursor:default;">
+          <div><div class="card-title" style="font-size:14px;">${email}</div>${ADMIN_EMAILS.includes(email) ? '<div class="card-sub">أدمن أساسي — ثابت</div>' : '<div class="card-sub">أدمن إضافي</div>'}</div>
+          ${!ADMIN_EMAILS.includes(email) ? `<div class="choice-btn" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="removeAdminEmail('${email}')">إزالة</div>` : ''}
+        </div>
+      `).join('')}
+      <input type="email" id="newAdminEmail" placeholder="إيميل المستخدم الجديد" style="margin-top:10px;">
+      <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="addAdminEmail()">➕ إضافة كأدمن</div>
+    </div>
+    <div class="card">
       <p class="card-title" style="margin-bottom:4px;">🏠 ترتيب الصفحة الرئيسية</p>
       <p class="card-sub" style="margin-bottom:10px;">الترتيب ده هيتطبّق على كل المستخدمين في التطبيق — مش على جهازك بس.</p>
       <div id="adminPillarOrderList"></div>
@@ -1424,6 +1482,7 @@ async function renderAdminScreen(){
     <p style="font-size:14px; color:var(--muted); text-align:center; margin:18px 0 10px;">جاري تحميل طلبات المتخصصين...</p>
   `;
   renderAdminPillarOrder();
+  loadAdminStats();
 
   const docs = await firestoreListAll('specialists');
   const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
@@ -1459,7 +1518,41 @@ async function renderAdminScreen(){
   body.querySelector('p:last-child').replaceWith(specialistsWrap);
 }
 
-// الترتيب الافتراضي الثابت المطلوب: روحاني، شخصي، عائلي، اجتماعي، مهني، مادي، صحي
+// ---------- إحصائيات عامة للتطبيق: عدد الزيارات وعدد المستخدمين المسجّلين ----------
+async function loadAdminStats(){
+  const wrap = document.getElementById('adminStatsWrap');
+  const [statsDoc, usersDocs] = await Promise.all([
+    firestoreGetDoc('app_stats', 'global'),
+    firestoreListAll('users'),
+  ]);
+  const totalVisits = (statsDoc && statsDoc.total_visits) || 0;
+  const totalUsers = usersDocs.length;
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div style="text-align:center;">
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalVisits}</p>
+        <p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي عدد الزيارات</p>
+      </div>
+      <div style="text-align:center;">
+        <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalUsers}</p>
+        <p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي المستخدمين المسجّلين</p>
+      </div>
+    </div>
+    <p style="font-size:11px; color:var(--muted); margin-top:10px;">"الزيارات" = كل مرة يتفتح فيها التطبيق (سواء سجّل دخول أو لأ). "المستخدمين" = حسابات مسجّلة فعليًا.</p>
+  `;
+}
+// كل جلسة (تبويب/فتحة تطبيق) بتتحسب زيارة واحدة بس، حتى لو المستخدم نقل بين شاشات كتير
+async function logAppVisit(){
+  if(sessionStorage.getItem('eihyaha_visit_logged')) return;
+  sessionStorage.setItem('eihyaha_visit_logged', '1');
+  try{
+    const current = await firestoreGetDoc('app_stats', 'global');
+    const newCount = ((current && current.total_visits) || 0) + 1;
+    await firestoreSetDoc('app_stats', 'global', { total_visits: newCount });
+  }catch(err){ /* فشل تسجيل الزيارة مش هيأثر على استخدام التطبيق */ }
+}
+
 const DEFAULT_PILLAR_ORDER = [1,2,3,4,5,6,7];
 
 // ---------- ترتيب الأركان في الصفحة الرئيسية (إعداد عام لكل المستخدمين، أدمن فقط) ----------
@@ -1702,6 +1795,7 @@ function showAuthError(msg){
 async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
   await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
+  await loadAdminEmails();
   await syncSocialSummaryFromCloud(); // مرة واحدة بس هنا، مش مع كل شاشة
   await syncFamilySummaryFromCloud();
   await syncSpiritualSummaryFromCloud();
@@ -2191,7 +2285,38 @@ function renderSettingsSection(){
         <div class="choice-btn" style="margin:0; padding:6px 14px; ${autoSyncOn ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="toggleSetting('eihyaha_auto_sync', ${autoSyncOn})">${autoSyncOn ? 'مفعّلة' : 'مقفولة'}</div>
       </div>
       <div class="choice-btn" style="text-align:center; margin-bottom:8px;" onclick="exportUserData()">⬇️ تصدير بياناتي</div>
-      <div class="choice-btn" style="text-align:center; color:var(--danger); border-color:var(--danger);" onclick="confirmDeleteLocalData()">🗑️ حذف بياناتي المحلية</div>
+      <div class="choice-btn" style="text-align:center; margin-bottom:8px;" onclick="triggerImportFile()">⬆️ استيراد بياناتي</div>
+      <input type="file" id="importFileInput" accept="application/json" style="display:none;" onchange="importUserData(this)">
+      <div class="choice-btn" style="text-align:center; margin-bottom:8px; color:var(--danger); border-color:var(--danger);" onclick="confirmDeleteLocalData()">🗑️ حذف بياناتي المحلية</div>
+      <div class="choice-btn" style="text-align:center; color:var(--danger); border-color:var(--danger);" onclick="confirmDeleteCloudAccount()">🗑️ حذف حسابي نهائيًا (محلي + سحابة)</div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🏠 تخصيص الصفحة الرئيسية</p>
+      <p class="card-sub" style="margin-bottom:10px;">اختار الأركان اللي تحب تظهرلك في الرئيسية.</p>
+      ${PILLARS.map(p => {
+        const hidden = JSON.parse(localStorage.getItem('eihyaha_hidden_pillars') || '[]').includes(p.id);
+        return `
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <span style="font-size:14px;">${p.icon} ${p.title}</span>
+          <div class="choice-btn" style="margin:0; padding:6px 14px; ${!hidden ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="togglePillarVisibility(${p.id})">${!hidden ? 'ظاهر' : 'مخفي'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🔤 حجم الخط</p>
+      <div style="display:flex; gap:8px;">
+        ${['0.9','1','1.15','1.3'].map(s => `
+          <div class="choice-btn" style="flex:1; text-align:center; margin:0; ${(localStorage.getItem('eihyaha_font_scale') || '1') === s ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setFontScale('${s}')">${s === '0.9' ? 'صغير' : s === '1' ? 'عادي' : s === '1.15' ? 'كبير' : 'أكبر'}</div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">🧑‍⚕️ عايز تنضم كمتخصص؟</p>
+      <p class="card-sub" style="margin-bottom:10px;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك تظهر للمستخدمين.</p>
+      <div class="choice-btn" style="text-align:center;" onclick="openBecomeSpecialistScreen()">سجّل كمتخصص ←</div>
     </div>
 
     <div class="card">
@@ -2200,6 +2325,13 @@ function renderSettingsSection(){
       <div class="choice-btn" style="text-align:center; margin-top:12px;" onclick="shareApp('general')">📤 شارك التطبيق مع حد تحبه</div>
     </div>
   `;
+}
+function togglePillarVisibility(id){
+  let hidden = JSON.parse(localStorage.getItem('eihyaha_hidden_pillars') || '[]');
+  if(hidden.includes(id)) hidden = hidden.filter(x => x !== id);
+  else hidden.push(id);
+  localStorage.setItem('eihyaha_hidden_pillars', JSON.stringify(hidden));
+  openSettingsScreen();
 }
 function toggleSetting(key, currentOn){
   localStorage.setItem(key, currentOn ? 'off' : 'on');
@@ -2493,7 +2625,8 @@ function renderHome(){
   const lifeBalanceWrap = document.getElementById('lifeBalanceCardWrap');
   if(lifeBalanceWrap) lifeBalanceWrap.innerHTML = renderLifeBalanceCard();
   const grid = document.getElementById('pillarsGrid');
-  grid.innerHTML = PILLARS.map(p => {
+  const hiddenPillars = JSON.parse(localStorage.getItem('eihyaha_hidden_pillars') || '[]');
+  grid.innerHTML = PILLARS.filter(p => !hiddenPillars.includes(p.id)).map(p => {
     const bg = p.img
       ? `linear-gradient(135deg, rgba(10,20,18,.75), rgba(10,20,18,.35)), url('${p.img}') center/cover no-repeat`
       : p.grad;
@@ -10476,6 +10609,109 @@ function confirmDeleteLocalData(){
   alert('اتمسحت بياناتك المحلية. هيتم إعادة تحميل التطبيق.');
   location.reload();
 }
+function triggerImportFile(){
+  document.getElementById('importFileInput').click();
+}
+function importUserData(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      const keys = Object.keys(data).filter(k => k.startsWith('eihyaha_'));
+      if(keys.length === 0){ alert('الملف ده مش ملف بيانات صحيح من التطبيق.'); return; }
+      if(!confirm(`هيتم استيراد ${keys.length} عنصر بيانات، وهيستبدل أي بيانات موجودة عندك حاليًا على الجهاز ده. متأكد؟`)) return;
+      keys.forEach(k => localStorage.setItem(k, data[k]));
+      alert('تم الاستيراد بنجاح! هيتم إعادة تحميل التطبيق.');
+      location.reload();
+    }catch(err){
+      alert('تعذّر قراءة الملف — تأكد إنه ملف تصدير صحيح من التطبيق.');
+    }
+  };
+  reader.readAsText(file);
+}
+async function confirmDeleteCloudAccount(){
+  if(!confirm('هيتم حذف حسابك نهائيًا من السحابة (كل ملخصات تقدمك في كل الأركان) بالإضافة لبياناتك المحلية. الإجراء ده لا يمكن التراجع عنه. متأكد؟')) return;
+  const uid = getUserId();
+  if(uid && isLoggedIn()){
+    const collections = ['users','social_summary','family_summary','spiritual_summary','personal_summary','professional_summary','financial_summary','health_summary'];
+    await Promise.all(collections.map(c =>
+      fetch(`${FIRESTORE_BASE}/${c}/${uid}?key=${FIREBASE_API_KEY}`, { method:'DELETE' }).catch(() => {})
+    ));
+  }
+  const keys = [];
+  for(let i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key.startsWith('eihyaha_')) keys.push(key);
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+  alert('اتمسح حسابك بالكامل من السحابة والجهاز. هيتم إعادة تحميل التطبيق.');
+  location.reload();
+}
+
+function openBecomeSpecialistScreen(){
+  if(!isLoggedIn()){ alert('لازم تكون مسجّل دخول الأول'); return; }
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const wrap = document.getElementById('becomeSpecialistBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك هنا عشان تظهر لمستخدمي التطبيق في "مين المختص المناسب ليك؟".</p>
+    <label class="flabel">الاسم الكامل</label>
+    <input type="text" id="becomeSpecFullName" placeholder="الاسم الكامل" value="${auth.username || ''}">
+    <label class="flabel">التخصص</label>
+    <input type="text" id="becomeSpecSpecialty" placeholder="مثال: لايف كوتش / استشاري نفسي / دكتور نفسي">
+    <label class="flabel">سنوات الخبرة</label>
+    <input type="number" id="becomeSpecExperience" placeholder="عدد السنوات">
+    <label class="flabel">رقم الترخيص/العضوية (اختياري)</label>
+    <input type="text" id="becomeSpecLicense" placeholder="رقم الترخيص">
+    <label class="flabel">نبذة مختصرة</label>
+    <textarea id="becomeSpecBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;"></textarea>
+    <label class="flabel">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
+    <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
+    <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
+      <input type="checkbox" id="becomeSpecCommissionAgree" style="width:auto; margin-top:3px;">
+      <label for="becomeSpecCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد <b>عمولة</b> على أي جلسة أو استشارة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-top:8px;">طلبك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
+    <button class="btn-primary" onclick="submitSpecialistApplication()">إرسال الطلب</button>
+  `;
+  showScreen('screen-become-specialist');
+}
+async function submitSpecialistApplication(){
+  const fullName = document.getElementById('becomeSpecFullName').value.trim();
+  const specialty = document.getElementById('becomeSpecSpecialty').value.trim();
+  const experience = document.getElementById('becomeSpecExperience').value.trim();
+  const license = document.getElementById('becomeSpecLicense').value.trim();
+  const bio = document.getElementById('becomeSpecBio').value.trim();
+  const agreedCommission = document.getElementById('becomeSpecCommissionAgree').checked;
+  if(!fullName || !specialty){ alert('لازم تملأ الاسم والتخصص'); return; }
+  if(!specialistImageBase64){ alert('لازم ترفع صورة شهادة أو بطاقة نقابية تثبت تخصصك'); return; }
+  if(!agreedCommission){ alert('لازم توافق على سياسة العمولة قبل التسجيل'); return; }
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(!auth){ alert('لازم تكون مسجّل دخول'); return; }
+  const uid = auth.uid;
+  const existingProfile = await firestoreGetDoc('users', uid) || {};
+  await firestoreSetDoc('users', uid, { ...existingProfile, role:'specialist' });
+  await firestoreSetDoc('specialists', uid, {
+    fullName, specialty, experience: experience || '', license: license || '',
+    bio: bio || '', email: auth.email || '', certificateImage: specialistImageBase64, status:'pending', agreedCommission:'yes',
+  });
+  specialistImageBase64 = '';
+  alert('تم إرسال طلبك بنجاح! هيتم مراجعته من الإدارة قريبًا.');
+  openSettingsScreen();
+}
+
+
+function setFontScale(scale){
+  localStorage.setItem('eihyaha_font_scale', scale);
+  applyFontScale();
+  openSettingsScreen();
+}
+function applyFontScale(){
+  const scale = localStorage.getItem('eihyaha_font_scale') || '1';
+  const appEl = document.getElementById('app');
+  if(appEl) appEl.style.zoom = scale;
+}
 
 function setTaskNotifications(state){
   localStorage.setItem('eihyaha_task_notifications', state);
@@ -10586,6 +10822,7 @@ async function loadFullHistory(){
 // ---------- تشغيل أولي ----------
 history.replaceState({ stackLen: 1 }, '', location.href);
 applyTheme(localStorage.getItem('eihyaha_theme') || 'classic');
+applyFontScale();
 applyLanguage();
 renderJournalHistory();
 renderStickyNotes('stickyNotesList', 10);
@@ -10599,6 +10836,7 @@ renderHealingEntryPoint();
 // عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
 renderGateScreen();
 showScreen('screen-gate');
+logAppVisit();
 </script>
 </body>
 </html>
