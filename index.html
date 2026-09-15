@@ -195,6 +195,8 @@
 
       <div id="lifeBalanceCardWrap"></div>
 
+      <div id="homeSpecialistsCarouselWrap"></div>
+
       <div style="display:flex; align-items:center; gap:8px; margin:6px 0 14px;">
         <span style="font-size:17px;">🌿</span>
         <p style="font-size:12px; color:var(--muted); margin:0;">كل ركن .. خطوة نحو توازنك</p>
@@ -1079,6 +1081,16 @@
     <div style="padding:0 16px;" id="adminBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: ADMIN USERS (بحث وإدارة كل المستخدمين) ===================== -->
+  <div class="screen" id="screen-admin-users">
+    <div class="topbar">
+      <div class="backbtn" onclick="openAdminScreen()">→</div>
+      <h1>حسابات المستخدمين</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="adminUsersScreenBody"></div>
+  </div>
+
   <!-- ===================== BOTTOM NAV ===================== -->
   <!-- ===================== SCREEN: NOTIFICATIONS ===================== -->
   <div class="screen" id="screen-notifications">
@@ -1491,10 +1503,6 @@ async function renderAdminScreen(){
       <div id="adminPillarOrderList"></div>
     </div>
     <div class="card">
-      <p class="card-title" style="margin-bottom:10px;">👥 حسابات المستخدمين</p>
-      <div id="adminUsersWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
-    </div>
-    <div class="card">
       <p class="card-title" style="margin-bottom:10px;">💰 العمولة والاشتراكات</p>
       <div id="adminCommissionSubsWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
     </div>
@@ -1520,7 +1528,6 @@ async function renderAdminScreen(){
   `;
   renderAdminPillarOrder();
   loadAdminStats();
-  loadAdminUsers();
   loadAdminCommissionSubs();
   loadAdminSubscriptionRequests();
   loadAdminAnnouncement();
@@ -1548,7 +1555,14 @@ async function renderAdminScreen(){
         ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
         ${s.license ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
         <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
-        ${s.sessionPrice || s.packagePrice ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">${s.sessionPrice ? 'سعر الجلسة: ' + s.sessionPrice + ' جنيه' : ''}${s.packagePrice ? ' — الباقة الشهرية: ' + s.packagePrice + ' جنيه' : ''}</p>` : ''}
+        ${s.availability ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">ساعات العمل: ${s.availability}</p>` : ''}
+        ${buildSpecialistPricingSummaryText(s) ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">${buildSpecialistPricingSummaryText(s)}</p>` : ''}
+        ${(s.payoutWallet || s.payoutInstapay) ? `
+        <div style="background:var(--sand); border-radius:10px; padding:10px; margin-bottom:8px;">
+          <p style="font-size:12px; color:#8A6153; font-weight:700; margin:0 0 4px;">🔒 بيانات استلام الأرباح (أدمن فقط)</p>
+          ${s.payoutWallet ? `<p style="font-size:13px; color:var(--text); margin:0;">محفظة: ${s.payoutWallet}</p>` : ''}
+          ${s.payoutInstapay ? `<p style="font-size:13px; color:var(--text); margin:2px 0 0;">إنستاباي: ${s.payoutInstapay}</p>` : ''}
+        </div>` : ''}
         ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
         ${s.status === 'pending' ? `
           <div style="display:flex; gap:8px;">
@@ -1595,7 +1609,7 @@ async function loadAdminStats(){
   wrap.innerHTML = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
       <div style="text-align:center;"><p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalVisits}</p><p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي الزيارات</p></div>
-      <div style="text-align:center;"><p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${totalUsers}</p><p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي المستخدمين</p></div>
+      <div style="text-align:center; cursor:pointer;" onclick="openAdminUsersScreen()"><p style="font-size:26px; font-weight:700; margin:0; color:var(--text); text-decoration:underline; text-decoration-color:var(--gold);">${totalUsers}</p><p style="font-size:12.5px; color:var(--muted); margin:4px 0 0;">إجمالي المستخدمين</p></div>
     </div>
     <p style="font-size:11px; color:var(--muted); margin-top:10px;">معدل التحويل (زيارة ← حساب): <b style="color:var(--text);">${conversionRate}٪</b></p>
 
@@ -1667,12 +1681,28 @@ async function saveSubscriptionConfig(){
 const DEFAULT_PILLAR_ORDER = [1,2,3,4,5,6,7];
 
 // ---------- إدارة حسابات المستخدمين ----------
+let cachedAdminUsers = [];
+function openAdminUsersScreen(){
+  const wrap = document.getElementById('adminUsersScreenBody');
+  wrap.innerHTML = `
+    <input type="text" id="adminUserSearchInput" placeholder="دوّر بالإيميل..." oninput="renderAdminUsersList(this.value)" style="margin:14px 0;">
+    <div id="adminUsersListWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
+  `;
+  showScreen('screen-admin-users');
+  loadAdminUsers();
+}
 async function loadAdminUsers(){
-  const wrap = document.getElementById('adminUsersWrap');
   const docs = await firestoreListAll('users');
-  const users = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  cachedAdminUsers = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  const currentQuery = document.getElementById('adminUserSearchInput') ? document.getElementById('adminUserSearchInput').value : '';
+  renderAdminUsersList(currentQuery);
+}
+function renderAdminUsersList(query){
+  const wrap = document.getElementById('adminUsersListWrap');
   if(!wrap) return;
-  if(users.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش مستخدمين لسه.</p>`; return; }
+  const q = (query || '').trim().toLowerCase();
+  const users = q ? cachedAdminUsers.filter(u => (u.email || '').toLowerCase().includes(q)) : cachedAdminUsers;
+  if(users.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">${q ? 'مفيش مستخدم بالإيميل ده.' : 'مفيش مستخدمين لسه.'}</p>`; return; }
   wrap.innerHTML = users.map(u => `
     <div class="tool-row" style="cursor:default; flex-wrap:wrap;">
       <div style="flex:1;">
@@ -1891,7 +1921,7 @@ const SPECIALIST_CATEGORIES = [
     definition:'مدرّب متخصص في مساعدتك تحدد أهدافك وتوصل لها بخطوات عملية — مش معالج ومش بيشخّص أي حالة نفسية.',
     whenNeeded:['عايز تطوّر نفسك أو تبني عادة جديدة', 'محتاج خطة واضحة لهدف أو مرحلة جديدة في حياتك أو شغلك', 'بتتغلب على التسويف أو محتاج دفعة تحفيزية'],
     important:'مش بديل عن علاج نفسي — لو عندك اضطراب نفسي حقيقي (قلق شديد، اكتئاب)، الكوتش مش الجهة المناسبة.',
-    keywords:['كوتش','لايف كوتش','مدرب حياة','كوتشينج'],
+    keywords:['كوتش','لايف كوتش','مدرب حياة','مدربة حياة','كوتشينج'],
     img:'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?fm=jpg&q=70&w=900&auto=format&fit=crop', overlay:'rgba(20,45,30,.5)',
   },
   {
@@ -1899,7 +1929,7 @@ const SPECIALIST_CATEGORIES = [
     definition:'متخصص مؤهل في الصحة النفسية، مدرّب على تقييم وعلاج المشاعر والسلوكيات عن طريق جلسات علاج نفسي (زي العلاج المعرفي السلوكي) — مش طبيب ومبيصفش أدوية.',
     whenNeeded:['قلق أو ضيق نفسي مستمر بيأثر على حياتك اليومية', 'صعوبة في التعامل مع صدمة، حزن، أو خسارة', 'مشاكل متكررة في العلاقات أو أنماط تفكير وسلوك محتاجة شغل أعمق'],
     important:'الفرق الجوهري بينه وبين الدكتور النفسي: العلاج بالكلام والتقنيات النفسية، مش بالدواء.',
-    keywords:['استشاري نفسي','معالج نفسي','أخصائي نفسي','مرشد نفسي','معالجة نفسية','أخصائية نفسية'],
+    keywords:['استشاري نفسي','استشارية نفسية','معالج نفسي','معالجة نفسية','أخصائي نفسي','أخصائية نفسية','مرشد نفسي','مرشدة نفسية'],
     img:'https://images.unsplash.com/photo-1573497491208-6b1acb260507?fm=jpg&q=70&w=900&auto=format&fit=crop', overlay:'rgba(20,30,45,.5)',
   },
   {
@@ -1907,7 +1937,7 @@ const SPECIALIST_CATEGORIES = [
     definition:'طبيب بشري متخصص في الطب النفسي، بيقدر يشخّص الاضطرابات النفسية طبيًا ويصف علاج دوائي — وده أهم فرق بينه وبين الاستشاري النفسي.',
     whenNeeded:['أعراض شديدة أو مستمرة (اكتئاب حاد، قلق معطّل، اضطراب ثنائي القطب)', 'حالات محتاجة تقييم دوائي أو تشخيص طبي رسمي', 'لو استشاري نفسي حوّلك له لأنك محتاج علاج دوائي بجانب الجلسات'],
     important:'هو الوحيد من التلاتة اللي يقدر يوصف دواء — لأنه طبيب بشري بالدرجة الأولى.',
-    keywords:['دكتور نفسي','طبيب نفسي','طبيب نفساني','استشاري طب نفسي'],
+    keywords:['دكتور نفسي','دكتورة نفسية','طبيب نفسي','طبيبة نفسية','طبيب نفساني','طبيبة نفسانية','استشاري طب نفسي','استشارية طب نفسي'],
     img:'https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=900&auto=format&fit=crop', overlay:'rgba(10,25,35,.5)',
   },
 ];
@@ -1945,11 +1975,17 @@ async function browseSpecialistsByCategory(categoryKey){
     specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
   } catch(e){ specialists = []; }
 
-  const rawNorm = s => (s || '').toLowerCase();
   const matched = specialists.filter(s => {
     if(s.status !== 'approved') return false;
-    const specialtyText = rawNorm(s.specialty);
-    return category.keywords.some(k => specialtyText.includes(k));
+    if(!s.specialty) return false;
+    const specialtyNorm = normalizeArabic(s.specialty);
+    const specialtyWords = new Set(tokenizeArabic(s.specialty));
+    return category.keywords.some(k => {
+      const kNorm = normalizeArabic(k);
+      if(specialtyNorm.includes(kNorm)) return true;
+      const kWords = tokenizeArabic(k);
+      return kWords.length > 0 && kWords.every(w => specialtyWords.has(w));
+    });
   });
 
   if(matched.length === 0){
@@ -1965,16 +2001,111 @@ async function browseSpecialistsByCategory(categoryKey){
     <div class="card" style="margin-top:14px;">
       <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
       <p class="card-sub">${s.specialty || ''}${s.experience ? ' — ' + s.experience + ' سنة خبرة' : ''}</p>
+      ${s.availability ? `<p style="font-size:13px; color:var(--muted); margin-top:6px;">🕒 ${s.availability}</p>` : ''}
       ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-top:8px;">${s.bio}</p>` : ''}
-      ${(s.sessionPrice || s.packagePrice) ? `
-        <div style="background:var(--sand); border-radius:10px; padding:10px; margin-top:10px;">
-          ${s.sessionPrice ? `<p style="font-size:13.5px; color:var(--text); margin:0;">💵 الجلسة: <b>${s.sessionPrice} جنيه</b></p>` : ''}
-          ${s.packagePrice ? `<p style="font-size:13.5px; color:var(--text); margin:4px 0 0;">📦 باقة شهرية: <b>${s.packagePrice} جنيه</b></p>` : ''}
-        </div>` : ''}
-      ${s.offerActive === 'yes' && s.offerText ? `<p style="font-size:13px; color:var(--danger); font-weight:700; margin-top:8px;">🔥 عرض خاص: ${s.offerText}</p>` : ''}
+      ${buildSpecialistPricingCardHtml(s)}
+      ${s.offerActive === 'yes' && s.offerText ? `<p style="font-size:13px; color:var(--danger); font-weight:700; margin-top:8px;">🔥 ${s.offerText}</p>` : ''}
       ${s.email ? `<p style="font-size:13px; color:var(--muted); margin-top:8px;">للتواصل: ${s.email}</p>` : ''}
     </div>
   `).join('');
+}
+function parseSpecialistTrack(s, trackKey){
+  try{ return JSON.parse(s['pricing' + trackKey] || '{}'); }catch(e){ return {}; }
+}
+function isSpecialistDiscountLive(s){
+  if(s.discountEnabled !== 'yes' || !s.discountEndDate) return false;
+  return new Date(s.discountEndDate) >= new Date(new Date().toDateString());
+}
+function priceRowHtml(label, price, originalPrice, discountLive){
+  const showDiscount = discountLive && originalPrice && Number(originalPrice) > Number(price);
+  return `<p style="font-size:13.5px; color:var(--text); margin:4px 0 0;">${label}: ${showDiscount ? `<span style="text-decoration:line-through; color:var(--muted); font-size:12px;">${originalPrice} جنيه</span> ` : ''}<b>${price} جنيه</b></p>`;
+}
+function buildSpecialistPricingCardHtml(s){
+  const online = parseSpecialistTrack(s, 'Online');
+  const offline = parseSpecialistTrack(s, 'Offline');
+  const discountLive = isSpecialistDiscountLive(s);
+  const trackHtml = (track, label) => {
+    if(!track || !track.enabled) return '';
+    const sessions = (track.sessions || []).map(r => priceRowHtml('💵 جلسة ' + r.duration, r.price, r.originalPrice, discountLive)).join('');
+    const packages = (track.packages || []).map(r => priceRowHtml('📦 باقة ' + r.count + ' جلسة (' + r.duration + ')', r.price, r.originalPrice, discountLive)).join('');
+    if(!sessions && !packages) return '';
+    return `<p style="font-size:12.5px; color:#8A6A1E; font-weight:700; margin-top:8px;">${label}</p>${sessions}${packages}`;
+  };
+  const html = trackHtml(online, '💻 أونلاين') + trackHtml(offline, '🏠 أوف لاين');
+  if(!html) return '';
+  return `<div style="background:var(--sand); border-radius:10px; padding:10px; margin-top:10px;">${html}${discountLive ? `<p style="font-size:11px; color:var(--danger); font-weight:700; margin-top:8px;">🔥 عرض ساري لحد ${s.discountEndDate}</p>` : ''}</div>`;
+}
+function buildSpecialistPricingSummaryText(s){
+  const online = parseSpecialistTrack(s, 'Online');
+  const offline = parseSpecialistTrack(s, 'Offline');
+  const parts = [];
+  [['أونلاين', online], ['أوف لاين', offline]].forEach(([label, track]) => {
+    if(!track || !track.enabled) return;
+    (track.sessions || []).forEach(r => parts.push(`${label} - جلسة ${r.duration}: ${r.price} جنيه`));
+    (track.packages || []).forEach(r => parts.push(`${label} - باقة ${r.count} جلسة (${r.duration}): ${r.price} جنيه`));
+  });
+  return parts.join(' — ');
+}
+
+// ============================================================
+// عرض متحرك للمتخصصين في الصفحة الرئيسية
+// ============================================================
+let homeCarouselSpecialists = [];
+let homeCarouselIndex = 0;
+let homeCarouselInterval = null;
+async function loadHomeSpecialistsCarousel(){
+  const wrap = document.getElementById('homeSpecialistsCarouselWrap');
+  if(!wrap) return;
+  try{
+    const docs = await firestoreListAll('specialists');
+    homeCarouselSpecialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
+      .filter(s => s.status === 'approved');
+  }catch(e){ homeCarouselSpecialists = []; }
+  if(homeCarouselInterval) clearInterval(homeCarouselInterval);
+  if(homeCarouselSpecialists.length === 0){ wrap.innerHTML = ''; return; }
+  homeCarouselIndex = 0;
+  renderHomeCarouselCard();
+  if(homeCarouselSpecialists.length > 1){
+    homeCarouselInterval = setInterval(() => {
+      homeCarouselIndex = (homeCarouselIndex + 1) % homeCarouselSpecialists.length;
+      renderHomeCarouselCard();
+    }, 4500);
+  }
+}
+function homeCarouselGo(dir){
+  homeCarouselIndex = (homeCarouselIndex + dir + homeCarouselSpecialists.length) % homeCarouselSpecialists.length;
+  renderHomeCarouselCard();
+  if(homeCarouselInterval) clearInterval(homeCarouselInterval);
+  if(homeCarouselSpecialists.length > 1){
+    homeCarouselInterval = setInterval(() => {
+      homeCarouselIndex = (homeCarouselIndex + 1) % homeCarouselSpecialists.length;
+      renderHomeCarouselCard();
+    }, 4500);
+  }
+}
+function renderHomeCarouselCard(){
+  const wrap = document.getElementById('homeSpecialistsCarouselWrap');
+  if(!wrap || homeCarouselSpecialists.length === 0) return;
+  const s = homeCarouselSpecialists[homeCarouselIndex];
+  wrap.innerHTML = `
+    <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:pointer; margin-top:8px;" onclick="openSpecialistsDirectory()">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-size:12px; color:var(--gold); font-weight:700;">🧑‍⚕️ من المتخصصين عندنا</span>
+        ${homeCarouselSpecialists.length > 1 ? `
+        <div style="display:flex; gap:10px;">
+          <span style="cursor:pointer; padding:2px 6px;" onclick="event.stopPropagation(); homeCarouselGo(1)">‹</span>
+          <span style="cursor:pointer; padding:2px 6px;" onclick="event.stopPropagation(); homeCarouselGo(-1)">›</span>
+        </div>` : ''}
+      </div>
+      <p style="font-size:15px; font-weight:700; margin:0; color:var(--text);">${s.fullName || 'بدون اسم'}</p>
+      <p style="font-size:13px; color:var(--muted); margin:2px 0 0;">${s.specialty || ''}</p>
+      ${s.offerActive === 'yes' && s.offerText ? `<p style="font-size:12.5px; color:var(--danger); font-weight:700; margin-top:6px;">🔥 ${s.offerText}</p>` : ''}
+      ${homeCarouselSpecialists.length > 1 ? `
+      <div style="display:flex; justify-content:center; gap:5px; margin-top:8px;">
+        ${homeCarouselSpecialists.map((_, i) => `<span style="width:6px; height:6px; border-radius:50%; background:${i === homeCarouselIndex ? 'var(--gold)' : 'var(--layer-l2-border)'};"></span>`).join('')}
+      </div>` : ''}
+    </div>
+  `;
 }
 
 // ============================================================
@@ -2947,6 +3078,7 @@ function renderHome(){
   if(followUpWrap) followUpWrap.innerHTML = renderFollowUpCard();
   const lifeBalanceWrap = document.getElementById('lifeBalanceCardWrap');
   if(lifeBalanceWrap) lifeBalanceWrap.innerHTML = renderLifeBalanceCard();
+  loadHomeSpecialistsCarousel();
   const grid = document.getElementById('pillarsGrid');
   const hiddenPillars = JSON.parse(localStorage.getItem('eihyaha_hidden_pillars') || '[]');
   grid.innerHTML = PILLARS.filter(p => !hiddenPillars.includes(p.id)).map(p => {
@@ -3004,7 +3136,7 @@ function goHome(){
   showScreen('screen-home');
   document.querySelector('.navitem[data-nav="home"]').classList.add('active');
   renderHomeTasksPreview();
-  renderStickyNotes('homeStickyNotesList', 3);
+  renderStickyNotes('homeStickyNotesList', false);
   renderHomeDailyFlash();
   renderHomeSpiritualTouch();
 }
@@ -10612,20 +10744,56 @@ async function finalizeSticky(inputId, chooserId, alsoJournal){
 
   input.value = '';
   document.getElementById(chooserId).innerHTML = '';
-  renderStickyNotes('stickyNotesList', 10);
-  renderStickyNotes('homeStickyNotesList', 3);
+  renderStickyNotes('stickyNotesList', true);
+  renderStickyNotes('homeStickyNotesList', false);
 }
 
-function renderStickyNotes(targetId, limit){
+// حالة "شوف المزيد" لكل قائمة طويلة في التطبيق — مفتاح فريد لكل قائمة
+const expandedLists = {};
+function toggleListExpand(listKey){
+  expandedLists[listKey] = !expandedLists[listKey];
+  if(listKey === 'stickyNotesList') renderStickyNotes('stickyNotesList', true);
+}
+
+const STICKY_PREVIEW_COUNT = 2;
+function renderStickyNotes(targetId, allowEdit){
   const notes = getStickyNotes();
   const wrap = document.getElementById(targetId);
   if(!wrap) return;
   if(notes.length === 0){ wrap.innerHTML = ''; return; }
-  wrap.innerHTML = notes.slice(0, limit || 10).map(n => `
+  const expanded = !!expandedLists[targetId];
+  const visibleCount = allowEdit ? (expanded ? notes.length : STICKY_PREVIEW_COUNT) : 3;
+  wrap.innerHTML = notes.slice(0, visibleCount).map((n, i) => `
     <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); padding:10px 14px; margin-bottom:6px;">
-      <p style="font-size:13px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <p style="font-size:13px; color:var(--muted); margin:0 0 4px;">${n.date}</p>
+        ${allowEdit ? `
+        <div style="display:flex; gap:10px;">
+          <span style="cursor:pointer;" onclick="editStickyNote(${i})">✏️</span>
+          <span style="cursor:pointer;" onclick="deleteStickyNote(${i})">🗑️</span>
+        </div>` : ''}
+      </div>
       <p style="font-size:15px; color:var(--text); margin:0;">${n.text}</p>
-    </div>`).join('');
+    </div>`).join('') + (allowEdit && notes.length > STICKY_PREVIEW_COUNT ? `
+    <div class="choice-btn" style="text-align:center;" onclick="toggleListExpand('${targetId}')">${expanded ? '▲ اقفل' : '▼ شوف المزيد (' + (notes.length - STICKY_PREVIEW_COUNT) + ')'}</div>
+  ` : '');
+}
+function editStickyNote(index){
+  const notes = getStickyNotes();
+  const updated = prompt('عدّل ملاحظتك:', notes[index].text);
+  if(updated === null) return;
+  const trimmed = updated.trim();
+  if(!trimmed) return;
+  notes[index].text = trimmed;
+  localStorage.setItem('eihyaha_sticky_notes', JSON.stringify(notes));
+  renderStickyNotes('stickyNotesList', true);
+}
+function deleteStickyNote(index){
+  if(!confirm('تحذف الملاحظة دي نهائيًا؟')) return;
+  const notes = getStickyNotes();
+  notes.splice(index, 1);
+  localStorage.setItem('eihyaha_sticky_notes', JSON.stringify(notes));
+  renderStickyNotes('stickyNotesList', true);
 }
 
 // ================= قراءة السجل الكامل من Firestore (كل الأجهزة) مقسّم بالتاريخ =================
@@ -10984,10 +11152,17 @@ async function confirmDeleteCloudAccount(){
   location.reload();
 }
 
+let specialistPricing = {
+  online: { enabled:false, sessions:[], packages:[] },
+  offline: { enabled:false, sessions:[], packages:[] },
+};
+let specialistDiscountEnabled = false;
 async function openBecomeSpecialistScreen(){
   if(!isLoggedIn()){ alert('لازم تكون مسجّل دخول الأول'); return; }
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   const commissionRate = await getCommissionRate();
+  specialistPricing = { online:{enabled:false, sessions:[], packages:[]}, offline:{enabled:false, sessions:[], packages:[]} };
+  specialistDiscountEnabled = false;
   const wrap = document.getElementById('becomeSpecialistBody');
   wrap.innerHTML = `
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك هنا عشان تظهر لمستخدمي التطبيق في "مين المختص المناسب ليك؟".</p>
@@ -11001,25 +11176,105 @@ async function openBecomeSpecialistScreen(){
     <input type="text" id="becomeSpecLicense" placeholder="رقم الترخيص">
     <label class="flabel">نبذة مختصرة</label>
     <textarea id="becomeSpecBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;"></textarea>
-    <label class="flabel">سعر الجلسة (جنيه)</label>
-    <input type="number" id="becomeSpecSessionPrice" placeholder="مثال: 300">
-    <label class="flabel">سعر الباقة الشهرية (اختياري، جنيه)</label>
-    <input type="number" id="becomeSpecPackagePrice" placeholder="مثال: 1000">
-    <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px;">
-      <input type="checkbox" id="becomeSpecOfferActive" style="width:auto; margin-top:3px;">
-      <label for="becomeSpecOfferActive" style="font-size:14px; color:var(--text);">عندي عرض خاص لفترة محدودة</label>
+    <label class="flabel">ساعات عملك المتاحة (نص وصفي)</label>
+    <input type="text" id="becomeSpecAvailability" placeholder="مثال: السبت-الخميس 4-10 مساءً">
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; padding:10px; background:var(--sand); border-radius:10px;">
+      <input type="checkbox" id="becomeSpecDiscountEnabled" style="width:auto;" onchange="specialistDiscountEnabled=this.checked; document.getElementById('specDiscountDateRow').style.display=this.checked?'block':'none'; renderSpecialistPricingTracks();">
+      <span style="font-size:14px; font-weight:700;">🔥 فعّل عرض خصم لفترة محدودة على كل أسعارك</span>
     </div>
-    <input type="text" id="becomeSpecOfferText" placeholder="مثال: خصم 20٪ على الجلسة الأولى" style="margin-top:8px;">
-    <label class="flabel">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
+    <div id="specDiscountDateRow" style="display:none; margin-bottom:8px;">
+      <label class="flabel">العرض ساري لحد تاريخ</label>
+      <input type="date" id="becomeSpecDiscountEndDate">
+    </div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:8px;">صمّم باقاتك — أونلاين وأوف لاين منفصلين</p>
+    <div id="specPricingTracksWrap"></div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px;">
+      <input type="checkbox" id="becomeSpecOfferActive" style="width:auto; margin-top:3px;">
+      <label for="becomeSpecOfferActive" style="font-size:14px; color:var(--text);">عندي نص عرض إضافي أحب أوضحه (اختياري)</label>
+    </div>
+    <input type="text" id="becomeSpecOfferText" placeholder="مثال: أول جلسة استشارية مجانية">
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:8px;">بيانات استلام أرباحك 🔒</p>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">دي بتتشاف من الأدمن بس، عشان يحوّلك نصيبك بعد خصم العمولة — مش هتظهر للمستخدمين خالص.</p>
+    <label class="flabel">رقم محفظتك (فودافون كاش / أورانج كاش..)</label>
+    <input type="text" id="becomeSpecWallet" placeholder="01xxxxxxxxx">
+    <label class="flabel">رابط أو معرّف إنستاباي بتاعك</label>
+    <input type="text" id="becomeSpecInstapay" placeholder="مثال: yourname@instapay">
+
+    <label class="flabel" style="margin-top:16px;">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
     <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
     <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
       <input type="checkbox" id="becomeSpecCommissionAgree" style="width:auto; margin-top:3px;">
-      <label for="becomeSpecCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد عمولة <b>${commissionRate}٪</b> على أي جلسة أو باقة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة.</label>
+      <label for="becomeSpecCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد عمولة <b>${commissionRate}٪</b> من أي جلسة أو باقة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة، وإن الباقي بيتحوّل لمحفظتي/إنستاباي بعد خصمها.</label>
     </div>
     <p style="font-size:13px; color:var(--muted); margin-top:8px;">طلبك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
     <button class="btn-primary" onclick="submitSpecialistApplication()">إرسال الطلب</button>
   `;
+  renderSpecialistPricingTracks();
   showScreen('screen-become-specialist');
+}
+function toggleSpecialistTrack(track, enabled){
+  specialistPricing[track].enabled = enabled;
+  renderSpecialistPricingTracks();
+}
+function renderSpecialistPricingTracks(){
+  const wrap = document.getElementById('specPricingTracksWrap');
+  const tracks = [{key:'online', label:'💻 أونلاين'}, {key:'offline', label:'🏠 أوف لاين'}];
+  wrap.innerHTML = tracks.map(t => `
+    <div style="border:1px solid var(--layer-l2-border); border-radius:12px; padding:12px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:${specialistPricing[t.key].enabled ? '10px' : '0'};">
+        <input type="checkbox" id="specTrack_${t.key}" style="width:auto;" ${specialistPricing[t.key].enabled ? 'checked' : ''} onchange="toggleSpecialistTrack('${t.key}', this.checked)">
+        <span style="font-size:15px; font-weight:700;">${t.label}</span>
+      </div>
+      ${specialistPricing[t.key].enabled ? `
+        <p style="font-size:13px; font-weight:700; color:#8A6A1E; margin:10px 0 6px;">جلسات فردية (حسب المدة)</p>
+        <div id="specSessions_${t.key}"></div>
+        <div class="choice-btn" style="text-align:center; margin-bottom:12px;" onclick="addSpecialistRow('${t.key}','sessions')">➕ أضف مدة جلسة</div>
+        <p style="font-size:13px; font-weight:700; color:#8A6A1E; margin:10px 0 6px;">باقات شهرية (حسب المدة وعدد الجلسات)</p>
+        <div id="specPackages_${t.key}"></div>
+        <div class="choice-btn" style="text-align:center;" onclick="addSpecialistRow('${t.key}','packages')">➕ أضف باقة</div>
+      ` : ''}
+    </div>
+  `).join('');
+  tracks.forEach(t => {
+    if(specialistPricing[t.key].enabled){
+      renderSpecialistRowsList(t.key, 'sessions');
+      renderSpecialistRowsList(t.key, 'packages');
+    }
+  });
+}
+function addSpecialistRow(track, kind){
+  const row = kind === 'sessions' ? { duration:'', price:'', originalPrice:'' } : { duration:'', count:'', price:'', originalPrice:'' };
+  specialistPricing[track][kind].push(row);
+  renderSpecialistRowsList(track, kind);
+}
+function removeSpecialistRow(track, kind, i){
+  specialistPricing[track][kind].splice(i, 1);
+  renderSpecialistRowsList(track, kind);
+}
+function updateSpecialistRowField(track, kind, i, field, value){
+  specialistPricing[track][kind][i][field] = value;
+}
+function renderSpecialistRowsList(track, kind){
+  const wrap = document.getElementById((kind === 'sessions' ? 'specSessions_' : 'specPackages_') + track);
+  if(!wrap) return;
+  const rows = specialistPricing[track][kind];
+  wrap.innerHTML = rows.map((r, i) => `
+    <div style="display:flex; gap:5px; align-items:center; margin-bottom:6px; flex-wrap:wrap;">
+      <input type="text" placeholder="مدة الجلسة (مثال: ساعة)" value="${r.duration}" oninput="updateSpecialistRowField('${track}','${kind}',${i},'duration',this.value)" style="flex:2; min-width:90px;">
+      ${kind === 'packages' ? `<input type="number" placeholder="عدد الجلسات" value="${r.count}" oninput="updateSpecialistRowField('${track}','${kind}',${i},'count',this.value)" style="flex:1; min-width:70px;">` : ''}
+      <input type="number" placeholder="السعر" value="${r.price}" oninput="updateSpecialistRowField('${track}','${kind}',${i},'price',this.value)" style="flex:1; min-width:70px;">
+      ${specialistDiscountEnabled ? `<input type="number" placeholder="السعر قبل الخصم" value="${r.originalPrice}" oninput="updateSpecialistRowField('${track}','${kind}',${i},'originalPrice',this.value)" style="flex:1; min-width:90px;">` : ''}
+      <span style="cursor:pointer; padding:0 4px;" onclick="removeSpecialistRow('${track}','${kind}',${i})">🗑️</span>
+    </div>
+  `).join('');
 }
 async function submitSpecialistApplication(){
   const fullName = document.getElementById('becomeSpecFullName').value.trim();
@@ -11027,13 +11282,26 @@ async function submitSpecialistApplication(){
   const experience = document.getElementById('becomeSpecExperience').value.trim();
   const license = document.getElementById('becomeSpecLicense').value.trim();
   const bio = document.getElementById('becomeSpecBio').value.trim();
-  const sessionPrice = document.getElementById('becomeSpecSessionPrice').value.trim();
-  const packagePrice = document.getElementById('becomeSpecPackagePrice').value.trim();
+  const availability = document.getElementById('becomeSpecAvailability').value.trim();
   const offerActive = document.getElementById('becomeSpecOfferActive').checked;
   const offerText = document.getElementById('becomeSpecOfferText').value.trim();
+  const wallet = document.getElementById('becomeSpecWallet').value.trim();
+  const instapay = document.getElementById('becomeSpecInstapay').value.trim();
   const agreedCommission = document.getElementById('becomeSpecCommissionAgree').checked;
+  const discountEndDate = specialistDiscountEnabled ? document.getElementById('becomeSpecDiscountEndDate').value : '';
   if(!fullName || !specialty){ alert('لازم تملأ الاسم والتخصص'); return; }
   if(!specialistImageBase64){ alert('لازم ترفع صورة شهادة أو بطاقة نقابية تثبت تخصصك'); return; }
+  const anyTrackEnabled = specialistPricing.online.enabled || specialistPricing.offline.enabled;
+  if(!anyTrackEnabled){ alert('فعّل تصنيف واحد على الأقل (أونلاين أو أوف لاين) وحدد أسعارك'); return; }
+  const cleanTrack = t => ({
+    enabled: t.enabled,
+    sessions: t.sessions.filter(r => r.duration && r.price),
+    packages: t.packages.filter(r => r.duration && r.count && r.price),
+  });
+  const cleanedOnline = cleanTrack(specialistPricing.online);
+  const cleanedOffline = cleanTrack(specialistPricing.offline);
+  if(specialistDiscountEnabled && !discountEndDate){ alert('حدد تاريخ انتهاء عرض الخصم'); return; }
+  if(!wallet && !instapay){ alert('لازم تدخل رقم محفظة أو إنستاباي عشان تستلم أرباحك'); return; }
   if(!agreedCommission){ alert('لازم توافق على سياسة العمولة قبل التسجيل'); return; }
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   if(!auth){ alert('لازم تكون مسجّل دخول'); return; }
@@ -11043,8 +11311,11 @@ async function submitSpecialistApplication(){
   await firestoreSetDoc('specialists', uid, {
     fullName, specialty, experience: experience || '', license: license || '',
     bio: bio || '', email: auth.email || '', certificateImage: specialistImageBase64, status:'pending', agreedCommission:'yes',
-    sessionPrice: sessionPrice || '', packagePrice: packagePrice || '',
+    availability: availability || '',
+    pricingOnline: JSON.stringify(cleanedOnline), pricingOffline: JSON.stringify(cleanedOffline),
+    discountEnabled: specialistDiscountEnabled ? 'yes' : 'no', discountEndDate: specialistDiscountEnabled ? discountEndDate : '',
     offerActive: offerActive ? 'yes' : 'no', offerText: offerActive ? offerText : '',
+    payoutWallet: wallet || '', payoutInstapay: instapay || '',
   });
   specialistImageBase64 = '';
   alert('تم إرسال طلبك بنجاح! هيتم مراجعته من الإدارة قريبًا.');
@@ -11234,8 +11505,8 @@ applyTheme(localStorage.getItem('eihyaha_theme') || 'classic');
 applyFontScale();
 applyLanguage();
 renderJournalHistory();
-renderStickyNotes('stickyNotesList', 10);
-renderStickyNotes('homeStickyNotesList', 3);
+renderStickyNotes('stickyNotesList', true);
+renderStickyNotes('homeStickyNotesList', false);
 renderHomeTasksPreview();
 renderHomeDailyFlash();
 renderHomeSpiritualTouch();
