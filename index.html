@@ -1320,13 +1320,30 @@ async function registerBiometric(refreshToken){
           displayName: auth.username,
         },
         pubKeyCredParams: [{ type:"public-key", alg:-7 }],
-        authenticatorSelection: { authenticatorAttachment:"platform", userVerification:"required" },
+        // residentKey:"preferred" بيطلب "مفتاح مرور" (passkey) قابل للاكتشاف بدل بصمة عادية —
+        // ده أكتر استقرارًا عبر إغلاق/فتح التطبيق على أندرويد، لأنه بيتسجّل في مدير كلمات مرور جوجل
+        // بشكل صريح بدل ما يفضل معتمد بس على تخزين محلي أقل ثباتًا
+        authenticatorSelection: { authenticatorAttachment:"platform", userVerification:"required", residentKey:"preferred", requireResidentKey:false },
         timeout: 60000,
       }
     });
     localStorage.setItem('eihyaha_webauthn_id', bufferToBase64(credential.rawId));
     localStorage.setItem('eihyaha_refresh_token', refreshToken);
     localStorage.setItem('eihyaha_biometric_enabled', '1');
+    // اختبار فوري: نتأكد إن الجهاز فعليًا قادر يسترجع نفس البصمة اللي سجّلها لسه —
+    // لو فشل هنا، المشكلة في الجهاز نفسه مش في تخزين البيانات بين الجلسات
+    try{
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          allowCredentials: [{ id: credential.rawId, type:'public-key' }],
+          userVerification: 'required',
+          timeout: 30000,
+        }
+      });
+    }catch(verifyErr){
+      console.warn('البصمة اتسجلت لكن الجهاز مش قادر يسترجعها فورًا — على الأغلب قيد في تنفيذ WebAuthn على الجهاز/المتصفح ده:', verifyErr);
+    }
   }catch(err){
     // الجهاز مش بيدعم بصمة، أو المستخدم رفض — نتجاهل من غير ما نضايقه
     console.warn('البصمة مش متاحة على الجهاز/المتصفح ده:', err);
