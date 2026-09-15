@@ -1361,7 +1361,14 @@ async function loginWithBiometric(){
       showAuthError('انتهت صلاحية جلسة البصمة، سجّل دخولك بالإيميل وكلمة المرور');
     }
   }catch(err){
-    showAuthError('تعذّر التحقق من البصمة');
+    // البصمة المسجّلة في التطبيق مش موجودة فعليًا على الجهاز ده (اتمسحت بيانات المتصفح، جهاز مختلف، إلخ) —
+    // نشيل الإشارة القديمة عشان المستخدم ما يفضلش يشوف نفس الخطأ كل مرة، ونوضح له طريق بديل واضح
+    console.warn('تعذّر التحقق من البصمة:', err);
+    localStorage.removeItem('eihyaha_webauthn_id');
+    localStorage.removeItem('eihyaha_refresh_token');
+    localStorage.removeItem('eihyaha_biometric_enabled');
+    renderGateScreen();
+    showAuthError('البصمة المسجّلة مش شغالة على الجهاز ده — سجّل دخولك بالإيميل وكلمة المرور تحت، وهنعرض عليك تفعيلها تاني بعد الدخول.');
   }
 }
 
@@ -1585,9 +1592,11 @@ const APP_SHARE_URL = 'https://melshennawy02-ops.github.io/eihyaha-app';
 const APP_SHARE_MESSAGES = {
   care: 'حابب أشاركك تطبيق بسيط اسمه "إحياها باستمتاع" — بيساعد في فهم النفس والتعامل مع الضغط والمشاعر بمنظور قرآني. فكرت يمكن يفيدك، جربه لو حابب: ',
   general: 'بستخدم تطبيق حلو اسمه "إحياها باستمتاع" لتنمية نفسية بمنظور قرآني — جربه ممكن يفيدك زي ما فادني: ',
+  progress: 'بشتغل على نفسي بتطبيق "إحياها باستمتاع" وحاسس بفرق حقيقي — حابب تجربه انت كمان؟ ',
+  challenge: 'خدت "بوصلتك" في تطبيق "إحياها باستمتاع" ووجّهتني لنقطة تستاهل شغل. جرّبها انت كمان وقارن نتيجتك بنتيجتي — بلطف مش منافسة 😊: ',
 };
-function shareApp(context){
-  const text = APP_SHARE_MESSAGES[context] || APP_SHARE_MESSAGES.general;
+function shareApp(context, customText){
+  const text = customText || APP_SHARE_MESSAGES[context] || APP_SHARE_MESSAGES.general;
   if(navigator.share){
     navigator.share({ title:'إحياها باستمتاع', text, url:APP_SHARE_URL }).catch(() => {});
   } else {
@@ -1598,6 +1607,19 @@ function shareApp(context){
       alert(full);
     }
   }
+}
+// كارت اختياري لطيف يُعرض بعد لحظة إيجابية حقيقية (تقدم أو بوصلة) — مش إلحاح، ومرة واحدة بس لكل مناسبة
+function renderShareProgressPrompt(promptKey, context, customText){
+  const dismissedKey = 'eihyaha_share_prompt_dismissed_' + promptKey;
+  if(localStorage.getItem(dismissedKey) === '1') return '';
+  return `
+    <div class="layer-card l2" style="margin-top:10px;">
+      <p class="layer-text" style="font-size:13px;">حابب تشارك اللحظة دي مع حد ممكن تفيده؟</p>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="localStorage.setItem('${dismissedKey}','1'); shareApp('${context}'${customText ? `, ${JSON.stringify(customText)}` : ''})">📤 شارك</div>
+        <div class="choice-btn" style="flex:1; text-align:center; margin:0;" onclick="localStorage.setItem('${dismissedKey}','1'); this.closest('.layer-card').remove();">مش دلوقتي</div>
+      </div>
+    </div>`;
 }
 function openSupportGuideScreen(){
   markToolOpened('support_guide');
@@ -2326,7 +2348,8 @@ function renderLifeBalanceCard(){
           </div>
         </div>
       `).join('')}
-      ${neglected.length > 0 ? `<p style="font-size:11px; color:var(--muted); margin:6px 0 0; line-height:1.6;">لسه ما زرتش ${neglected.map(e => e.title).join('، ')} — مش لازم تكون الأعلى في كل ركن، بس محتاج توازن بينهم.</p>` : `<p style="font-size:11px; color:var(--muted); margin:6px 0 0;">زرت كل الأركان على الأقل مرة — استمر توازن بينهم بدل ما تركّز في واحد بس.</p>`}
+      ${neglected.length > 0 ? `<p style="font-size:11px; color:var(--muted); margin:6px 0 0; line-height:1.6;">لسه ما زرتش ${neglected.map(e => e.title).join('، ')} — مش لازم تكون الأعلى في كل ركن، بس محتاج توازن بينهم.</p>` : `<p style="font-size:11px; color:var(--muted); margin:6px 0 0;">زرت كل الأركان على الأقل مرة — استمر توازن بينهم بدل ما تركّز في واحد بس.</p>
+      ${renderShareProgressPrompt('all_pillars', 'progress')}`}
     </div>
   `;
 }
@@ -4056,7 +4079,8 @@ function openProfessionalReport(){
       <div class="layer-card l1" style="border-color:var(--gold);">
         <p class="layer-title" style="color:var(--text);">✨ تقدم حقيقي وملموس</p>
         <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
-      </div>`;
+      </div>
+      ${renderShareProgressPrompt('progress', 'progress')}`;
   } else if(overdueUnresolved >= 2){
     toneHtml = `
       <div class="layer-card l2">
@@ -4527,7 +4551,8 @@ function openFinancialReport(){
       <div class="layer-card l1" style="border-color:var(--gold);">
         <p class="layer-title" style="color:var(--text);">✨ تقدم حقيقي وملموس</p>
         <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
-      </div>`;
+      </div>
+      ${renderShareProgressPrompt('progress', 'progress')}`;
   } else if(overdueUnresolved >= 2){
     toneHtml = `
       <div class="layer-card l2">
@@ -5021,7 +5046,8 @@ function openHealthReport(){
       <div class="layer-card l1" style="border-color:var(--gold);">
         <p class="layer-title" style="color:var(--text);">✨ تقدم حقيقي وملموس</p>
         <p class="layer-text" style="margin-top:8px;">${worked} من أهدافك فرّقت فعليًا. الاستمرارية دي أهم من أي قفزة كبيرة — كمّل بنفس الخطى.</p>
-      </div>`;
+      </div>
+      ${renderShareProgressPrompt('progress', 'progress')}`;
   } else if(overdueUnresolved >= 2){
     toneHtml = `
       <div class="layer-card l2">
@@ -8630,6 +8656,7 @@ function renderCompassResult(result, stages, currentIndex, previous){
     </div>
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="openJourneyScreen()">شوف رحلتك كاملة ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="shareApp('challenge', 'خدت «بوصلتك» في تطبيق «إحياها باستمتاع» ووجّهتني لـ${tool.pillarName}. جرّبها انت كمان وقارن نتيجتك بنتيجتي — بلطف مش منافسة 😊: ')">👥 ادعُ حد يجرب البوصلة ويقارن بلطف ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="goHome()">رجوع للرئيسية</div>
   `;
 }
