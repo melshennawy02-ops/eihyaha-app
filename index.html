@@ -1099,6 +1099,16 @@
     <div style="padding:0 16px;" id="adminUsersScreenBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: EDIT SPECIALIST (أدمن) ===================== -->
+  <div class="screen" id="screen-edit-specialist">
+    <div class="topbar">
+      <div class="backbtn" onclick="openAdminScreen()">→</div>
+      <h1>تعديل بيانات المتخصص</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="editSpecialistBody"></div>
+  </div>
+
   <!-- ===================== BOTTOM NAV ===================== -->
   <!-- ===================== SCREEN: NOTIFICATIONS ===================== -->
   <div class="screen" id="screen-notifications">
@@ -1565,6 +1575,10 @@ async function renderAdminScreen(){
           </div>
           <span style="font-size:12px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
         </div>
+        ${(!s.fullName || !s.specialty) ? `
+        <div class="layer-card l3" style="margin-bottom:8px;">
+          <p class="layer-text" style="font-size:12.5px; font-weight:700;">⚠️ السجل ده ناقص: ${!s.fullName ? 'الاسم فاضي. ' : ''}${!s.specialty ? 'التخصص فاضي.' : ''} استخدم "✏️ تعديل" تحت عشان تكمّله.</p>
+        </div>` : ''}
         ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
         ${s.license ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
         <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
@@ -1577,6 +1591,7 @@ async function renderAdminScreen(){
           ${s.payoutInstapay ? `<p style="font-size:13px; color:var(--text); margin:2px 0 0;">إنستاباي: ${s.payoutInstapay}</p>` : ''}
         </div>` : ''}
         ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
+        <div class="choice-btn" style="text-align:center; margin-bottom:8px;" onclick="openEditSpecialistScreen('${s.id}')">✏️ تعديل بيانات المتخصص</div>
         ${s.status === 'pending' ? `
           <div style="display:flex; gap:8px;">
             <button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">✓ قبول</button>
@@ -1948,8 +1963,88 @@ async function loadPillarOrder(){
 }
 
 async function reviewSpecialist(uid, decision){
-  await firestoreSetDoc('specialists', uid, { status: decision });
+  const existing = await firestoreGetDoc('specialists', uid) || {};
+  await firestoreSetDoc('specialists', uid, { ...existing, status: decision });
   renderAdminScreen();
+}
+let editingSpecialistUid = null;
+async function openEditSpecialistScreen(uid){
+  pricingUIPrefix = 'editSpec';
+  editingSpecialistUid = uid;
+  const s = await firestoreGetDoc('specialists', uid) || {};
+  specialistPricing = {
+    online: (() => { try{ return JSON.parse(s.pricingOnline || '{}'); }catch(e){ return {enabled:false, sessions:[], packages:[]}; } })(),
+    offline: (() => { try{ return JSON.parse(s.pricingOffline || '{}'); }catch(e){ return {enabled:false, sessions:[], packages:[]}; } })(),
+  };
+  if(!specialistPricing.online.sessions) specialistPricing.online.sessions = [];
+  if(!specialistPricing.online.packages) specialistPricing.online.packages = [];
+  if(!specialistPricing.offline.sessions) specialistPricing.offline.sessions = [];
+  if(!specialistPricing.offline.packages) specialistPricing.offline.packages = [];
+  specialistDiscountEnabled = s.discountEnabled === 'yes';
+  const wrap = document.getElementById('editSpecialistBody');
+  wrap.innerHTML = `
+    <label class="flabel">الاسم الكامل</label>
+    <input type="text" id="editSpecFullName" placeholder="الاسم الكامل" value="${s.fullName || ''}">
+    <label class="flabel">التخصص</label>
+    <input type="text" id="editSpecSpecialty" placeholder="مثال: لايف كوتش / استشاري نفسي / دكتور نفسي" value="${s.specialty || ''}">
+    <label class="flabel">سنوات الخبرة</label>
+    <input type="number" id="editSpecExperience" placeholder="عدد السنوات" value="${s.experience || ''}">
+    <label class="flabel">رقم الترخيص/العضوية (اختياري)</label>
+    <input type="text" id="editSpecLicense" placeholder="رقم الترخيص" value="${s.license || ''}">
+    <label class="flabel">نبذة مختصرة</label>
+    <textarea id="editSpecBio" placeholder="نبذة..." style="min-height:50px;">${s.bio || ''}</textarea>
+    <label class="flabel">ساعات العمل المتاحة</label>
+    <input type="text" id="editSpecAvailability" placeholder="مثال: السبت-الخميس 4-10 مساءً" value="${s.availability || ''}">
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; padding:10px; background:var(--sand); border-radius:10px;">
+      <input type="checkbox" id="editSpecDiscountEnabled" style="width:auto;" ${specialistDiscountEnabled ? 'checked' : ''} onchange="specialistDiscountEnabled=this.checked; document.getElementById('editDiscountDateRow').style.display=this.checked?'block':'none'; renderSpecialistPricingTracks();">
+      <span style="font-size:14px; font-weight:700;">🔥 عرض خصم لفترة محدودة</span>
+    </div>
+    <div id="editDiscountDateRow" style="display:${specialistDiscountEnabled ? 'block' : 'none'}; margin-bottom:8px;">
+      <label class="flabel">العرض ساري لحد تاريخ</label>
+      <input type="date" id="editSpecDiscountEndDate" value="${s.discountEndDate || ''}">
+    </div>
+
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:8px;">الباقات</p>
+    <div id="editSpecPricingTracksWrap"></div>
+    <input type="text" id="editSpecWallet" placeholder="01xxxxxxxxx" value="${s.payoutWallet || ''}">
+    <label class="flabel">إنستاباي</label>
+    <input type="text" id="editSpecInstapay" placeholder="مثال: name@instapay" value="${s.payoutInstapay || ''}">
+
+    <button class="btn-primary" onclick="saveEditedSpecialist()">حفظ التعديلات</button>
+  `;
+  renderSpecialistPricingTracks();
+  showScreen('screen-edit-specialist');
+}
+async function saveEditedSpecialist(){
+  const uid = editingSpecialistUid;
+  const fullName = document.getElementById('editSpecFullName').value.trim();
+  const specialty = document.getElementById('editSpecSpecialty').value.trim();
+  if(!fullName || !specialty){ alert('لازم تملأ الاسم والتخصص'); return; }
+  const discountEndDate = specialistDiscountEnabled ? document.getElementById('editSpecDiscountEndDate').value : '';
+  const cleanTrack = t => ({
+    enabled: t.enabled,
+    sessions: (t.sessions || []).filter(r => r.duration && r.price),
+    packages: (t.packages || []).filter(r => r.duration && r.count && r.price),
+  });
+  const existing = await firestoreGetDoc('specialists', uid) || {};
+  await firestoreSetDoc('specialists', uid, {
+    ...existing,
+    fullName, specialty,
+    experience: document.getElementById('editSpecExperience').value.trim(),
+    license: document.getElementById('editSpecLicense').value.trim(),
+    bio: document.getElementById('editSpecBio').value.trim(),
+    availability: document.getElementById('editSpecAvailability').value.trim(),
+    pricingOnline: JSON.stringify(cleanTrack(specialistPricing.online)),
+    pricingOffline: JSON.stringify(cleanTrack(specialistPricing.offline)),
+    discountEnabled: specialistDiscountEnabled ? 'yes' : 'no', discountEndDate,
+    payoutWallet: document.getElementById('editSpecWallet').value.trim(),
+    payoutInstapay: document.getElementById('editSpecInstapay').value.trim(),
+  });
+  alert('تم حفظ التعديلات.');
+  openAdminScreen();
 }
 
 // ============================================================
@@ -11305,6 +11400,7 @@ let specialistPricing = {
 let specialistDiscountEnabled = false;
 async function openBecomeSpecialistScreen(){
   if(!isLoggedIn()){ alert('لازم تكون مسجّل دخول الأول'); return; }
+  pricingUIPrefix = 'spec';
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   const commissionRate = await getCommissionRate();
   specialistPricing = { online:{enabled:false, sessions:[], packages:[]}, offline:{enabled:false, sessions:[], packages:[]} };
@@ -11366,25 +11462,26 @@ async function openBecomeSpecialistScreen(){
   renderSpecialistPricingTracks();
   showScreen('screen-become-specialist');
 }
+let pricingUIPrefix = 'spec';
 function toggleSpecialistTrack(track, enabled){
   specialistPricing[track].enabled = enabled;
   renderSpecialistPricingTracks();
 }
 function renderSpecialistPricingTracks(){
-  const wrap = document.getElementById('specPricingTracksWrap');
+  const wrap = document.getElementById(pricingUIPrefix + 'PricingTracksWrap');
   const tracks = [{key:'online', label:'💻 أونلاين'}, {key:'offline', label:'🏠 أوف لاين'}];
   wrap.innerHTML = tracks.map(t => `
     <div style="border:1px solid var(--layer-l2-border); border-radius:12px; padding:12px; margin-bottom:12px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:${specialistPricing[t.key].enabled ? '10px' : '0'};">
-        <input type="checkbox" id="specTrack_${t.key}" style="width:auto;" ${specialistPricing[t.key].enabled ? 'checked' : ''} onchange="toggleSpecialistTrack('${t.key}', this.checked)">
+        <input type="checkbox" id="${pricingUIPrefix}Track_${t.key}" style="width:auto;" ${specialistPricing[t.key].enabled ? 'checked' : ''} onchange="toggleSpecialistTrack('${t.key}', this.checked)">
         <span style="font-size:15px; font-weight:700;">${t.label}</span>
       </div>
       ${specialistPricing[t.key].enabled ? `
         <p style="font-size:13px; font-weight:700; color:#8A6A1E; margin:10px 0 6px;">جلسات فردية (حسب المدة)</p>
-        <div id="specSessions_${t.key}"></div>
+        <div id="${pricingUIPrefix}Sessions_${t.key}"></div>
         <div class="choice-btn" style="text-align:center; margin-bottom:12px;" onclick="addSpecialistRow('${t.key}','sessions')">➕ أضف مدة جلسة</div>
         <p style="font-size:13px; font-weight:700; color:#8A6A1E; margin:10px 0 6px;">باقات شهرية (حسب المدة وعدد الجلسات)</p>
-        <div id="specPackages_${t.key}"></div>
+        <div id="${pricingUIPrefix}Packages_${t.key}"></div>
         <div class="choice-btn" style="text-align:center;" onclick="addSpecialistRow('${t.key}','packages')">➕ أضف باقة</div>
       ` : ''}
     </div>
@@ -11409,7 +11506,7 @@ function updateSpecialistRowField(track, kind, i, field, value){
   specialistPricing[track][kind][i][field] = value;
 }
 function renderSpecialistRowsList(track, kind){
-  const wrap = document.getElementById((kind === 'sessions' ? 'specSessions_' : 'specPackages_') + track);
+  const wrap = document.getElementById(pricingUIPrefix + (kind === 'sessions' ? 'Sessions_' : 'Packages_') + track);
   if(!wrap) return;
   const rows = specialistPricing[track][kind];
   wrap.innerHTML = rows.map((r, i) => `
