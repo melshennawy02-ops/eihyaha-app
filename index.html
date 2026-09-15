@@ -417,11 +417,9 @@
       <div id="journalMatchResult"></div>
       <div id="journalWeeklyTrendWrap" style="margin-top:14px;"></div>
       <div class="card" style="margin-top:16px;">
-        <p class="card-title">سجلك (على الجهاز ده بس)</p>
+        <p class="card-title">سجلك</p>
         <div id="journalHistory" style="font-size:14px; color:var(--muted);">لسه معملتش تسجيل</div>
       </div>
-      <button class="btn-ghost" onclick="loadFullHistory()">📂 عرض السجلات</button>
-      <div id="fullHistoryWrap" style="margin-top:14px;"></div>
 
       <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-top:20px;">
         <p class="card-title">📌 ملاحظة سريعة</p>
@@ -10731,9 +10729,52 @@ function renderJournalWeeklyTrend(){
 function showFirebaseStatus(ok, label, collectionName){
   alert(ok ? '✅ تم الحفظ' : '⚠️ اتحفظ على جهازك بس، حصلت مشكلة في الاتصال بالسحابة');
 }
-function renderJournalHistory(){
+function normalizeCloudJournalEntry(e){
+  const d = new Date(e.date);
+  const valid = !isNaN(d.getTime());
+  const dateKey = valid ? d.toISOString().slice(0,10) : null;
+  const dateLabel = valid ? (d.toLocaleDateString('ar-EG') + ' - ' + d.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})) : (e.date || '');
+  if(e.type === 'mood'){
+    const info = MOOD_INFO[e.mood];
+    const noteText = (e.note && e.note !== '(بدون كتابة)') ? e.note : '';
+    return { type:'mood', dateKey, date: dateLabel, moodEmoji: info ? info.emoji : '', moodLabel: info ? info.label : String(e.mood), subLabel: e.subLabel, text: noteText };
+  }
+  if(e.type === 'sticky'){
+    return { type:'sticky', dateKey, date: dateLabel, text: e.note || '' };
+  }
+  return { type:'journal', dateKey, date: dateLabel, anxiety: e.anxiety, energy: e.energy, sleep: e.sleep, text: e.note || '' };
+}
+let cachedMergedJournal = null;
+async function renderJournalHistory(){
   const local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]');
-  renderCompactHistory('journalHistory', 'journalHistory', local, e => {
+  const expanded = !!historyExpandState['journalHistory'];
+
+  // أول ما نفتح "عرض المزيد"، نجيب سجل السحابة (كل الأجهزة) وندمجه مع المحلي مرة واحدة ونخزّنه مؤقتًا
+  if(expanded && cachedMergedJournal === null && isLoggedIn()){
+    const wrap = document.getElementById('journalHistory');
+    if(wrap && local.length <= 1) wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">جاري تحميل سجلك من كل أجهزتك...</p>`;
+    try{
+      const uid = getUserId();
+      const [journalDocs, moodDocs] = await Promise.all([firestoreListAll('journal'), firestoreListAll('moods')]);
+      const cloudEntries = [];
+      journalDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => {
+        let type = 'journal';
+        if(e.mood !== undefined) type = 'mood';
+        else if(e.source === 'sticky') type = 'sticky';
+        cloudEntries.push(normalizeCloudJournalEntry({...e, type}));
+      });
+      moodDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => cloudEntries.push(normalizeCloudJournalEntry({...e, type:'mood'})));
+      // منع التكرار: أي تسجيل من السحابة موجود بالفعل محليًا (نفس اليوم ونفس النص) بنستبعده
+      const seen = new Set(local.map(e => (e.dateKey || '') + '|' + (e.text || '')));
+      const uniqueCloud = cloudEntries.filter(e => !seen.has((e.dateKey || '') + '|' + (e.text || '')));
+      cachedMergedJournal = [...local, ...uniqueCloud].sort((a,b) => new Date(b.dateKey || 0) - new Date(a.dateKey || 0));
+    }catch(err){
+      cachedMergedJournal = local; // لو فشل الاتصال، نكتفي بالمحلي من غير ما نعطّل الشاشة
+    }
+  }
+
+  const entries = expanded && cachedMergedJournal ? cachedMergedJournal : local;
+  renderCompactHistory('journalHistory', 'journalHistory', entries, e => {
     if(e.type === 'mood'){
       return `<div style="padding:8px 0; border-bottom:1px solid #F0EDE2;">
         <div style="font-weight:600; color:var(--text);">${e.date} — مزاج: ${e.moodEmoji} ${e.subLabel || e.moodLabel}</div>
@@ -10751,6 +10792,9 @@ function renderJournalHistory(){
       ${e.text ? `<div style="margin-top:4px; color:var(--muted); line-height:1.6;">📝 ${e.text}</div>` : ''}
     </div>`;
   }, e => e.dateKey || null);
+  // renderCompactHistory بيسجّل نفسه كمُعالج افتراضي للمفتاح ده — نعيد التسجيل هنا عشان زرار
+  // "عرض المزيد" يفضل يستدعي renderJournalHistory نفسها (بمنطق دمج السحابة)، مش النسخة المحلية بس
+  historyRenderers['journalHistory'] = renderJournalHistory;
 }
 
 // حالة العرض الموسّع والفلترة بالتاريخ لكل قائمة سجلات — قابلة لإعادة الاستخدام في أي "نافذة تسجيل"
@@ -11582,74 +11626,6 @@ function parseFirestoreDoc(doc){
   return out;
 }
 
-async function loadFullHistory(){
-  const wrap = document.getElementById('fullHistoryWrap');
-  wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل من Firebase...</p>`;
-
-  const uid = getUserId();
-  const [journalDocs, moodDocs] = await Promise.all([
-    firestoreListAll('journal'),
-    firestoreListAll('moods'),
-  ]);
-
-  let entries = [];
-  journalDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => {
-    let type = 'journal';
-    if(e.mood !== undefined) type = 'mood';
-    else if(e.source === 'sticky') type = 'sticky';
-    entries.push({ ...e, type });
-  });
-  moodDocs.map(parseFirestoreDoc).filter(e => e.uid === uid && e.date).forEach(e => entries.push({...e, type:'mood'}));
-
-  if(entries.length === 0){
-    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش سجل محفوظ على Firebase لحد دلوقتي (أو تعذّر الاتصال).</p>`;
-    return;
-  }
-
-  entries.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-  // تقسيم إلى: سنة → شهر → يوم
-  const tree = {};
-  entries.forEach(e => {
-    const d = new Date(e.date);
-    const y = d.getFullYear();
-    const m = d.getMonth();
-    const day = d.getDate();
-    tree[y] = tree[y] || {};
-    tree[y][m] = tree[y][m] || {};
-    tree[y][m][day] = tree[y][m][day] || [];
-    tree[y][m][day].push(e);
-  });
-
-  const years = Object.keys(tree).sort((a,b) => b - a);
-  wrap.innerHTML = years.map(y => `
-    <div class="card" style="margin-bottom:10px;">
-      <p class="card-title" style="margin-bottom:8px;">📅 سنة ${y}</p>
-      ${Object.keys(tree[y]).sort((a,b) => b - a).map(m => `
-        <div style="margin-bottom:8px; padding-right:8px; border-right:2px solid #EFDBAE;">
-          <p style="font-size:15px; font-weight:600; color:var(--text); margin:6px 0;">${ARABIC_MONTHS[m]}</p>
-          ${Object.keys(tree[y][m]).sort((a,b) => b - a).map(day => `
-            <div style="margin-bottom:6px; padding-right:8px;">
-              <p style="font-size:14px; font-weight:600; color:var(--muted); margin:0 0 4px;">يوم ${day}</p>
-              ${tree[y][m][day].map(e => {
-                if(e.type === 'mood'){
-                  const info = MOOD_INFO[e.mood];
-                  const noteText = (e.note && e.note !== '(بدون كتابة)') ? ' — 📝 ' + e.note : '';
-                  const shownLabel = e.subLabel || (info ? info.label : String(e.mood));
-                  return `<div style="font-size:14px; color:var(--text); padding:3px 0;">${info ? info.emoji : ''} ${shownLabel}${noteText}</div>`;
-                }
-                if(e.type === 'sticky'){
-                  return `<div style="font-size:14px; color:var(--text); padding:3px 0;">📌 ${e.note}</div>`;
-                }
-                return `<div style="font-size:14px; color:var(--text); padding:3px 0;">قلق ${e.anxiety}/10، طاقة ${e.energy}/10، نوم ${e.sleep} س${e.note ? ' — 📝 ' + e.note : ''}</div>`;
-              }).join('')}
-            </div>
-          `).join('')}
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
 
 // ---------- تشغيل أولي ----------
 history.replaceState({ stackLen: 1 }, '', location.href);
