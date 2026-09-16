@@ -214,15 +214,6 @@
         <div style="font-size:19px; color:var(--gold);">‹</div>
       </div>
 
-      <div class="quick-help-card" onclick="openSpecialistsDirectory()" style="margin-top:8px;">
-        <div class="icon-circle" style="width:38px; height:38px; font-size:20px;">🧑‍⚕️</div>
-        <div style="flex:1;">
-          <p style="font-size:15px; font-weight:700; margin:0;">مين المختص المناسب ليك؟</p>
-          <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">لايف كوتش، استشاري نفسي، أو دكتور نفسي — إيه الفرق؟</p>
-        </div>
-        <div style="font-size:19px; color:var(--gold);">‹</div>
-      </div>
-
       <p class="section-title">كيف حالك اليوم؟</p>
       <p class="section-sub">اختر حالتك المزاجية لنمنحك تجربة مناسبة لك</p>
       <div class="mood-row" id="moodRow">
@@ -234,10 +225,10 @@
       </div>
       <div id="moodFeedback" style="display:none; margin:-6px 0 16px;"></div>
 
-      <div class="card" style="margin-bottom:20px; margin-top:8px;">
+      <div class="card" style="margin-bottom:20px; margin-top:8px; background:linear-gradient(135deg, rgba(15,30,25,.85), rgba(15,30,25,.6)), url('https://images.unsplash.com/photo-1768055104910-8c8d213835fb?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat;">
         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-          <div class="icon-circle" style="width:34px; height:34px; font-size:18px;">✅</div>
-          <p style="font-size:15px; font-weight:700; margin:0; flex:1;">مهامك اليوم</p>
+          <div class="icon-circle" style="width:34px; height:34px; font-size:18px; background:rgba(255,255,255,.15); border-color:var(--gold);">✅</div>
+          <p style="font-size:15px; font-weight:700; margin:0; flex:1; color:#fff;">مهامك اليوم</p>
           <div onclick="openTasksScreen()" style="font-size:13px; color:var(--gold); font-weight:700; cursor:pointer;">التقويم كامل ‹</div>
         </div>
         <div id="homeTasksPreview"></div>
@@ -247,24 +238,24 @@
         </div>
       </div>
 
-      <div class="card" style="background:var(--layer-l2-bg); border-color:var(--layer-l2-border); margin-bottom:20px;">
-        <p class="card-title">📌 ملاحظة سريعة</p>
+      <div class="card" style="margin-bottom:20px; background:linear-gradient(135deg, rgba(60,45,20,.82), rgba(60,45,20,.55)), url('https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border-color:var(--layer-l2-border);">
+        <p class="card-title" style="color:#fff;">📌 ملاحظة سريعة</p>
         <textarea id="homeStickyInput" placeholder="اكتب ملاحظة سريعة..." style="min-height:44px;"></textarea>
         <button class="btn-primary" style="margin-top:8px;" onclick="saveStickyPrompt('homeStickyInput','homeStickyChooserWrap')">حفظ</button>
         <div id="homeStickyChooserWrap"></div>
         <div id="homeStickyNotesList" style="margin-top:8px;"></div>
       </div>
 
-      <div class="card" style="background:var(--navy-dark); margin-bottom:20px; cursor:pointer;" onclick="openFlashScreen()">
+      <div class="card" style="background:linear-gradient(135deg, rgba(7,43,40,.85), rgba(7,43,40,.55)), url('https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; margin-bottom:20px; cursor:pointer;" onclick="openFlashScreen()">
         <div id="homeDailyFlash"></div>
         <p style="font-size:12px; color:var(--gold); margin:8px 0 0; font-weight:700;">شوف كل الومضات ‹</p>
       </div>
 
-      <div class="card" style="background:#7A5A1C; margin-bottom:20px;">
+      <div class="card" style="background:linear-gradient(135deg, rgba(90,65,20,.85), rgba(90,65,20,.6)), url('https://images.unsplash.com/photo-1566341013452-946caa457784?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; margin-bottom:20px;">
         <div id="homeSpiritualTouch"></div>
       </div>
 
-      <div class="card" style="background:linear-gradient(135deg, #2E1F4A, #4A2E6B); margin-bottom:20px; cursor:pointer;" onclick="openJourneyScreen()">
+      <div class="card" style="background:linear-gradient(135deg, rgba(46,31,74,.85), rgba(74,46,107,.6)), url('https://images.unsplash.com/photo-1685438531044-ef75606db89d?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; margin-bottom:20px; cursor:pointer;" onclick="openJourneyScreen()">
         <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 4px;">🕋 أين أنت في رحلتك النفسية القرآنية؟</p>
         <p style="font-size:11.5px; color:rgba(255,255,255,.85); margin:0;">اقرأ ← اعرف ← آمن ← اطمئن ← اصبر ← تطهر... شوف وصلت فين بالظبط</p>
       </div>
@@ -1569,9 +1560,13 @@ async function renderAdminScreen(){
     specialistsWrap.innerHTML = specialists.map(s => `
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-          <div>
-            <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
-            <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${s.profileImage ? `<img src="${s.profileImage}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); flex-shrink:0;">` : ''}
+            <div>
+              <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
+              ${s.identityTagline ? `<p style="font-size:12px; color:var(--gold); font-weight:700; margin:0 0 2px;">${s.identityTagline}</p>` : ''}
+              <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
+            </div>
           </div>
           <span style="font-size:12px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
         </div>
@@ -1971,6 +1966,7 @@ let editingSpecialistUid = null;
 async function openEditSpecialistScreen(uid){
   pricingUIPrefix = 'editSpec';
   editingSpecialistUid = uid;
+  specialistProfileImageBase64 = '';
   const s = await firestoreGetDoc('specialists', uid) || {};
   specialistPricing = {
     online: (() => { try{ return JSON.parse(s.pricingOnline || '{}'); }catch(e){ return {enabled:false, sessions:[], packages:[]}; } })(),
@@ -1983,8 +1979,13 @@ async function openEditSpecialistScreen(uid){
   specialistDiscountEnabled = s.discountEnabled === 'yes';
   const wrap = document.getElementById('editSpecialistBody');
   wrap.innerHTML = `
+    <label class="flabel">صورة شخصية</label>
+    ${s.profileImage ? `<img src="${s.profileImage}" style="width:90px; height:90px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:2px solid var(--gold);">` : ''}
+    <input type="file" accept="image/*" onchange="handleSpecialistProfileFile(this)">
     <label class="flabel">الاسم الكامل</label>
     <input type="text" id="editSpecFullName" placeholder="الاسم الكامل" value="${s.fullName || ''}">
+    <label class="flabel">هويتك (نص قصير يظهر تحت اسمك)</label>
+    <input type="text" id="editSpecIdentityTagline" placeholder="مثال: لايف كوتش • مؤلف • متخصص في علم النفس القرآني" value="${s.identityTagline || ''}">
     <label class="flabel">التخصص</label>
     <input type="text" id="editSpecSpecialty" placeholder="مثال: لايف كوتش / استشاري نفسي / دكتور نفسي" value="${s.specialty || ''}">
     <label class="flabel">سنوات الخبرة</label>
@@ -2033,6 +2034,8 @@ async function saveEditedSpecialist(){
   await firestoreSetDoc('specialists', uid, {
     ...existing,
     fullName, specialty,
+    identityTagline: document.getElementById('editSpecIdentityTagline').value.trim(),
+    profileImage: specialistProfileImageBase64 || existing.profileImage || '',
     experience: document.getElementById('editSpecExperience').value.trim(),
     license: document.getElementById('editSpecLicense').value.trim(),
     bio: document.getElementById('editSpecBio').value.trim(),
@@ -2043,6 +2046,7 @@ async function saveEditedSpecialist(){
     payoutWallet: document.getElementById('editSpecWallet').value.trim(),
     payoutInstapay: document.getElementById('editSpecInstapay').value.trim(),
   });
+  specialistProfileImageBase64 = '';
   alert('تم حفظ التعديلات.');
   openAdminScreen();
 }
@@ -2134,8 +2138,14 @@ async function browseSpecialistsByCategory(categoryKey){
   }
   wrap.innerHTML = matched.map(s => `
     <div class="card" style="margin-top:14px;">
-      <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
-      <p class="card-sub">${s.specialty || ''}${s.experience ? ' — ' + s.experience + ' سنة خبرة' : ''}</p>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:2px;">
+        ${s.profileImage ? `<img src="${s.profileImage}" style="width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); flex-shrink:0;">` : `<div style="width:56px; height:56px; border-radius:50%; background:var(--sand); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🧑‍⚕️</div>`}
+        <div>
+          <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
+          ${s.identityTagline ? `<p style="font-size:12.5px; color:var(--gold); font-weight:700; margin:0;">${s.identityTagline}</p>` : ''}
+        </div>
+      </div>
+      <p class="card-sub" style="margin-top:6px;">${s.specialty || ''}${s.experience ? ' — ' + s.experience + ' سنة خبرة' : ''}</p>
       ${s.availability ? `<p style="font-size:13px; color:var(--muted); margin-top:6px;">🕒 ${s.availability}</p>` : ''}
       ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-top:8px;">${s.bio}</p>` : ''}
       ${buildSpecialistPricingCardHtml(s)}
@@ -2190,60 +2200,66 @@ function buildSpecialistPricingSummaryText(s){
 // ============================================================
 // عرض متحرك للمتخصصين في الصفحة الرئيسية
 // ============================================================
-let homeCarouselSpecialists = [];
-let homeCarouselIndex = 0;
-let homeCarouselInterval = null;
+let categoryCarouselCounts = {};
+let categoryCarouselIndex = 0;
+let categoryCarouselInterval = null;
 async function loadHomeSpecialistsCarousel(){
   const wrap = document.getElementById('homeSpecialistsCarouselWrap');
   if(!wrap) return;
   try{
     const docs = await firestoreListAll('specialists');
-    homeCarouselSpecialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
-      .filter(s => s.status === 'approved');
-  }catch(e){ homeCarouselSpecialists = []; }
-  if(homeCarouselInterval) clearInterval(homeCarouselInterval);
-  if(homeCarouselSpecialists.length === 0){ wrap.innerHTML = ''; return; }
-  homeCarouselIndex = 0;
+    const specialists = docs.map(parseFirestoreDoc).filter(s => s.status === 'approved');
+    categoryCarouselCounts = {};
+    SPECIALIST_CATEGORIES.forEach(cat => {
+      categoryCarouselCounts[cat.key] = specialists.filter(s => {
+        if(!s.specialty) return false;
+        const specialtyNorm = normalizeArabic(s.specialty);
+        const specialtyWords = new Set(tokenizeArabic(s.specialty));
+        return cat.keywords.some(k => {
+          const kNorm = normalizeArabic(k);
+          if(specialtyNorm.includes(kNorm)) return true;
+          const kWords = tokenizeArabic(k);
+          return kWords.length > 0 && kWords.every(w => specialtyWords.has(w));
+        });
+      }).length;
+    });
+  }catch(e){ categoryCarouselCounts = {}; }
+  if(categoryCarouselInterval) clearInterval(categoryCarouselInterval);
+  categoryCarouselIndex = 0;
   renderHomeCarouselCard();
-  if(homeCarouselSpecialists.length > 1){
-    homeCarouselInterval = setInterval(() => {
-      homeCarouselIndex = (homeCarouselIndex + 1) % homeCarouselSpecialists.length;
-      renderHomeCarouselCard();
-    }, 4500);
-  }
+  categoryCarouselInterval = setInterval(() => {
+    categoryCarouselIndex = (categoryCarouselIndex + 1) % SPECIALIST_CATEGORIES.length;
+    renderHomeCarouselCard();
+  }, 4000);
 }
 function homeCarouselGo(dir){
-  homeCarouselIndex = (homeCarouselIndex + dir + homeCarouselSpecialists.length) % homeCarouselSpecialists.length;
+  categoryCarouselIndex = (categoryCarouselIndex + dir + SPECIALIST_CATEGORIES.length) % SPECIALIST_CATEGORIES.length;
   renderHomeCarouselCard();
-  if(homeCarouselInterval) clearInterval(homeCarouselInterval);
-  if(homeCarouselSpecialists.length > 1){
-    homeCarouselInterval = setInterval(() => {
-      homeCarouselIndex = (homeCarouselIndex + 1) % homeCarouselSpecialists.length;
-      renderHomeCarouselCard();
-    }, 4500);
-  }
+  if(categoryCarouselInterval) clearInterval(categoryCarouselInterval);
+  categoryCarouselInterval = setInterval(() => {
+    categoryCarouselIndex = (categoryCarouselIndex + 1) % SPECIALIST_CATEGORIES.length;
+    renderHomeCarouselCard();
+  }, 4000);
 }
 function renderHomeCarouselCard(){
   const wrap = document.getElementById('homeSpecialistsCarouselWrap');
-  if(!wrap || homeCarouselSpecialists.length === 0) return;
-  const s = homeCarouselSpecialists[homeCarouselIndex];
+  if(!wrap) return;
+  const cat = SPECIALIST_CATEGORIES[categoryCarouselIndex];
+  const count = categoryCarouselCounts[cat.key] || 0;
   wrap.innerHTML = `
-    <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:pointer; margin-top:8px;" onclick="openSpecialistsDirectory()">
+    <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:pointer; margin-top:8px; background:linear-gradient(135deg, ${cat.overlay}, ${cat.overlay}), url('${cat.img}') center/cover no-repeat; border-color:var(--gold);" onclick="openSpecialistsDirectory()">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-        <span style="font-size:12px; color:var(--gold); font-weight:700;">🧑‍⚕️ من المتخصصين عندنا</span>
-        ${homeCarouselSpecialists.length > 1 ? `
+        <span style="font-size:12px; color:var(--gold); font-weight:700;">🧑‍⚕️ مين المختص المناسب ليك؟</span>
         <div style="display:flex; gap:10px;">
-          <span style="cursor:pointer; padding:2px 6px;" onclick="event.stopPropagation(); homeCarouselGo(1)">‹</span>
-          <span style="cursor:pointer; padding:2px 6px;" onclick="event.stopPropagation(); homeCarouselGo(-1)">›</span>
-        </div>` : ''}
+          <span style="cursor:pointer; padding:2px 6px; color:#fff;" onclick="event.stopPropagation(); homeCarouselGo(1)">‹</span>
+          <span style="cursor:pointer; padding:2px 6px; color:#fff;" onclick="event.stopPropagation(); homeCarouselGo(-1)">›</span>
+        </div>
       </div>
-      <p style="font-size:15px; font-weight:700; margin:0; color:var(--text);">${s.fullName || 'بدون اسم'}</p>
-      <p style="font-size:13px; color:var(--muted); margin:2px 0 0;">${s.specialty || ''}</p>
-      ${s.offerActive === 'yes' && s.offerText ? `<p style="font-size:12.5px; color:var(--danger); font-weight:700; margin-top:6px;">🔥 ${s.offerText}</p>` : ''}
-      ${homeCarouselSpecialists.length > 1 ? `
+      <p style="font-size:15px; font-weight:700; margin:0; color:#fff;">${cat.icon} ${cat.title}</p>
+      <p style="font-size:13px; color:rgba(255,255,255,.85); margin:2px 0 0;">${count > 0 ? `${count} متخصص مسجّل عندنا` : 'لسه محدش مسجّل في التصنيف ده'}</p>
       <div style="display:flex; justify-content:center; gap:5px; margin-top:8px;">
-        ${homeCarouselSpecialists.map((_, i) => `<span style="width:6px; height:6px; border-radius:50%; background:${i === homeCarouselIndex ? 'var(--gold)' : 'var(--layer-l2-border)'};"></span>`).join('')}
-      </div>` : ''}
+        ${SPECIALIST_CATEGORIES.map((_, i) => `<span style="width:6px; height:6px; border-radius:50%; background:${i === categoryCarouselIndex ? 'var(--gold)' : 'rgba(255,255,255,.4)'};"></span>`).join('')}
+      </div>
     </div>
   `;
 }
@@ -2431,6 +2447,7 @@ async function doSignIn(){
 
 // ---------- تسجيل متخصص: بيانات كاملة + رفع صورة توثيق (Base64 داخل Firestore) ----------
 let specialistImageBase64 = '';
+let specialistProfileImageBase64 = '';
 
 function handleSpecialistFile(input){
   const file = input.files[0];
@@ -2444,6 +2461,20 @@ function handleSpecialistFile(input){
   }
   const reader = new FileReader();
   reader.onload = e => { specialistImageBase64 = e.target.result; };
+  reader.readAsDataURL(file);
+}
+function handleSpecialistProfileFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const MAX_BYTES = 400 * 1024;
+  if(file.size > MAX_BYTES){
+    showAuthError('حجم الصورة كبير — اختار صورة أصغر من 400 كيلوبايت (اضغطها أول)');
+    input.value = '';
+    specialistProfileImageBase64 = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => { specialistProfileImageBase64 = e.target.result; };
   reader.readAsDataURL(file);
 }
 
@@ -2614,6 +2645,25 @@ function openAccountScreen(){
 function openSettingsScreen(){
   document.getElementById('settingsBody').innerHTML = renderSettingsSection();
   showScreen('screen-settings');
+  checkOwnSpecialistCompleteness();
+}
+async function checkOwnSpecialistCompleteness(){
+  const wrap = document.getElementById('specialistIncompleteWarningWrap');
+  if(!wrap) return;
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(!auth){ wrap.innerHTML = ''; return; }
+  const s = await firestoreGetDoc('specialists', auth.uid);
+  if(!s){ wrap.innerHTML = ''; return; }
+  const missing = [];
+  if(!s.fullName) missing.push('الاسم');
+  if(!s.specialty) missing.push('التخصص');
+  if(!s.payoutWallet && !s.payoutInstapay) missing.push('بيانات استلام الأرباح');
+  if(missing.length === 0){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = `
+    <div class="layer-card l3" style="cursor:pointer;" onclick="openBecomeSpecialistScreen()">
+      <p class="layer-text" style="font-size:13px; font-weight:700;">⚠️ بياناتك كمتخصص ناقصة: ${missing.join('، ')}. اضغط هنا عشان تكمّلها.</p>
+    </div>
+  `;
 }
 
 function openStatsScreen(){
@@ -2871,6 +2921,7 @@ function renderSettingsSection(){
       <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="submitUserFeedback()">إرسال</div>
     </div>
 
+    <div id="specialistIncompleteWarningWrap"></div>
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">🧑‍⚕️ عايز تنضم كمتخصص؟</p>
       <p class="card-sub" style="margin-bottom:10px;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك تظهر للمستخدمين.</p>
@@ -3106,8 +3157,11 @@ function renderLifeBalanceCard(){
   if(touched === 0) return ''; // مفيش داعي نوريها لحد ما يبدأ يستخدم أي ركن أصلًا
   const neglected = engagement.filter(e => e.openedCount === 0);
   return `
-    <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:default; background:var(--white);">
-      <p style="font-size:13px; font-weight:700; color:var(--text); margin:0 0 10px;">⚖️ ميزان حياتك</p>
+    <div class="quick-help-card" style="flex-direction:column; align-items:stretch; cursor:default; background:var(--white); padding:0; overflow:hidden;">
+      <div style="height:70px; background:linear-gradient(135deg, rgba(20,35,55,.6), rgba(20,35,55,.35)), url('https://images.unsplash.com/photo-1530368333607-c100785945b5?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; display:flex; align-items:center; padding:0 14px;">
+        <p style="font-size:14px; font-weight:700; color:#fff; margin:0; text-shadow:0 1px 4px rgba(0,0,0,.4);">⚖️ ميزان حياتك</p>
+      </div>
+      <div style="padding:14px;">
       ${engagement.map(e => `
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
           <span style="font-size:15px; width:22px;">${e.icon}</span>
@@ -3119,6 +3173,7 @@ function renderLifeBalanceCard(){
       `).join('')}
       ${neglected.length > 0 ? `<p style="font-size:11px; color:var(--muted); margin:6px 0 0; line-height:1.6;">لسه ما زرتش ${neglected.map(e => e.title).join('، ')} — مش لازم تكون الأعلى في كل ركن، بس محتاج توازن بينهم.</p>` : `<p style="font-size:11px; color:var(--muted); margin:6px 0 0;">زرت كل الأركان على الأقل مرة — استمر توازن بينهم بدل ما تركّز في واحد بس.</p>
       ${renderShareProgressPrompt('all_pillars', 'progress')}`}
+      </div>
     </div>
   `;
 }
@@ -11203,14 +11258,14 @@ function renderHomeTasksPreview(){
   const key = formatDateKey(new Date());
   const tasks = getTasksForDate(key).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
   if(tasks.length === 0){
-    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:6px 0;">مفيش مهام مسجّلة النهاردة</p>`;
+    wrap.innerHTML = `<p style="font-size:14px; color:rgba(255,255,255,.75); text-align:center; padding:6px 0;">مفيش مهام مسجّلة النهاردة</p>`;
     return;
   }
   wrap.innerHTML = tasks.map(t => `
-    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #F0EDE2;">
-      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--text); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
-      <p style="font-size:14px; margin:0; flex:1; ${t.done ? 'text-decoration:line-through; color:var(--muted);' : 'color:var(--text);'}">${t.title}</p>
-      ${t.time ? `<span style="font-size:12px; color:var(--muted);">🕐 ${t.time}</span>` : ''}
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.15);">
+      <div onclick="toggleTaskDone('${t.id}')" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:13px; color:var(--navy-dark); ${t.done ? 'background:var(--gold);' : ''}">${t.done ? '✓' : ''}</div>
+      <p style="font-size:14px; margin:0; flex:1; ${t.done ? 'text-decoration:line-through; color:rgba(255,255,255,.6);' : 'color:#fff;'}">${t.title}</p>
+      ${t.time ? `<span style="font-size:12px; color:rgba(255,255,255,.75);">🕐 ${t.time}</span>` : ''}
     </div>`).join('');
 }
 
@@ -11403,32 +11458,52 @@ async function openBecomeSpecialistScreen(){
   pricingUIPrefix = 'spec';
   const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   const commissionRate = await getCommissionRate();
-  specialistPricing = { online:{enabled:false, sessions:[], packages:[]}, offline:{enabled:false, sessions:[], packages:[]} };
-  specialistDiscountEnabled = false;
+  const existing = await firestoreGetDoc('specialists', auth.uid) || {};
+  specialistPricing = {
+    online: (() => { try{ return JSON.parse(existing.pricingOnline || '{}'); }catch(e){ return {}; } })(),
+    offline: (() => { try{ return JSON.parse(existing.pricingOffline || '{}'); }catch(e){ return {}; } })(),
+  };
+  if(!specialistPricing.online.sessions) specialistPricing.online = {enabled:false, sessions:[], packages:[]};
+  if(!specialistPricing.offline.sessions) specialistPricing.offline = {enabled:false, sessions:[], packages:[]};
+  specialistDiscountEnabled = existing.discountEnabled === 'yes';
+  specialistProfileImageBase64 = '';
+  const missingFields = [];
+  if(existing.email && !existing.fullName) missingFields.push('الاسم');
+  if(existing.email && !existing.specialty) missingFields.push('التخصص');
+  if(existing.email && !existing.payoutWallet && !existing.payoutInstapay) missingFields.push('بيانات استلام الأرباح');
   const wrap = document.getElementById('becomeSpecialistBody');
   wrap.innerHTML = `
+    ${missingFields.length > 0 ? `
+    <div class="layer-card l3" style="margin-top:14px;">
+      <p class="layer-text" style="font-size:13px; font-weight:700;">⚠️ بياناتك ناقصة: ${missingFields.join('، ')}. كمّلها تحت عشان تظهر صح للمستخدمين وتقدر تستقبل جلسات.</p>
+    </div>` : ''}
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px; line-height:1.7;">لو إنت لايف كوتش أو استشاري نفسي أو دكتور نفسي، سجّل بياناتك هنا عشان تظهر لمستخدمي التطبيق في "مين المختص المناسب ليك؟".</p>
+    <label class="flabel">صورتك الشخصية</label>
+    ${existing.profileImage ? `<img src="${existing.profileImage}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:2px solid var(--gold);">` : ''}
+    <input type="file" accept="image/*" onchange="handleSpecialistProfileFile(this)">
     <label class="flabel">الاسم الكامل</label>
-    <input type="text" id="becomeSpecFullName" placeholder="الاسم الكامل" value="${auth.username || ''}">
+    <input type="text" id="becomeSpecFullName" placeholder="الاسم الكامل" value="${existing.fullName || auth.username || ''}">
+    <label class="flabel">هويتك (نص قصير يظهر تحت اسمك)</label>
+    <input type="text" id="becomeSpecIdentityTagline" placeholder="مثال: لايف كوتش • مؤلف • متخصص في علم النفس القرآني" value="${existing.identityTagline || ''}">
     <label class="flabel">التخصص</label>
-    <input type="text" id="becomeSpecSpecialty" placeholder="مثال: لايف كوتش / استشاري نفسي / دكتور نفسي">
+    <input type="text" id="becomeSpecSpecialty" placeholder="مثال: لايف كوتش / استشاري نفسي / دكتور نفسي" value="${existing.specialty || ''}">
     <label class="flabel">سنوات الخبرة</label>
-    <input type="number" id="becomeSpecExperience" placeholder="عدد السنوات">
+    <input type="number" id="becomeSpecExperience" placeholder="عدد السنوات" value="${existing.experience || ''}">
     <label class="flabel">رقم الترخيص/العضوية (اختياري)</label>
-    <input type="text" id="becomeSpecLicense" placeholder="رقم الترخيص">
+    <input type="text" id="becomeSpecLicense" placeholder="رقم الترخيص" value="${existing.license || ''}">
     <label class="flabel">نبذة مختصرة</label>
-    <textarea id="becomeSpecBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;"></textarea>
+    <textarea id="becomeSpecBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;">${existing.bio || ''}</textarea>
     <label class="flabel">ساعات عملك المتاحة (نص وصفي)</label>
-    <input type="text" id="becomeSpecAvailability" placeholder="مثال: السبت-الخميس 4-10 مساءً">
+    <input type="text" id="becomeSpecAvailability" placeholder="مثال: السبت-الخميس 4-10 مساءً" value="${existing.availability || ''}">
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; padding:10px; background:var(--sand); border-radius:10px;">
-      <input type="checkbox" id="becomeSpecDiscountEnabled" style="width:auto;" onchange="specialistDiscountEnabled=this.checked; document.getElementById('specDiscountDateRow').style.display=this.checked?'block':'none'; renderSpecialistPricingTracks();">
+      <input type="checkbox" id="becomeSpecDiscountEnabled" style="width:auto;" ${specialistDiscountEnabled ? 'checked' : ''} onchange="specialistDiscountEnabled=this.checked; document.getElementById('specDiscountDateRow').style.display=this.checked?'block':'none'; renderSpecialistPricingTracks();">
       <span style="font-size:14px; font-weight:700;">🔥 فعّل عرض خصم لفترة محدودة على كل أسعارك</span>
     </div>
-    <div id="specDiscountDateRow" style="display:none; margin-bottom:8px;">
+    <div id="specDiscountDateRow" style="display:${specialistDiscountEnabled ? 'block' : 'none'}; margin-bottom:8px;">
       <label class="flabel">العرض ساري لحد تاريخ</label>
-      <input type="date" id="becomeSpecDiscountEndDate">
+      <input type="date" id="becomeSpecDiscountEndDate" value="${existing.discountEndDate || ''}">
     </div>
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
@@ -11437,27 +11512,28 @@ async function openBecomeSpecialistScreen(){
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
     <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px;">
-      <input type="checkbox" id="becomeSpecOfferActive" style="width:auto; margin-top:3px;">
+      <input type="checkbox" id="becomeSpecOfferActive" ${existing.offerActive === 'yes' ? 'checked' : ''} style="width:auto; margin-top:3px;">
       <label for="becomeSpecOfferActive" style="font-size:14px; color:var(--text);">عندي نص عرض إضافي أحب أوضحه (اختياري)</label>
     </div>
-    <input type="text" id="becomeSpecOfferText" placeholder="مثال: أول جلسة استشارية مجانية">
+    <input type="text" id="becomeSpecOfferText" placeholder="مثال: أول جلسة استشارية مجانية" value="${existing.offerText || ''}">
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
     <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:8px;">بيانات استلام أرباحك 🔒</p>
     <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">دي بتتشاف من الأدمن بس، عشان يحوّلك نصيبك بعد خصم العمولة — مش هتظهر للمستخدمين خالص.</p>
     <label class="flabel">رقم محفظتك (فودافون كاش / أورانج كاش..)</label>
-    <input type="text" id="becomeSpecWallet" placeholder="01xxxxxxxxx">
+    <input type="text" id="becomeSpecWallet" placeholder="01xxxxxxxxx" value="${existing.payoutWallet || ''}">
     <label class="flabel">رابط أو معرّف إنستاباي بتاعك</label>
-    <input type="text" id="becomeSpecInstapay" placeholder="مثال: yourname@instapay">
+    <input type="text" id="becomeSpecInstapay" placeholder="مثال: yourname@instapay" value="${existing.payoutInstapay || ''}">
 
     <label class="flabel" style="margin-top:16px;">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
+    ${existing.certificateImage ? `<p style="font-size:12px; color:var(--muted); margin-bottom:6px;">✅ عندك صورة مرفوعة أصلًا — ارفع صورة جديدة بس لو حابب تغيّرها.</p>` : ''}
     <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
     <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
-      <input type="checkbox" id="becomeSpecCommissionAgree" style="width:auto; margin-top:3px;">
+      <input type="checkbox" id="becomeSpecCommissionAgree" ${existing.agreedCommission === 'yes' ? 'checked' : ''} style="width:auto; margin-top:3px;">
       <label for="becomeSpecCommissionAgree" style="font-size:14px; color:var(--text); line-height:1.6;">موافق إن المنصة بتاخد عمولة <b>${commissionRate}٪</b> من أي جلسة أو باقة بتتم من خلال تحويل المستخدمين ليّا عن طريق المنصة، وإن الباقي بيتحوّل لمحفظتي/إنستاباي بعد خصمها.</label>
     </div>
-    <p style="font-size:13px; color:var(--muted); margin-top:8px;">طلبك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.</p>
-    <button class="btn-primary" onclick="submitSpecialistApplication()">إرسال الطلب</button>
+    <p style="font-size:13px; color:var(--muted); margin-top:8px;">${existing.email ? 'أي تعديل هيرجّع حالتك لـ"قيد المراجعة" لحد ما يتم التأكد منها.' : 'طلبك هيبقى "قيد المراجعة" لحد ما يتم التأكد من بياناتك.'}</p>
+    <button class="btn-primary" onclick="submitSpecialistApplication()">${existing.email ? 'حفظ التعديلات' : 'إرسال الطلب'}</button>
   `;
   renderSpecialistPricingTracks();
   showScreen('screen-become-specialist');
@@ -11532,8 +11608,13 @@ async function submitSpecialistApplication(){
   const instapay = document.getElementById('becomeSpecInstapay').value.trim();
   const agreedCommission = document.getElementById('becomeSpecCommissionAgree').checked;
   const discountEndDate = specialistDiscountEnabled ? document.getElementById('becomeSpecDiscountEndDate').value : '';
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(!auth){ alert('لازم تكون مسجّل دخول'); return; }
+  const uid = auth.uid;
+  const existing = await firestoreGetDoc('specialists', uid) || {};
   if(!fullName || !specialty){ alert('لازم تملأ الاسم والتخصص'); return; }
-  if(!specialistImageBase64){ alert('لازم ترفع صورة شهادة أو بطاقة نقابية تثبت تخصصك'); return; }
+  const certificateImage = specialistImageBase64 || existing.certificateImage || '';
+  if(!certificateImage){ alert('لازم ترفع صورة شهادة أو بطاقة نقابية تثبت تخصصك'); return; }
   const anyTrackEnabled = specialistPricing.online.enabled || specialistPricing.offline.enabled;
   if(!anyTrackEnabled){ alert('فعّل تصنيف واحد على الأقل (أونلاين أو أوف لاين) وحدد أسعارك'); return; }
   const cleanTrack = t => ({
@@ -11546,21 +11627,20 @@ async function submitSpecialistApplication(){
   if(specialistDiscountEnabled && !discountEndDate){ alert('حدد تاريخ انتهاء عرض الخصم'); return; }
   if(!wallet && !instapay){ alert('لازم تدخل رقم محفظة أو إنستاباي عشان تستلم أرباحك'); return; }
   if(!agreedCommission){ alert('لازم توافق على سياسة العمولة قبل التسجيل'); return; }
-  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
-  if(!auth){ alert('لازم تكون مسجّل دخول'); return; }
-  const uid = auth.uid;
   const existingProfile = await firestoreGetDoc('users', uid) || {};
   await firestoreSetDoc('users', uid, { ...existingProfile, role:'specialist' });
+  const identityTagline = document.getElementById('becomeSpecIdentityTagline').value.trim();
   await firestoreSetDoc('specialists', uid, {
     fullName, specialty, experience: experience || '', license: license || '',
-    bio: bio || '', email: auth.email || '', certificateImage: specialistImageBase64, status:'pending', agreedCommission:'yes',
-    availability: availability || '',
+    bio: bio || '', email: auth.email || '', certificateImage, status:'pending', agreedCommission:'yes',
+    availability: availability || '', identityTagline: identityTagline || '', profileImage: specialistProfileImageBase64 || existing.profileImage || '',
     pricingOnline: JSON.stringify(cleanedOnline), pricingOffline: JSON.stringify(cleanedOffline),
     discountEnabled: specialistDiscountEnabled ? 'yes' : 'no', discountEndDate: specialistDiscountEnabled ? discountEndDate : '',
     offerActive: offerActive ? 'yes' : 'no', offerText: offerActive ? offerText : '',
     payoutWallet: wallet || '', payoutInstapay: instapay || '',
   });
   specialistImageBase64 = '';
+  specialistProfileImageBase64 = '';
   alert('تم إرسال طلبك بنجاح! هيتم مراجعته من الإدارة قريبًا.');
   openSettingsScreen();
 }
