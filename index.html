@@ -2449,33 +2449,56 @@ async function doSignIn(){
 let specialistImageBase64 = '';
 let specialistProfileImageBase64 = '';
 
+function compressImageToDataUrl(file, maxBytes, callback){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      let width = img.width, height = img.height;
+      const maxDimension = 700;
+      if(width > maxDimension || height > maxDimension){
+        if(width > height){ height = Math.round(height * maxDimension / width); width = maxDimension; }
+        else { width = Math.round(width * maxDimension / height); height = maxDimension; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      let quality = 0.85;
+      function tryCompress(){
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const approxBytes = dataUrl.length * 0.75;
+        if(approxBytes > maxBytes && quality > 0.25){ quality -= 0.1; tryCompress(); }
+        else callback(dataUrl, approxBytes <= maxBytes);
+      }
+      tryCompress();
+    };
+    img.onerror = () => callback(null, false);
+    img.src = e.target.result;
+  };
+  reader.onerror = () => callback(null, false);
+  reader.readAsDataURL(file);
+}
 function handleSpecialistFile(input){
   const file = input.files[0];
   if(!file) return;
-  const MAX_BYTES = 400 * 1024; // 400 كيلوبايت كحد أقصى (قيد Firestore على حجم الحقل النصي)
-  if(file.size > MAX_BYTES){
-    showAuthError('حجم الصورة كبير — اختار صورة أصغر من 400 كيلوبايت (اضغطها أول)');
-    input.value = '';
-    specialistImageBase64 = '';
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => { specialistImageBase64 = e.target.result; };
-  reader.readAsDataURL(file);
+  const MAX_BYTES = 700 * 1024; // قيد Firestore على حجم الحقل النصي
+  compressImageToDataUrl(file, MAX_BYTES, (dataUrl, fits) => {
+    if(!dataUrl){ alert('تعذّر قراءة الصورة، جرب صورة تانية'); input.value = ''; return; }
+    if(!fits){ alert('الصورة كبيرة جدًا حتى بعد الضغط — جرب صورة تانية أصغر شوية'); input.value = ''; specialistImageBase64 = ''; return; }
+    specialistImageBase64 = dataUrl;
+    alert('تم رفع صورة الشهادة بنجاح ✅');
+  });
 }
 function handleSpecialistProfileFile(input){
   const file = input.files[0];
   if(!file) return;
-  const MAX_BYTES = 400 * 1024;
-  if(file.size > MAX_BYTES){
-    showAuthError('حجم الصورة كبير — اختار صورة أصغر من 400 كيلوبايت (اضغطها أول)');
-    input.value = '';
-    specialistProfileImageBase64 = '';
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => { specialistProfileImageBase64 = e.target.result; };
-  reader.readAsDataURL(file);
+  const MAX_BYTES = 700 * 1024;
+  compressImageToDataUrl(file, MAX_BYTES, (dataUrl, fits) => {
+    if(!dataUrl){ alert('تعذّر قراءة الصورة، جرب صورة تانية'); input.value = ''; return; }
+    if(!fits){ alert('الصورة كبيرة جدًا حتى بعد الضغط — جرب صورة تانية أصغر شوية'); input.value = ''; specialistProfileImageBase64 = ''; return; }
+    specialistProfileImageBase64 = dataUrl;
+    alert('تم رفع صورتك الشخصية بنجاح ✅');
+  });
 }
 
 async function doSignUpSpecialist(){
@@ -2569,7 +2592,7 @@ function renderAuthFields(mode){
       <input type="text" id="specLicense" placeholder="رقم الترخيص">
       <label class="flabel">نبذة مختصرة</label>
       <textarea id="specBio" placeholder="اكتب نبذة عن خبرتك..." style="min-height:50px;"></textarea>
-      <label class="flabel">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
+      <label class="flabel">صورة شهادة أو بطاقة نقابية (هتتضغط تلقائيًا)</label>
       <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
       <label class="flabel">الإيميل</label>
       <input type="email" id="authEmail" placeholder="name@example.com">
@@ -11525,7 +11548,7 @@ async function openBecomeSpecialistScreen(){
     <label class="flabel">رابط أو معرّف إنستاباي بتاعك</label>
     <input type="text" id="becomeSpecInstapay" placeholder="مثال: yourname@instapay" value="${existing.payoutInstapay || ''}">
 
-    <label class="flabel" style="margin-top:16px;">صورة شهادة أو بطاقة نقابية (أقل من 400 كيلوبايت)</label>
+    <label class="flabel" style="margin-top:16px;">صورة شهادة أو بطاقة نقابية (هتتضغط تلقائيًا)</label>
     ${existing.certificateImage ? `<p style="font-size:12px; color:var(--muted); margin-bottom:6px;">✅ عندك صورة مرفوعة أصلًا — ارفع صورة جديدة بس لو حابب تغيّرها.</p>` : ''}
     <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
     <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
