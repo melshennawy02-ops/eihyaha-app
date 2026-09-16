@@ -205,13 +205,13 @@
       </div>
       <div class="pillars-grid" id="pillarsGrid"></div>
 
-      <div class="quick-help-card" onclick="startEhkily()" style="margin-top:8px;">
-        <div class="icon-circle" style="width:38px; height:38px; font-size:20px;">🧠</div>
+      <div class="quick-help-card" onclick="startEhkily()" style="margin-top:8px; background:linear-gradient(135deg, rgba(20,20,40,.75), rgba(20,20,40,.5)), url('https://images.unsplash.com/photo-1573497491208-6b1acb260507?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border-color:var(--gold);">
+        <div class="icon-circle" style="width:38px; height:38px; font-size:20px; background:rgba(255,255,255,.15); border-color:var(--gold);">🧠</div>
         <div style="flex:1;">
-          <p style="font-size:15px; font-weight:700; margin:0;">مساعدة فورية</p>
-          <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">تحدث مع مختص الآن</p>
+          <p style="font-size:15px; font-weight:700; margin:0; color:#fff;">مساعدة فورية</p>
+          <p style="font-size:12px; color:rgba(255,255,255,.85); margin:2px 0 0;">تحدث مع مختص الآن</p>
         </div>
-        <div style="font-size:19px; color:var(--gold);">‹</div>
+        <div style="font-size:19px; color:#fff;">‹</div>
       </div>
 
       <p class="section-title">كيف حالك اليوم؟</p>
@@ -1967,6 +1967,7 @@ async function openEditSpecialistScreen(uid){
   pricingUIPrefix = 'editSpec';
   editingSpecialistUid = uid;
   specialistProfileImageBase64 = '';
+  specialistImageBase64 = '';
   const s = await firestoreGetDoc('specialists', uid) || {};
   specialistPricing = {
     online: (() => { try{ return JSON.parse(s.pricingOnline || '{}'); }catch(e){ return {enabled:false, sessions:[], packages:[]}; } })(),
@@ -1996,6 +1997,9 @@ async function openEditSpecialistScreen(uid){
     <textarea id="editSpecBio" placeholder="نبذة..." style="min-height:50px;">${s.bio || ''}</textarea>
     <label class="flabel">ساعات العمل المتاحة</label>
     <input type="text" id="editSpecAvailability" placeholder="مثال: السبت-الخميس 4-10 مساءً" value="${s.availability || ''}">
+    <label class="flabel">صورة شهادة أو بطاقة نقابية (هتتضغط تلقائيًا)</label>
+    ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; max-width:220px; border-radius:10px; margin-bottom:6px; border:1px solid #EDE8D8;"><p style="font-size:12px; color:var(--muted); margin-bottom:6px;">✅ الصورة دي المرفوعة أصلًا — ارفع صورة جديدة بس لو حابب تغيّرها.</p>` : ''}
+    <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
 
     <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; padding:10px; background:var(--sand); border-radius:10px;">
@@ -2036,6 +2040,7 @@ async function saveEditedSpecialist(){
     fullName, specialty,
     identityTagline: document.getElementById('editSpecIdentityTagline').value.trim(),
     profileImage: specialistProfileImageBase64 || existing.profileImage || '',
+    certificateImage: specialistImageBase64 || existing.certificateImage || '',
     experience: document.getElementById('editSpecExperience').value.trim(),
     license: document.getElementById('editSpecLicense').value.trim(),
     bio: document.getElementById('editSpecBio').value.trim(),
@@ -6833,6 +6838,12 @@ const EHKILY_TREE = {
       {label:"اتظلمت أو اتخنت من حد قريب", next:"go_merat_envy_betrayal"},
       {label:"خايف أواجه حد أقوى مني", next:"go_merat_fear_confrontation"},
       {label:"حاسس بذنب من غلطة عملتها", next:"go_merat_guilt_return"},
+      {label:"بيجيلي خفقان وضيق نفس فجأة", next:"go_disorder_2"},
+      {label:"بترجع تتأكد من حاجة أكتر من مرة", next:"go_disorder_6"},
+      {label:"مش عارف أنام والأفكار مزحمة دماغي", next:"go_disorder_21"},
+      {label:"بتنفجر غضب لموقف بسيط", next:"go_disorder_90"},
+      {label:"بتخاف من رفض الناس ليك", next:"go_trait_1"},
+      {label:"بتصعب عليك أي تغيير في حياتك", next:"go_trait_74"},
       {label:"مش عارف أوصف اللي حاسس بيه", next:"unsure"},
     ]
   },
@@ -9561,6 +9572,8 @@ function renderEhkilyNode(key){
       if(c.next === 'go_relcheck_family'){ openRelationshipCheckScreen(3, 'زوجك أو زوجتك'); return; }
       if(c.next === 'go_relcheck_social'){ openRelationshipCheckScreen(4, 'صاحبك'); return; }
       if(c.next && c.next.startsWith('go_merat_')){ openMeratPattern(c.next.replace('go_merat_','')); return; }
+      if(c.next && c.next.startsWith('go_disorder_')){ showDisorderDetail(Number(c.next.replace('go_disorder_',''))); return; }
+      if(c.next && c.next.startsWith('go_trait_')){ showTraitGuideDetail(Number(c.next.replace('go_trait_','')), 'startEhkily'); return; }
       ehkilyCurrent = c.next;
       renderEhkilyNode(c.next);
       win.scrollTop = win.scrollHeight;
@@ -11549,7 +11562,7 @@ async function openBecomeSpecialistScreen(){
     <input type="text" id="becomeSpecInstapay" placeholder="مثال: yourname@instapay" value="${existing.payoutInstapay || ''}">
 
     <label class="flabel" style="margin-top:16px;">صورة شهادة أو بطاقة نقابية (هتتضغط تلقائيًا)</label>
-    ${existing.certificateImage ? `<p style="font-size:12px; color:var(--muted); margin-bottom:6px;">✅ عندك صورة مرفوعة أصلًا — ارفع صورة جديدة بس لو حابب تغيّرها.</p>` : ''}
+    ${existing.certificateImage ? `<img src="${existing.certificateImage}" style="width:100%; max-width:220px; border-radius:10px; margin-bottom:6px; border:1px solid #EDE8D8;"><p style="font-size:12px; color:var(--muted); margin-bottom:6px;">✅ الصورة دي المرفوعة أصلًا — ارفع صورة جديدة بس لو حابب تغيّرها.</p>` : ''}
     <input type="file" accept="image/*" onchange="handleSpecialistFile(this)">
     <div style="display:flex; align-items:flex-start; gap:8px; margin-top:12px; padding:10px; background:var(--sand); border-radius:10px;">
       <input type="checkbox" id="becomeSpecCommissionAgree" ${existing.agreedCommission === 'yes' ? 'checked' : ''} style="width:auto; margin-top:3px;">
