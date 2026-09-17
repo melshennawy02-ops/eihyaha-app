@@ -1851,19 +1851,23 @@ async function loadAdminSessionRequests(){
     if(!grouped[key]) grouped[key] = [];
     grouped[key].push(r);
   });
-  wrap.innerHTML = Object.entries(grouped).map(([specialistName, list]) => `
+  const groupKeys = Object.keys(grouped);
+  wrap.innerHTML = groupKeys.map((specialistName, gi) => `
     <div style="margin-bottom:14px; border:1px solid var(--layer-l2-border); border-radius:10px; padding:10px;">
-      <p style="font-size:14px; font-weight:700; color:var(--text); margin:0 0 8px;">${specialistName} — <span style="color:var(--gold);">${list.length} طلب</span></p>
-      ${list.map(r => `
-        <div class="tool-row" style="cursor:default;">
-          <div>
-            <div class="card-title" style="font-size:13px;">${r.username || 'مستخدم'}</div>
-            <div class="card-sub">${r.sessionLabel || ''} — ${r.price || ''} جنيه</div>
-          </div>
-        </div>
-      `).join('')}
+      <p style="font-size:14px; font-weight:700; color:var(--text); margin:0 0 8px;">${specialistName} — <span style="color:var(--gold);">${grouped[specialistName].length} طلب</span></p>
+      <div id="sessionGroup_${gi}"></div>
     </div>
   `).join('');
+  groupKeys.forEach((specialistName, gi) => {
+    renderCompactHistory(`sessionGroup_${gi}`, `sessionGroup_${gi}`, grouped[specialistName], r => `
+      <div class="tool-row" style="cursor:default;">
+        <div>
+          <div class="card-title" style="font-size:13px;">${r.username || 'مستخدم'}</div>
+          <div class="card-sub">${r.sessionLabel || ''} — ${r.price || ''} جنيه</div>
+        </div>
+      </div>
+    `, r => r.date ? r.date.slice(0,10) : null, 3);
+  });
 }
 async function confirmSubscriptionPayment(requestId, uid, tierKey){
   if(!confirm('اتأكدت إن التحويل وصل فعليًا في المحفظة/إنستاباي بتاعتك؟')) return;
@@ -7802,9 +7806,9 @@ async function openSpiritualReport(){
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;">
-      <div class="card" style="text-align:center; margin:0;">
+      <div class="card" style="text-align:center; margin:0; cursor:pointer;" onclick="openWorshipInsights()">
         <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${consistency30 !== null ? consistency30 + '٪' : '—'}</p>
-        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">انتظام العبادة (٣٠ يوم)</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">انتظام العبادة (٣٠ يوم) — شوف التفاصيل ‹</p>
       </div>
       <div class="card" style="text-align:center; margin:0;">
         <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${tawbaLog.length}</p>
@@ -7922,6 +7926,7 @@ async function openWorshipInsights(){
       </div>
     </div>
     ${correlationHtml}
+    <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openSpiritualReport()">شوف تقريرك الروحاني الكامل 📊</div>
   `;
 }
 
