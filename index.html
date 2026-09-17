@@ -1570,7 +1570,9 @@ async function renderAdminScreen(){
   loadAdminUnmatchedQueries();
 
   const docs = await firestoreListAll('specialists');
-  const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  const statusPriority = { pending:0, approved:1, suspended:2, rejected:3 };
+  const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
+    .sort((a,b) => (statusPriority[a.status] ?? 9) - (statusPriority[b.status] ?? 9));
   const specialistsWrap = document.createElement('div');
 
   if(specialists.length === 0){
@@ -1907,13 +1909,12 @@ async function loadAdminFeedback(){
   const wrap = document.getElementById('adminFeedbackWrap');
   const docs = await firestoreListAll('feedback');
   if(!wrap) return;
-  if(docs.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش بلاغات لسه.</p>`; return; }
-  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
-  wrap.innerHTML = items.map(f => `
+  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date));
+  renderCompactHistory('adminFeedbackWrap', 'adminFeedback', items, f => `
     <div class="tool-row" style="cursor:default;">
       <div><div class="card-title" style="font-size:13.5px;">${f.text}</div><div class="card-sub">${f.date ? new Date(f.date).toLocaleDateString('ar-EG') : ''}</div></div>
     </div>
-  `).join('');
+  `, f => f.date ? f.date.slice(0,10) : null, 5, 'مفيش بلاغات لسه.');
 }
 
 // ---------- عبارات بحث بدون تطابق ----------
@@ -1921,9 +1922,10 @@ async function loadAdminUnmatchedQueries(){
   const wrap = document.getElementById('adminUnmatchedWrap');
   const docs = await firestoreListAll('unmatched_queries');
   if(!wrap) return;
-  if(docs.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش عبارات مسجّلة لسه.</p>`; return; }
-  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 40);
-  wrap.innerHTML = items.map(q => `<p style="font-size:13.5px; color:var(--text); padding:6px 0; border-bottom:1px solid #EDE8D8;">"${q.text}"</p>`).join('');
+  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date));
+  renderCompactHistory('adminUnmatchedWrap', 'adminUnmatched', items,
+    q => `<p style="font-size:13.5px; color:var(--text); padding:6px 0; border-bottom:1px solid #EDE8D8;">"${q.text}"</p>`,
+    q => q.date ? q.date.slice(0,10) : null, 5, 'مفيش عبارات مسجّلة لسه.');
 }
 
 // ---------- ترتيب الأركان في الصفحة الرئيسية (إعداد عام لكل المستخدمين، أدمن فقط) ----------
@@ -11175,11 +11177,12 @@ function setHistoryDateFilter(key, which, value){
   if(historyRenderers[key]) historyRenderers[key]();
 }
 // entries: مرتبة الأحدث أولًا. renderEntryFn(entry) بترجع HTML للسطر. getDateFn(entry) بترجع تاريخ YYYY-MM-DD أو null.
-function renderCompactHistory(containerId, stateKey, entries, renderEntryFn, getDateFn){
-  historyRenderers[stateKey] = () => renderCompactHistory(containerId, stateKey, entries, renderEntryFn, getDateFn);
+function renderCompactHistory(containerId, stateKey, entries, renderEntryFn, getDateFn, initialCount, emptyMessage){
+  initialCount = initialCount || 1;
+  historyRenderers[stateKey] = () => renderCompactHistory(containerId, stateKey, entries, renderEntryFn, getDateFn, initialCount, emptyMessage);
   const wrap = document.getElementById(containerId);
   if(!wrap) return;
-  if(entries.length === 0){ wrap.innerHTML = '<p style="font-size:14px; color:var(--muted);">لسه معملتش تسجيل</p>'; return; }
+  if(entries.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted);">${emptyMessage || 'لسه معملتش تسجيل'}</p>`; return; }
   const expanded = !!historyExpandState[stateKey];
   const filterFrom = historyDateFilter[stateKey + '_from'];
   const filterTo = historyDateFilter[stateKey + '_to'];
@@ -11193,10 +11196,10 @@ function renderCompactHistory(containerId, stateKey, entries, renderEntryFn, get
       return true;
     });
   }
-  const visible = expanded ? filtered : entries.slice(0,1);
+  const visible = expanded ? filtered : entries.slice(0,initialCount);
   let html = visible.map(renderEntryFn).join('');
   if(visible.length === 0) html = '<p style="font-size:14px; color:var(--muted);">مفيش تسجيلات في الفترة دي.</p>';
-  if(entries.length > 1){
+  if(entries.length > initialCount){
     if(expanded){
       html += `
         <div style="display:flex; gap:6px; margin:10px 0;">
@@ -11205,7 +11208,7 @@ function renderCompactHistory(containerId, stateKey, entries, renderEntryFn, get
         </div>
         <div class="choice-btn" style="text-align:center;" onclick="toggleHistoryExpand('${stateKey}')">▲ إخفاء</div>`;
     } else {
-      html += `<div class="choice-btn" style="text-align:center;" onclick="toggleHistoryExpand('${stateKey}')">▼ عرض المزيد (${entries.length - 1})</div>`;
+      html += `<div class="choice-btn" style="text-align:center;" onclick="toggleHistoryExpand('${stateKey}')">▼ عرض المزيد (${entries.length - initialCount})</div>`;
     }
   }
   wrap.innerHTML = html;
