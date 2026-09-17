@@ -1109,9 +1109,18 @@
   </div>
 
   <!-- ===================== SCREEN: EDIT SPECIALIST (أدمن) ===================== -->
-  <div class="screen" id="screen-edit-specialist">
+  <div class="screen" id="screen-admin-specialists">
     <div class="topbar">
       <div class="backbtn" onclick="openAdminScreen()">→</div>
+      <h1>كل المتخصصين</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="adminSpecialistsBody"></div>
+  </div>
+
+  <div class="screen" id="screen-edit-specialist">
+    <div class="topbar">
+      <div class="backbtn" onclick="openAdminSpecialistsScreen()">→</div>
       <h1>تعديل بيانات المتخصص</h1>
       <div style="width:48px;"></div>
     </div>
@@ -1558,7 +1567,10 @@ async function renderAdminScreen(){
       <p class="card-sub" style="margin-bottom:10px;">دليل على محتوى محتاج يتضاف للتطبيق.</p>
       <div id="adminUnmatchedWrap"><p style="font-size:14px; color:var(--muted); text-align:center;">جاري التحميل...</p></div>
     </div>
-    <p style="font-size:14px; color:var(--muted); text-align:center; margin:18px 0 10px;">جاري تحميل طلبات المتخصصين...</p>
+    <div class="card" style="cursor:pointer;" onclick="openAdminSpecialistsScreen()">
+      <p class="card-title" style="margin-bottom:4px;">👥 كل المتخصصين</p>
+      <p class="card-sub" id="adminSpecialistsSummary">جاري التحميل...</p>
+    </div>
   `;
   renderAdminPillarOrder();
   loadAdminStats();
@@ -1568,60 +1580,120 @@ async function renderAdminScreen(){
   loadAdminAnnouncement();
   loadAdminFeedback();
   loadAdminUnmatchedQueries();
-
+  loadAdminSpecialistsSummary();
+}
+async function loadAdminSpecialistsSummary(){
+  const el = document.getElementById('adminSpecialistsSummary');
+  if(!el) return;
   const docs = await firestoreListAll('specialists');
-  const statusPriority = { pending:0, approved:1, suspended:2, rejected:3 };
-  const specialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }))
-    .sort((a,b) => (statusPriority[a.status] ?? 9) - (statusPriority[b.status] ?? 9));
-  const specialistsWrap = document.createElement('div');
+  const specialists = docs.map(parseFirestoreDoc);
+  const pendingCount = specialists.filter(s => s.status === 'pending').length;
+  el.textContent = `${specialists.length} متخصص إجمالًا${pendingCount > 0 ? ` — ${pendingCount} قيد المراجعة ⚠️` : ''}`;
+}
 
-  if(specialists.length === 0){
-    specialistsWrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center;">مفيش طلبات تسجيل من متخصصين لحد دلوقتي.</p>`;
-  } else {
-    const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗', suspended:'موقوف مؤقتًا ⏸️' };
-    const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34', suspended:'#8A6153' };
-    specialistsWrap.innerHTML = specialists.map(s => `
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            ${s.profileImage ? `<img src="${s.profileImage}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); flex-shrink:0;">` : ''}
-            <div>
-              <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
-              ${s.identityTagline ? `<p style="font-size:12px; color:var(--gold); font-weight:700; margin:0 0 2px;">${s.identityTagline}</p>` : ''}
-              <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
-            </div>
-          </div>
-          <span style="font-size:12px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
-        </div>
-        ${(!s.fullName || !s.specialty) ? `
-        <div class="layer-card l3" style="margin-bottom:8px;">
-          <p class="layer-text" style="font-size:12.5px; font-weight:700;">⚠️ السجل ده ناقص: ${!s.fullName ? 'الاسم فاضي. ' : ''}${!s.specialty ? 'التخصص فاضي.' : ''} استخدم "✏️ تعديل" تحت عشان تكمّله.</p>
-        </div>` : ''}
-        ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
-        ${s.license ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
-        <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
-        ${s.availability ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">ساعات العمل: ${s.availability}</p>` : ''}
-        ${buildSpecialistPricingSummaryText(s) ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">${buildSpecialistPricingSummaryText(s)}</p>` : ''}
-        ${(s.payoutWallet || s.payoutInstapay) ? `
-        <div style="background:var(--sand); border-radius:10px; padding:10px; margin-bottom:8px;">
-          <p style="font-size:12px; color:#8A6153; font-weight:700; margin:0 0 4px;">🔒 بيانات استلام الأرباح (أدمن فقط)</p>
-          ${s.payoutWallet ? `<p style="font-size:13px; color:var(--text); margin:0;">محفظة: ${s.payoutWallet}</p>` : ''}
-          ${s.payoutInstapay ? `<p style="font-size:13px; color:var(--text); margin:2px 0 0;">إنستاباي: ${s.payoutInstapay}</p>` : ''}
-        </div>` : ''}
-        ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
-        <div class="choice-btn" style="text-align:center; margin-bottom:8px;" onclick="openEditSpecialistScreen('${s.id}')">✏️ تعديل بيانات المتخصص</div>
-        ${s.status === 'pending' ? `
-          <div style="display:flex; gap:8px;">
-            <button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">✓ قبول</button>
-            <button class="btn-ghost" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="reviewSpecialist('${s.id}','rejected')">✗ رفض</button>
-          </div>
-        ` : ''}
-        ${s.status === 'approved' ? `<button class="btn-ghost" style="margin:0; color:#8A6153; border-color:#8A6153;" onclick="reviewSpecialist('${s.id}','suspended')">⏸️ إيقاف مؤقت</button>` : ''}
-        ${s.status === 'suspended' ? `<button class="btn-primary" style="margin:0;" onclick="reviewSpecialist('${s.id}','approved')">▶️ إعادة التفعيل</button>` : ''}
+// ---------- شاشة إدارة كل المتخصصين: تابات بالحالة + بحث + قائمة مختصرة + تفاصيل عند الضغط ----------
+let cachedAdminSpecialists = [];
+let adminSpecialistsFilter = 'pending';
+let adminSpecialistsSearch = '';
+async function openAdminSpecialistsScreen(){
+  showScreen('screen-admin-specialists');
+  const body = document.getElementById('adminSpecialistsBody');
+  body.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">جاري التحميل...</p>`;
+  const docs = await firestoreListAll('specialists');
+  cachedAdminSpecialists = docs.map(d => ({ ...parseFirestoreDoc(d), id: d.name.split('/').pop() }));
+  if(cachedAdminSpecialists.filter(s => s.status === 'pending').length === 0) adminSpecialistsFilter = 'all';
+  renderAdminSpecialistsShell();
+}
+function renderAdminSpecialistsShell(){
+  const body = document.getElementById('adminSpecialistsBody');
+  const tabs = [
+    { key:'pending', label:'قيد المراجعة' }, { key:'approved', label:'معتمد' },
+    { key:'suspended', label:'موقوف' }, { key:'rejected', label:'مرفوض' }, { key:'all', label:'الكل' },
+  ];
+  body.innerHTML = `
+    <div style="display:flex; gap:6px; overflow-x:auto; padding:14px 0 10px;">
+      ${tabs.map(t => `<div class="choice-btn" style="margin:0; white-space:nowrap; flex-shrink:0; ${adminSpecialistsFilter===t.key ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setAdminSpecialistsFilter('${t.key}')">${t.label}</div>`).join('')}
+    </div>
+    <input type="text" id="adminSpecialistsSearchInput" placeholder="دوّر بالاسم أو الإيميل..." value="${adminSpecialistsSearch}" oninput="setAdminSpecialistsSearch(this.value)" style="margin-bottom:10px;">
+    <div id="adminSpecialistsListWrap"></div>
+  `;
+  renderAdminSpecialistsList();
+}
+function setAdminSpecialistsFilter(key){ adminSpecialistsFilter = key; renderAdminSpecialistsShell(); }
+function setAdminSpecialistsSearch(val){ adminSpecialistsSearch = val; renderAdminSpecialistsList(); }
+function renderAdminSpecialistsList(){
+  const wrap = document.getElementById('adminSpecialistsListWrap');
+  if(!wrap) return;
+  const q = adminSpecialistsSearch.trim().toLowerCase();
+  let list = adminSpecialistsFilter === 'all' ? cachedAdminSpecialists : cachedAdminSpecialists.filter(s => s.status === adminSpecialistsFilter);
+  if(q) list = list.filter(s => (s.fullName||'').toLowerCase().includes(q) || (s.email||'').toLowerCase().includes(q));
+  const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗', suspended:'موقوف ⏸️' };
+  const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34', suspended:'#8A6153' };
+  if(list.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">مفيش نتايج.</p>`; return; }
+  wrap.innerHTML = list.map(s => `
+    <div class="tool-row" onclick="showAdminSpecialistDetail('${s.id}')">
+      ${s.profileImage ? `<img src="${s.profileImage}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0;">` : `<div class="icon-circle" style="width:36px; height:36px; font-size:16px; flex-shrink:0;">🧑‍⚕️</div>`}
+      <div style="flex:1;">
+        <div class="card-title" style="font-size:14px;">${s.fullName || 'بدون اسم'} ${(!s.fullName || !s.specialty) ? '⚠️' : ''}</div>
+        <div class="card-sub">${s.specialty || ''}</div>
       </div>
-    `).join('');
-  }
-  body.querySelector('p:last-child').replaceWith(specialistsWrap);
+      <span style="font-size:11.5px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'}; white-space:nowrap;">${statusLabel[s.status] || s.status}</span>
+    </div>
+  `).join('');
+}
+function showAdminSpecialistDetail(uid){
+  const s = cachedAdminSpecialists.find(x => x.id === uid);
+  if(!s) return;
+  const body = document.getElementById('adminSpecialistsBody');
+  const statusLabel = { pending:'قيد المراجعة', approved:'مقبول ✓', rejected:'مرفوض ✗', suspended:'موقوف مؤقتًا ⏸️' };
+  const statusColor = { pending:'#8A6A1E', approved:'#2E6459', rejected:'#B23A34', suspended:'#8A6153' };
+  body.innerHTML = `
+    <div class="choice-btn" style="text-align:center; margin:14px 0;" onclick="renderAdminSpecialistsShell()">→ رجوع للقائمة</div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          ${s.profileImage ? `<img src="${s.profileImage}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); flex-shrink:0;">` : ''}
+          <div>
+            <p class="card-title" style="margin-bottom:2px;">${s.fullName || 'بدون اسم'}</p>
+            ${s.identityTagline ? `<p style="font-size:12px; color:var(--gold); font-weight:700; margin:0 0 2px;">${s.identityTagline}</p>` : ''}
+            <p class="card-sub">${s.specialty || ''} ${s.experience ? '— ' + s.experience + ' سنة خبرة' : ''}</p>
+          </div>
+        </div>
+        <span style="font-size:12px; font-weight:700; color:${statusColor[s.status] || '#5B6C69'};">${statusLabel[s.status] || s.status}</span>
+      </div>
+      ${(!s.fullName || !s.specialty) ? `
+      <div class="layer-card l3" style="margin-bottom:8px;">
+        <p class="layer-text" style="font-size:12.5px; font-weight:700;">⚠️ السجل ده ناقص: ${!s.fullName ? 'الاسم فاضي. ' : ''}${!s.specialty ? 'التخصص فاضي.' : ''} استخدم "✏️ تعديل" تحت عشان تكمّله.</p>
+      </div>` : ''}
+      ${s.bio ? `<p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.bio}</p>` : ''}
+      ${s.license ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">رقم الترخيص: ${s.license}</p>` : ''}
+      <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">الإيميل: ${s.email || ''}</p>
+      ${s.availability ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">ساعات العمل: ${s.availability}</p>` : ''}
+      ${buildSpecialistPricingSummaryText(s) ? `<p style="font-size:13px; color:var(--muted); margin-bottom:8px;">${buildSpecialistPricingSummaryText(s)}</p>` : ''}
+      ${(s.payoutWallet || s.payoutInstapay) ? `
+      <div style="background:var(--sand); border-radius:10px; padding:10px; margin-bottom:8px;">
+        <p style="font-size:12px; color:#8A6153; font-weight:700; margin:0 0 4px;">🔒 بيانات استلام الأرباح (أدمن فقط)</p>
+        ${s.payoutWallet ? `<p style="font-size:13px; color:var(--text); margin:0;">محفظة: ${s.payoutWallet}</p>` : ''}
+        ${s.payoutInstapay ? `<p style="font-size:13px; color:var(--text); margin:2px 0 0;">إنستاباي: ${s.payoutInstapay}</p>` : ''}
+      </div>` : ''}
+      ${s.certificateImage ? `<img src="${s.certificateImage}" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #EDE8D8;">` : ''}
+      <div class="choice-btn" style="text-align:center; margin-bottom:8px;" onclick="openEditSpecialistScreen('${s.id}')">✏️ تعديل بيانات المتخصص</div>
+      ${s.status === 'pending' ? `
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary" style="margin:0;" onclick="reviewSpecialistAndRefresh('${s.id}','approved')">✓ قبول</button>
+          <button class="btn-ghost" style="margin:0; color:var(--danger); border-color:var(--danger);" onclick="reviewSpecialistAndRefresh('${s.id}','rejected')">✗ رفض</button>
+        </div>
+      ` : ''}
+      ${s.status === 'approved' ? `<button class="btn-ghost" style="margin:0; color:#8A6153; border-color:#8A6153;" onclick="reviewSpecialistAndRefresh('${s.id}','suspended')">⏸️ إيقاف مؤقت</button>` : ''}
+      ${s.status === 'suspended' ? `<button class="btn-primary" style="margin:0;" onclick="reviewSpecialistAndRefresh('${s.id}','approved')">▶️ إعادة التفعيل</button>` : ''}
+    </div>
+  `;
+}
+async function reviewSpecialistAndRefresh(uid, decision){
+  await reviewSpecialist(uid, decision);
+  const idx = cachedAdminSpecialists.findIndex(x => x.id === uid);
+  if(idx > -1) cachedAdminSpecialists[idx].status = decision;
+  renderAdminSpecialistsShell();
 }
 
 // ---------- إحصائيات عامة للتطبيق: عدد الزيارات وعدد المستخدمين المسجّلين ----------
@@ -1987,7 +2059,6 @@ async function loadPillarOrder(){
 async function reviewSpecialist(uid, decision){
   const existing = await firestoreGetDoc('specialists', uid) || {};
   await firestoreSetDoc('specialists', uid, { ...existing, status: decision });
-  renderAdminScreen();
 }
 let editingSpecialistUid = null;
 async function openEditSpecialistScreen(uid){
@@ -2080,7 +2151,7 @@ async function saveEditedSpecialist(){
   });
   specialistProfileImageBase64 = '';
   alert('تم حفظ التعديلات.');
-  openAdminScreen();
+  openAdminSpecialistsScreen();
 }
 
 // ============================================================
@@ -2133,6 +2204,20 @@ function openSpecialistsDirectory(){
   `;
   showScreen('screen-specialists-directory');
 }
+let cachedBrowseSpecialists = [];
+let browseSpecialistsSearch = '';
+let browseSpecialistsSort = 'default';
+function getSpecialistStartingPrice(s){
+  const online = parseSpecialistTrack(s, 'Online');
+  const offline = parseSpecialistTrack(s, 'Offline');
+  const prices = [];
+  [online, offline].forEach(track => {
+    if(!track || !track.enabled) return;
+    (track.sessions||[]).forEach(r => prices.push(Number(r.price)||Infinity));
+    (track.packages||[]).forEach(r => prices.push(Number(r.price)||Infinity));
+  });
+  return prices.length ? Math.min(...prices) : null;
+}
 async function browseSpecialistsByCategory(categoryKey){
   const category = SPECIALIST_CATEGORIES.find(c => c.key === categoryKey);
   document.getElementById('specialistsBrowseTitle').textContent = category.title;
@@ -2158,6 +2243,9 @@ async function browseSpecialistsByCategory(categoryKey){
       return kWords.length > 0 && kWords.every(w => specialtyWords.has(w));
     });
   });
+  cachedBrowseSpecialists = matched;
+  browseSpecialistsSearch = '';
+  browseSpecialistsSort = 'default';
 
   if(matched.length === 0){
     wrap.innerHTML = `
@@ -2168,8 +2256,59 @@ async function browseSpecialistsByCategory(categoryKey){
     `;
     return;
   }
-  wrap.innerHTML = matched.map(s => `
-    <div class="card" style="margin-top:14px;">
+  renderBrowseSpecialistsShell();
+}
+function renderBrowseSpecialistsShell(){
+  const wrap = document.getElementById('specialistsBrowseBody');
+  const sorts = [
+    { key:'default', label:'الأنسب' }, { key:'price_asc', label:'الأقل سعرًا' },
+    { key:'experience_desc', label:'الأكتر خبرة' }, { key:'offers', label:'عنده عرض' },
+  ];
+  wrap.innerHTML = `
+    <input type="text" id="browseSpecialistsSearchInput" placeholder="دوّر بالاسم..." value="${browseSpecialistsSearch}" oninput="setBrowseSpecialistsSearch(this.value)" style="margin-top:14px;">
+    <div style="display:flex; gap:6px; overflow-x:auto; padding:10px 0;">
+      ${sorts.map(s => `<div class="choice-btn" style="margin:0; white-space:nowrap; flex-shrink:0; ${browseSpecialistsSort===s.key ? 'background:var(--sand); border-color:var(--gold);' : ''}" onclick="setBrowseSpecialistsSort('${s.key}')">${s.label}</div>`).join('')}
+    </div>
+    <div id="browseSpecialistsListWrap"></div>
+  `;
+  renderBrowseSpecialistsList();
+}
+function setBrowseSpecialistsSearch(val){ browseSpecialistsSearch = val; renderBrowseSpecialistsList(); }
+function setBrowseSpecialistsSort(key){ browseSpecialistsSort = key; renderBrowseSpecialistsList(); }
+function renderBrowseSpecialistsList(){
+  const wrap = document.getElementById('browseSpecialistsListWrap');
+  if(!wrap) return;
+  const q = browseSpecialistsSearch.trim().toLowerCase();
+  let list = q ? cachedBrowseSpecialists.filter(s => (s.fullName||'').toLowerCase().includes(q)) : [...cachedBrowseSpecialists];
+  if(browseSpecialistsSort === 'price_asc'){
+    list.sort((a,b) => (getSpecialistStartingPrice(a) ?? Infinity) - (getSpecialistStartingPrice(b) ?? Infinity));
+  } else if(browseSpecialistsSort === 'experience_desc'){
+    list.sort((a,b) => (Number(b.experience)||0) - (Number(a.experience)||0));
+  } else if(browseSpecialistsSort === 'offers'){
+    list = list.filter(s => s.offerActive === 'yes' && s.offerText);
+  }
+  if(list.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">مفيش نتايج.</p>`; return; }
+  wrap.innerHTML = list.map(s => {
+    const price = getSpecialistStartingPrice(s);
+    return `
+    <div class="tool-row" onclick="showBrowseSpecialistDetail('${s.id}')">
+      ${s.profileImage ? `<img src="${s.profileImage}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0;">` : `<div class="icon-circle" style="width:44px; height:44px; font-size:18px; flex-shrink:0;">🧑‍⚕️</div>`}
+      <div style="flex:1;">
+        <div class="card-title" style="font-size:14px;">${s.fullName || 'بدون اسم'}</div>
+        <div class="card-sub">${s.identityTagline || s.specialty || ''}</div>
+      </div>
+      <span style="font-size:12px; font-weight:700; color:var(--gold); white-space:nowrap;">${price ? 'من ' + price + ' ج' : ''}${s.offerActive === 'yes' ? ' 🔥' : ''}</span>
+    </div>
+  `;
+  }).join('');
+}
+function showBrowseSpecialistDetail(uid){
+  const s = cachedBrowseSpecialists.find(x => x.id === uid);
+  if(!s) return;
+  const wrap = document.getElementById('specialistsBrowseBody');
+  wrap.innerHTML = `
+    <div class="choice-btn" style="text-align:center; margin:14px 0;" onclick="renderBrowseSpecialistsShell()">→ رجوع للقائمة</div>
+    <div class="card">
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:2px;">
         ${s.profileImage ? `<img src="${s.profileImage}" style="width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); flex-shrink:0;">` : `<div style="width:56px; height:56px; border-radius:50%; background:var(--sand); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🧑‍⚕️</div>`}
         <div>
@@ -2184,7 +2323,7 @@ async function browseSpecialistsByCategory(categoryKey){
       ${s.offerActive === 'yes' && s.offerText ? `<p style="font-size:13px; color:var(--danger); font-weight:700; margin-top:8px;">🔥 ${s.offerText}</p>` : ''}
       ${s.email ? `<p style="font-size:13px; color:var(--muted); margin-top:8px;">للتواصل: ${s.email}</p>` : ''}
     </div>
-  `).join('');
+  `;
 }
 function parseSpecialistTrack(s, trackKey){
   try{ return JSON.parse(s['pricing' + trackKey] || '{}'); }catch(e){ return {}; }
