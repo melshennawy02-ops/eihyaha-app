@@ -3702,7 +3702,7 @@ function renderCircleQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${CIRCLE_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCircle(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('circleBody', 'answerCircleFreeTextCB', index)}
     </div>
   `;
@@ -4025,7 +4025,7 @@ function renderCoworkerExchangeQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${COWORKER_EXCHANGE_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCoworkerExchange(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCoworkerExchange(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('coworkerExchangeBody', 'answerCoworkerExchangeFreeTextCB', index)}
     </div>
   `;
@@ -4166,7 +4166,7 @@ function renderCoworkerBurnoutQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${COWORKER_BURNOUT_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCoworkerBurnout(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCoworkerBurnout(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('coworkerBurnoutBody', 'answerCoworkerBurnoutFreeTextCB', index)}
     </div>
   `;
@@ -4418,7 +4418,7 @@ function renderProfessionalCircleQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${questions.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerProfessionalCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerProfessionalCircle(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('professionalCircleBody', 'answerProfessionalCircleFreeTextCB', index)}
     </div>
   `;
@@ -4800,7 +4800,7 @@ function renderFieldDiscoveryQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${FIELD_DISCOVERY_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFieldDiscovery(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFieldDiscovery(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('fieldDiscoveryBody', 'answerFieldDiscoveryFreeTextCB', index)}
     </div>
   `;
@@ -5253,7 +5253,7 @@ function renderFinancialCircleQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${FINANCIAL_CIRCLE_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFinancialCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFinancialCircle(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('financialCircleBody', 'answerFinancialCircleFreeTextCB', index)}
     </div>
   `;
@@ -5705,7 +5705,7 @@ function renderHealthCircleQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${HEALTH_CIRCLE_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerHealthCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerHealthCircle(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('healthCircleBody', 'answerHealthCircleFreeTextCB', index)}
     </div>
   `;
@@ -6412,7 +6412,7 @@ function renderFamilyCircleQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${FAMILY_CIRCLE_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFamilyCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerFamilyCircle(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('familyCircleBody', 'answerFamilyCircleFreeTextCB', index)}
     </div>
   `;
@@ -7284,7 +7284,7 @@ function renderWhoIsAllahQuestion(index){
     <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${WHO_IS_ALLAH_QUESTIONS.length} — محتاجين نفهم مساحتك النفسية والروحانية دلوقتي</p>
     <p style="font-size:17px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWhoIsAllah(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWhoIsAllah(${index}, ${i})">${q.options[i].label}</div>`).join('')}
     </div>
   `;
 }
@@ -7556,7 +7556,7 @@ function renderSpiritualCircleQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${SPIRITUAL_CIRCLE_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerSpiritualCircle(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerSpiritualCircle(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('spiritualCircleBody', 'answerSpiritualCircleFreeTextCB', index)}
     </div>
   `;
@@ -7655,7 +7655,7 @@ function renderTasleemCompassQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${TASLEEM_COMPASS_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerTasleemCompass(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerTasleemCompass(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       ${freeTextOptionHtml('tasleemCompassBody', 'answerTasleemCompassFreeTextCB', index)}
     </div>
   `;
@@ -8524,7 +8524,7 @@ function renderSelfKnowQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${SELF_KNOW_QUESTIONS.length} — محتاجين نفهم مساحتك مع نفسك دلوقتي</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerSelfKnow(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerSelfKnow(${index}, ${i})">${q.options[i].label}</div>`).join('')}
     </div>
   `;
 }
@@ -8959,6 +8959,17 @@ function openTawbaFromLink(entryId){
 }
 // ---------- مكوّن عام لخيار "إجابتي مختلفة" (نص حر) — يُستخدم في أي كويز بدل ما نكرره ----------
 let _ftContainer = null, _ftFn = null, _ftArg = null;
+// خلط ترتيب عرض اختيارات أي سؤال تشخيصي، عشان الإجابة "المثالية" متبقاش دايمًا أول اختيار —
+// بيرجّع الـ index الأصلي لكل اختيار (مش نسخة من الاختيار نفسه)، عشان دوال التسجيل الحالية
+// تفضل شغالة زي ما هي من غير أي تعديل (بتاخد index وتقرأ q.options[index] زي الأول بالظبط)
+function shuffledOptionIndices(options){
+  const indices = options.map((_, i) => i);
+  for(let i = indices.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices;
+}
 function freeTextOptionHtml(containerId, targetFn, extraArg){
   return `<div class="choice-btn" style="margin:0; text-align:right; border-style:dashed; opacity:.85;" onclick="showFreeTextBox('${containerId}','${targetFn}', ${extraArg})">✍️ إجابتي مختلفة عن دي — سيبني أوصفها بكلامي</div>`;
 }
@@ -9152,7 +9163,7 @@ function renderWoundQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${WOUND_QUESTIONS.length} — الاختيار الخفي</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWound(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerWound(${index}, ${i})">${q.options[i].label}</div>`).join('')}
       <div class="choice-btn" style="margin:0; text-align:right; border-style:dashed; opacity:.85;" onclick="showWoundFreeText(${index})">✍️ إجابتي مختلفة عن دي — سيبني أوصفها بكلامي</div>
     </div>
   `;
@@ -9919,7 +9930,7 @@ function renderCompassQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${COMPASS_ALL_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCompass(${index}, ${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(q.options).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerCompass(${index}, ${i})">${q.options[i].label}</div>`).join('')}
     </div>
   `;
 }
