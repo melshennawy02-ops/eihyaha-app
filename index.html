@@ -445,6 +445,15 @@
     <div style="padding:0 16px;" id="spiritualCircleBody"></div>
   </div>
 
+  <div class="screen" id="screen-tasleem-compass">
+    <div class="topbar">
+      <div class="backbtn" onclick="goToPillar(1)">→</div>
+      <h1>بوصلة التسليم</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="tasleemCompassBody"></div>
+  </div>
+
   <div class="screen" id="screen-spiritual-report">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(1)">→</div>
@@ -3330,7 +3339,7 @@ const PILLARS = [
 // ---------- ميزان حياتك: تتبع "تفاعل" مش "تفوق" — الهدف توازن مش أعلى درجة ----------
 // كل قيمة هنا = مفاتيح markToolOpened الأساسية لكل ركن (نفس المفاتيح المستخدمة لشارة "ابدأ من هنا")
 const PILLAR_TOOL_KEYS = {
-  1: ['spiritual_circle','rabbek','asma','prophets','worship','tawba','spiritual_report'],
+  1: ['spiritual_circle','tasleem_compass','rabbek','asma','prophets','worship','tawba','spiritual_report'],
   2: ['selfknow','tabiei','ehkily','merat','flash','daftar','report','disorder_guide','trait_guide'],
   3: ['family_wound','relcheck_3','spouse','children','siblings','extended_family','support_guide','family_report'],
   4: ['circle','relcheck_4','social_skills','rahm','neighbor','coworkers','support_guide','social_report'],
@@ -5952,12 +5961,19 @@ function showFatigueDetail(i){
 
 // ---------- إيه اللي حاسس بيه جسديًا؟ (تشخيص عكسي — الجسم نقطة دخول لركن تاني، مش وجهة نهائية) ----------
 const BODY_SIGNAL_BANK = [
-  { emoji:"🤕", label:"صداع متكرر", psych:"الصداع المتكرر غالبًا بيرتبط بتوتر مزمن، وأكتر مصدر شائع ليه عندك تحديدًا هو القلق أو الضغط المادي.", linkFn:"startFinancialCircleAssessment()", linkLabel:"شوف تشخيص الركن المادي ←" },
-  { emoji:"🤢", label:"مشاكل في المعدة أو الهضم", psych:"المعدة من أكتر أعضاء الجسم حساسية للتوتر العاطفي، وغالبًا بترتبط بضغوط في علاقات قريبة (العائلة تحديدًا).", linkFn:"startFamilyCircleAssessment()", linkLabel:"شوف تشخيص الركن العائلي ←" },
-  { emoji:"💆", label:"شد في الرقبة والكتفين", psych:"شد العضلات في المنطقة دي من أوضح العلامات الجسدية لضغط الشغل والمسؤوليات المتراكمة.", linkFn:"startProfessionalCircleAssessment()", linkLabel:"شوف تشخيص الركن المهني ←" },
-  { emoji:"💓", label:"خفقان أو ضيق في التنفس", psych:"الإحساس ده أحيانًا بيرتبط بقلق وجودي أعمق أو بعد عن الطمأنينة الروحية، مش بس سبب جسدي مباشر.", linkFn:"openRabbekScreen()", linkLabel:"شوف علاقتك بربك (الركن الروحاني) ←" },
+  { emoji:"🤯", label:"ثقل أو ضغط في منتصف الرأس والجبهة", psych:"غالبًا مرتبط بخوف مستمر من المستقبل ومحاولة عقلك يتحكم في كل احتمال قبل ما يحصل — إرهاق ذهني من ترقّب مش من مجهود فعلي.", linkFn:"startSpiritualCircleAssessment()", linkLabel:"شوف أضعف نقطة روحانية عندك ←" },
+  { emoji:"😬", label:"شد أو صرير في الفك والأسنان", psych:"الفك بيحمل غضب أو خوف بتكتمه من غير ما تدّيه مخرج — العضلة بتقفل بدل ما الانفعال ياخد طريقه الطبيعي.", linkFn:"openTawbaScreen()", linkLabel:"شوف التوبة والعودة ←" },
+  { emoji:"🦴", label:"تيبس أو ألم مستمر في الرقبة", psych:"جسمك بيفضل في وضعية استعداد دائم زي إنك بتحرس نفسك من خطر — علامة على ترقّب مستمر للمخاطر مش على مجهود جسدي.", linkFn:"startSpiritualCircleAssessment()", linkLabel:"شوف أضعف نقطة روحانية عندك ←" },
+  { emoji:"😮‍💨", label:"إحساس بضيق أو كتلة في الحلق", psych:"غالبًا صوت أو مشاعر بتمنعها من الخروج بقالها فترة — احتياج شديد لقبول حد معين مع خوف من رفضه لو تكلمت بصراحة.", linkFn:"startCircleAssessment()", linkLabel:"شوف تشخيص الركن الاجتماعي ←" },
+  { emoji:"😔", label:"ضيق أو ثقل في الصدر وقت التفكير في الناس حواليّا", psych:"احتياج شديد لشخص معين مع خوف من فقده أو رفضه — جسمك بيدخل حالة استنفار كل ما فكرت في العلاقة دي.", linkFn:"startCircleAssessment()", linkLabel:"شوف تشخيص الركن الاجتماعي ←" },
+  { emoji:"💓", label:"خفقان أو إحساس غريب في القلب من غير سبب طبي", psych:"القلب هو مركز الحب والخوف والرجاء الثلاثة مع بعض — لو التلاتة موجّهين لغير الله، أول ما بيحس بالتعب هو نفس العضو ده.", linkFn:"openRabbekScreen()", linkLabel:"شوف علاقتك بربك (الركن الروحاني) ←" },
+  { emoji:"🤢", label:"مشاكل في المعدة أو الهضم", psych:"المعدة من أكتر أعضاء الجسم حساسية للخوف — طاقة جسمك بتتحول للاستعداد للخطر بدل الهضم كل ما تحس بتهديد مستمر.", linkFn:"startFinancialCircleAssessment()", linkLabel:"شوف تشخيص الركن المادي ←" },
+  { emoji:"🌀", label:"اضطراب مستمر في القولون (إمساك أو إسهال بالتبادل)", psych:"القولون من أكتر الأعضاء ارتباطًا بحالة \"الانتظار المعلّق\" — وانتظار نتيجة أو قرار من حد أو حاجة بعيدة عن إيدك.", linkFn:"startProfessionalCircleAssessment()", linkLabel:"شوف تشخيص الركن المهني ←" },
+  { emoji:"💆", label:"شد في الكتفين ومنطقة اللوح بالظهر", psych:"\"حاسس إني شايل الدنيا على كتافي\" — جسمك بياخدها حرفيًا لما تحمّل نفسك مسؤولية أكبر بكتير من حجمك الطبيعي.", linkFn:"startProfessionalCircleAssessment()", linkLabel:"شوف تشخيص الركن المهني ←" },
+  { emoji:"🪨", label:"ألم مستمر في أسفل الظهر", psych:"أسفل الظهر بيحمل وزن جسمك كله فعليًا، وبيتوجع أول ما الأساس النفسي بتاعك يهتز — لما القلب يدور على أساس بديل (مال، نفوذ، سيطرة) بدل الاطمئنان بالله.", linkFn:"startSpiritualCircleAssessment()", linkLabel:"شوف أضعف نقطة روحانية عندك ←" },
+  { emoji:"🦵", label:"ثقل غريب في الرجلين من غير مجهود بدني", psych:"مش تعب عضلي عادي — غالبًا علامة على إحساس بفقدان الاتصال بمعنى حقيقي لحياتك اليومية، مش بس إرهاق جسدي.", linkFn:"openSelfKnowScreen()", linkLabel:"شوف اعرف نفسك (الركن الشخصي) ←" },
+  { emoji:"🦿", label:"آلام متكررة في الركبة أو المفاصل", psych:"دي غالبًا مش وليدة موقف واحد، لكن تراكم طويل من إهمال نفسي وجسدي مع بعض محتاج مسار علاج مزدوج مش حل سريع.", linkFn:"startHealthCircleAssessment()", linkLabel:"شوف تشخيص الركن الصحي ←" },
   { emoji:"😩", label:"تعب عام مش عارف مصدره", psych:"التعب اللي مالوش سبب جسدي واضح غالبًا بيكون انعكاس لحمل نفسي متراكم محتاج تفهمه الأول.", linkFn:"openSelfKnowScreen()", linkLabel:"شوف اعرف نفسك (الركن الشخصي) ←" },
-  { emoji:"😔", label:"ضيق أو ثقل في الصدر وقت التفكير في الناس حواليّا", psych:"الإحساس الجسدي ده وقت التفكير في علاقة معينة بيكون غالبًا مؤشر مباشر إن العلاقة دي مصدر استنزاف حقيقي.", linkFn:"startCircleAssessment()", linkLabel:"شوف تشخيص الركن الاجتماعي ←" },
 ];
 function openBodySignalsScreen(){
   markToolOpened('body_signals');
@@ -6861,6 +6877,7 @@ function goToPillar(id){
     // الركن الروحاني — لوحة ملخص سريعة + الأدوات المتاحة بخلفيات صور
     const spiritualTools = [
       { key:"spiritual_circle", onclick:"startSpiritualCircleAssessment()", icon:"🧭", title:"أضعف نقطة روحانية عندك", sub:"تشخيص يوجّهك لنقطة التركيز الصح", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,45,35,.72)" },
+      { key:"tasleem_compass", onclick:"startTasleemCompass()", icon:"🧭", title:"بوصلة التسليم", sub:"من إيمان زائف باللسان إلى تسليم حقيقي بالقلب", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(45,30,10,.75)" },
       { key:"rabbek", onclick:"openRabbekScreen()", icon:"🤲", title:"علاقتك بربك", sub:"الخوف والرجاء والحب .. لمين موجّهين؟", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,35,.72)" },
       { key:"asma", onclick:"openAsmaScreen()", icon:"📿", title:"أسماء الله الحسنى", sub:"معنى، أثر نفسي، وتطبيق عملي لكل اسم", img:"https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
       { key:"prophets", onclick:"openProphetsScreen()", icon:"📖", title:"قصص الأنبياء والتسليم", sub:"٢٢ نبيًا .. إزاي طبّقوا التسليم لله", img:"https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,15,10,.75)" },
@@ -7589,6 +7606,115 @@ function renderSpiritualCircleResult(result, freeText){
     ${freeMatch ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch.entry, freeMatch.positive)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="restartSpiritualCircleAssessment()">🔄 أعد التقييم</div>
+    <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startTasleemCompass()">🧭 عايز تعرف السبب الأعمق؟ جرّب بوصلة التسليم ←</div>
+  `;
+}
+
+// ---------- بوصلة التسليم: طبقة أعمق تحت "أضعف نقطة روحانية" — من كتاب بوصلة التسليم، الباب الأول ----------
+const TASLEEM_COMPASS_QUESTIONS = [
+  { axis:'self_god', q:"قراراتك المهمة بتتحكم فيها إيه أكتر؟", options:[
+    { label:"إيه اللي يرضي الله", score:0 }, { label:"متقلب بين رضا الله وراحتي أنا", score:1 }, { label:"إيه اللي يريحني أنا شخصيًا", score:2 },
+  ]},
+  { axis:'dunya_pride', q:"لما تحقق نجاح أو تملك حاجة كنت عايزها، بتحس بإيه تجاه نفسك؟", options:[
+    { label:"فضل الله عليّ، ومحتاج أشكره", score:0 }, { label:"فخور بنفسي وفي نفس الوقت شاكر", score:1 }, { label:"إنجاز شخصي بحته، أنا اللي وصلت له", score:2 },
+  ]},
+  { axis:'cause_effect', q:"علاقتك بربنا مبنية على إيه أكتر؟", options:[
+    { label:"ثقة في حكمته بغض النظر عن النتيجة", score:0 }, { label:"غالبًا ثقة، بس بتهتز لو النتيجة مجتش زي المتوقع", score:1 }, { label:"لو التزمت لازم الدنيا تمشي كويس، ولو ما مشتش بحس إني اتظلمت", score:2 },
+  ]},
+  { axis:'arrogance_resentment', q:"لو حصلك موقف مش عاجبك أو حد رفض طلبك، رد فعلك الأول بيكون إيه؟", options:[
+    { label:"أتقبله وأدوّر على الحكمة منه", score:0 }, { label:"بتضايق شوية بس بعدي بترجع أتقبله", score:1 }, { label:"سخط وإحساس إني مستاهل أحسن من كده", score:2 },
+  ]},
+];
+const TASLEEM_COMPASS_LABELS = { self_god:"أنا إله حياتي", dunya_pride:"غرور الدنيا", cause_effect:"منطق الإلحاد (السبب والنتيجة)", arrogance_resentment:"الكبر والسخط" };
+const TASLEEM_TOOL_MAP = {
+  self_god: { fn:"openTawbaScreen()", label:"التوبة والعودة" },
+  dunya_pride: { fn:"openProphetsScreen()", label:"قصص الأنبياء والتسليم" },
+  cause_effect: { fn:"openRabbekScreen()", label:"علاقتك بربك" },
+  arrogance_resentment: { fn:"openWorshipScreen()", label:"متابعة عباداتك" },
+};
+let tasleemCompassAnswers = [];
+function startTasleemCompass(){
+  markToolOpened('tasleem_compass');
+  const saved = getTasleemCompassAssessment();
+  showScreen('screen-tasleem-compass');
+  if(saved){
+    renderTasleemCompassResult(saved, '');
+  } else {
+    restartTasleemCompass();
+  }
+}
+function restartTasleemCompass(){
+  tasleemCompassAnswers = [];
+  renderTasleemCompassQuestion(0);
+}
+function renderTasleemCompassQuestion(index){
+  const wrap = document.getElementById('tasleemCompassBody');
+  if(index >= TASLEEM_COMPASS_QUESTIONS.length){ revealTasleemCompassResult(); return; }
+  const q = TASLEEM_COMPASS_QUESTIONS[index];
+  wrap.innerHTML = `
+    <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${index+1} من ${TASLEEM_COMPASS_QUESTIONS.length}</p>
+    <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${q.options.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerTasleemCompass(${index}, ${i})">${o.label}</div>`).join('')}
+      ${freeTextOptionHtml('tasleemCompassBody', 'answerTasleemCompassFreeTextCB', index)}
+    </div>
+  `;
+}
+function answerTasleemCompassFreeTextCB(qIndex, text){
+  const q = TASLEEM_COMPASS_QUESTIONS[qIndex];
+  tasleemCompassAnswers.push({ axis:q.axis, score:1, freeText: text || null });
+  renderTasleemCompassQuestion(qIndex + 1);
+}
+function answerTasleemCompass(qIndex, oIndex){
+  const q = TASLEEM_COMPASS_QUESTIONS[qIndex];
+  tasleemCompassAnswers.push({ axis:q.axis, score:q.options[oIndex].score });
+  renderTasleemCompassQuestion(qIndex + 1);
+}
+function getTasleemCompassAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_tasleem_compass_assessment') || 'null'); }
+function revealTasleemCompassResult(){
+  const scores = {};
+  tasleemCompassAnswers.forEach(a => { scores[a.axis] = (scores[a.axis]||0) + a.score; });
+  const freeText = tasleemCompassAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
+  const previous = getTasleemCompassAssessment();
+  const result = { scores, date:new Date().toISOString() };
+  if(previous) localStorage.setItem('eihyaha_tasleem_compass_previous', JSON.stringify(previous));
+  localStorage.setItem('eihyaha_tasleem_compass_assessment', JSON.stringify(result));
+  syncSpiritualSummaryToCloud();
+  renderTasleemCompassResult(result, freeText);
+}
+function renderTasleemCompassResult(result, freeText){
+  const wrap = document.getElementById('tasleemCompassBody');
+  const weakest = Object.entries(result.scores).sort((a,b) => b[1]-a[1])[0][0];
+  const tool = TASLEEM_TOOL_MAP[weakest];
+  const freeMatch = freeText ? matchProphetLinkBest(freeText) : null;
+  const previous = JSON.parse(localStorage.getItem('eihyaha_tasleem_compass_previous') || 'null');
+  let trendHtml = '';
+  if(previous){
+    const currentTotal = Object.values(result.scores).reduce((a,b)=>a+b,0);
+    const previousTotal = Object.values(previous.scores).reduce((a,b)=>a+b,0);
+    const trendMsg = currentTotal < previousTotal ? "قلبك بيتحرك من الإيمان الزائف للتسليم الحقيقي — استمر." : currentTotal > previousTotal ? "فيه رجوع لمنطق السبب والنتيجة عن آخر مرة — وقت مناسب تراجع نفسك." : "وضعك مستقر تقريبًا زي آخر مرة.";
+    trendHtml = `<div class="layer-card l2"><p class="layer-title" style="color:#8A6A1E;">اتجاهك بمرور الوقت</p><p class="layer-text" style="margin-top:6px;">${trendMsg}</p></div>`;
+  }
+  wrap.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px;">
+      <p class="layer-title" style="color:var(--text);">🧭 أقرب محطة لك في "عجلة الشهوة"</p>
+      <p class="layer-text" style="margin-top:6px;">من إيمان باللسان إلى تسليم حقيقي بالقلب — أقرب نقطة محتاجة شغل: <b>${TASLEEM_COMPASS_LABELS[weakest]}</b></p>
+    </div>
+    ${Object.entries(result.scores).sort((a,b)=>b[1]-a[1]).map(([axis,val]) => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+          <span>${TASLEEM_COMPASS_LABELS[axis]}</span><span style="color:var(--muted);">${val >= 2 ? 'محتاجة شغل' : 'مستقرة'}</span>
+        </div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;">
+          <div style="width:${Math.min(val/2,1)*100}%; height:100%; background:${axis===weakest ? 'var(--gold)' : '#C9BFA0'}; border-radius:3px;"></div>
+        </div>
+      </div>
+    `).join('')}
+    ${freeMatch ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch.entry, freeMatch.positive)}` : ''}
+    ${trendHtml}
+    <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
+    <div class="choice-btn" style="text-align:center;" onclick="restartTasleemCompass()">🔄 أعد التقييم</div>
+    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:10px;">من كتاب «بوصلة التسليم» — الباب الأول</p>
   `;
 }
 
@@ -7605,23 +7731,23 @@ function openRabbekScreen(){
 
     <div class="layer-card" style="background:linear-gradient(rgba(10,10,20,.78), rgba(10,10,20,.78)), url('https://images.unsplash.com/photo-1564198879220-63f2734f7cec?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none;">
       <p class="layer-title" style="color:var(--gold);">😰 الخوف</p>
-      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">لغير الله:</b> خوف من الناس، من المستقبل، من المجهول — بيولّد قلق مستمر وترقب دائم ووسواس في الاحتمالات، لأن القلب بيدور على أمان في حاجة مالهاش أمان مطلق أصلًا.</p>
-      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">لله:</b> خشية وتعظيم (مش رعب) — بيولّد مراقبة النفس، انضباط، وطمأنينة، لأنه بيرافقه دايمًا الرجاء: مهما كانت الظروف صعبة، رحمة الله أكبر.</p>
+      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">من غير الله ← القلق والتوتر وعدم الأمان:</b> خوف من الناس، من المستقبل، من المجهول — قلق مستمر وترقب دائم، لأن القلب بيدور على أمان في حاجة مالهاش أمان مطلق أصلًا.</p>
+      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">من الله ← الطمأنينة والانضباط:</b> خشية وتعظيم (مش رعب) — بيولّد مراقبة النفس وانضباط، ويرافقه دايمًا الرجاء: مهما كانت الظروف صعبة، رحمة الله أكبر.</p>
     </div>
 
     <div class="layer-card" style="background:linear-gradient(rgba(35,25,5,.72), rgba(35,25,5,.72)), url('https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none;">
       <p class="layer-title" style="color:var(--gold);">🌤️ الرجاء</p>
-      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">في غير الله:</b> تعلّق الأمل بشخص أو موقف بعينه — بيولّد إحباط شديد وانكسار كل ما الأمور ما تسيرش زي المتوقع.</p>
-      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">في الله:</b> مهما كانت الظروف، الطريق ما انتهاش — أمل وتفاؤل وطمأنينة، لأن المستقبل مش متروك للصدفة.</p>
+      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">في غير الله ← الذل والانكسار والاحتياج:</b> تعلّق الأمل بشخص أو موقف بعينه — بيولّد انكسار واحتياج شديد كل ما الأمور ما تسيرش زي المتوقع.</p>
+      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">في الله ← العزة والثقة:</b> مهما كانت الظروف، الطريق ما انتهاش — عزة وثقة حقيقية، لأن المستقبل مش متروك للصدفة.</p>
     </div>
 
     <div class="layer-card" style="background:linear-gradient(rgba(30,10,10,.72), rgba(30,10,10,.72)), url('https://images.unsplash.com/photo-1745932545319-e91ca25aa4a8?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; border:none;">
       <p class="layer-title" style="color:var(--gold);">❤️ الحب</p>
-      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">لغير الله (تعلّق مرضي):</b> لما شخص واحد يبقى مصدر قيمتك وأمانك كله — بتفقد نفسك، ونومك، وقراراتك في غيابه أو غضبه.</p>
-      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">لله:</b> أحب الناس والأشياء، لكن خلّي حبك الأكبر لله — كده محدش وقراره بيبقى قادر يهزّك من جذورك.</p>
+      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">لغير الله ← التعلق المرضي:</b> لما شخص واحد يبقى مصدر قيمتك وأمانك كله — بتفقد نفسك، ونومك، وقراراتك في غيابه أو غضبه.</p>
+      <p class="layer-text" style="margin-top:6px; color:#fff;"><b style="color:var(--gold);">لله ← الأمان والسكينة:</b> أحب الناس والأشياء، لكن خلّي حبك الأكبر لله — كده محدش وقراره بيبقى قادر يهزّك من جذورك.</p>
     </div>
 
-    <p style="font-size:13px; color:var(--muted); text-align:center; margin-top:14px; margin-bottom:20px;">من كتاب «بوصلة التسليم»</p>
+    <p style="font-size:13px; color:var(--muted); text-align:center; margin-top:14px; margin-bottom:20px;">من كتاب «بوصلة التسليم» — الباب الثاني: بوصلة العبادة</p>
 
     <div style="display:flex; align-items:center; gap:8px; margin:10px 0 4px;">
       <span style="font-size:17px;">✍️</span>
