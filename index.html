@@ -135,19 +135,20 @@
 </head>
 <body>
 <div id="appBgFixed"></div>
+<div id="offlineOverlay" style="display:none; position:fixed; inset:0; z-index:99999; background:var(--navy-dark, #0A2420); flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;">
+  <div style="font-size:56px; margin-bottom:16px;">📡</div>
+  <p style="font-size:19px; font-weight:700; color:#fff; margin:0 0 10px;">مفيش اتصال بالإنترنت</p>
+  <p style="font-size:14px; color:rgba(255,255,255,.75); line-height:1.8; margin:0 0 24px; max-width:320px;">التطبيق محتاج نت عشان يشتغل صح. تأكد من اتصالك وجرّب تاني.</p>
+  <div class="choice-btn" style="margin:0; background:var(--gold, #C9A24B); color:#0A2420; border:none; padding:12px 32px;" onclick="location.reload()">🔄 حاول تاني</div>
+</div>
 <div id="app">
 
   <!-- ===================== SCREEN: ONBOARDING (ترحيب مرة واحدة) ===================== -->
   <div class="screen" id="screen-onboarding">
     <div style="padding:50px 16px 0; text-align:center;">
       <p style="font-size:13px; letter-spacing:1px; color:var(--gold); margin:0 0 4px;">✦ إحياها باستمتاع ✦</p>
-      <h1 style="font-size:24px; font-weight:700; margin:0 0 16px;">أهلًا بيك في رحلتك</h1>
-      <p style="font-size:15px; color:var(--muted); line-height:1.8; margin:0 0 24px; padding:0 8px;">إحياها باستمتاع مش تطبيق دعم نفسي عادي — هدفنا نساعدك توازن حياتك كاملة في <b style="color:var(--text);">٧ أركان</b>، مش ركن واحد بس.</p>
     </div>
-    <div style="padding:0 16px;">
-      <div id="onboardingPillarsList" style="margin-bottom:20px;"></div>
-      <button class="btn-primary" onclick="finishOnboarding()">يلا نبدأ رحلتي 🌿</button>
-    </div>
+    <div style="padding:0 16px;" id="onboardingSlideBody"></div>
   </div>
 
   <!-- ===================== SCREEN: GATE (تسجيل دخول إجباري) ===================== -->
@@ -496,10 +497,19 @@
   <div class="screen" id="screen-prophets">
     <div class="topbar">
       <div class="backbtn" onclick="goToPillar(1)">→</div>
-      <h1>قصص الأنبياء والتسليم</h1>
+      <h1>مرآتك: مين شبه وجعك؟</h1>
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="prophetsBody"></div>
+  </div>
+
+  <div class="screen" id="screen-mirror-test">
+    <div class="topbar">
+      <div class="backbtn" onclick="openProphetsScreen()">→</div>
+      <h1>اختبار: مين شبه وجعك؟</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="mirrorTestBody"></div>
   </div>
 
   <!-- ===================== SCREEN: TAWBA (التوبة والعودة) ===================== -->
@@ -2555,16 +2565,62 @@ async function enterApp(){
   }
 }
 
+const ONBOARDING_SLIDES = [
+  { icon:"⚖️", title:"٧ أركان متكاملة لحياتك", desc:"روحاني، شخصي، عائلي، اجتماعي، مهني، مادي، وصحي — كل ركن له تشخيص خاص بيه وأدوات عملية وتقرير مستقل، مش نصايح عامة." },
+  { icon:"📊", title:"تقارير وتتبّع حقيقي", desc:"مش بس بنقولك اعمل كذا — التطبيق بيتابع أهدافك بمرور الوقت ويقولك بصراحة هل الخطوة دي فرّقت في حياتك فعلًا ولا لأ." },
+  { icon:"🧠", title:"تحليل شخصي وأسري عميق", desc:"اعرف نفسك، هل أنا طبيعي، تقييم علاقتك بشريك حياتك وأهلك وأصحابك وزمايلك — أدوات مبنية على مصادر نفسية حقيقية." },
+  { icon:"🧑‍⚕️", title:"احجز مع متخصص حقيقي", desc:"لايف كوتش، استشاري نفسي، أو دكتور نفسي — تقدر تحجز جلسة مباشرة من جوه التطبيق لما تحس إنك محتاج مساعدة أعمق." },
+  { icon:"🧭", title:"وبعد كده؟ بوصلتك", desc:"دلوقتي هنسألك كام سؤال بسيط عشان نعرف بالظبط أضعف ركن عندك حاليًا، وتبدأ رحلتك بيه مباشرة." },
+];
+let onboardingSlideIndex = 0;
 function showOnboarding(){
-  const wrap = document.getElementById('onboardingPillarsList');
-  wrap.innerHTML = PILLARS.map(p => `
-    <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #EDE8D8;">
-      <div style="width:34px; height:34px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:19px;">${p.icon}</div>
-      <p style="font-size:15px; font-weight:600; margin:0;">${p.title}</p>
-    </div>
-  `).join('');
+  onboardingSlideIndex = 0;
   document.getElementById('bottomNav').style.display = 'none';
   showScreen('screen-onboarding');
+  renderOnboardingSlide();
+}
+function renderOnboardingSlide(){
+  const wrap = document.getElementById('onboardingSlideBody');
+  if(onboardingSlideIndex < ONBOARDING_SLIDES.length){
+    const s = ONBOARDING_SLIDES[onboardingSlideIndex];
+    const isLast = onboardingSlideIndex === ONBOARDING_SLIDES.length - 1;
+    wrap.innerHTML = `
+      <div style="text-align:center; padding:30px 8px;">
+        <div style="font-size:52px; margin-bottom:16px;">${s.icon}</div>
+        <h1 style="font-size:21px; font-weight:700; margin:0 0 12px;">${s.title}</h1>
+        <p style="font-size:15px; color:var(--muted); line-height:1.8; margin:0;">${s.desc}</p>
+      </div>
+      <div style="display:flex; justify-content:center; gap:6px; margin-bottom:24px;">
+        ${ONBOARDING_SLIDES.map((_,i) => `<span style="width:${i===onboardingSlideIndex?'20px':'6px'}; height:6px; border-radius:3px; background:${i===onboardingSlideIndex?'var(--gold)':'var(--layer-l2-border)'}; transition:width .2s;"></span>`).join('')}
+      </div>
+      <button class="btn-primary" onclick="nextOnboardingSlide()">${isLast ? 'شوف أركانك السبعة ←' : 'التالي ←'}</button>
+      ${!isLast ? `<button class="btn-ghost" onclick="renderOnboardingPillarsList()">تخطّي</button>` : ''}
+    `;
+  } else {
+    renderOnboardingPillarsList();
+  }
+}
+function nextOnboardingSlide(){
+  onboardingSlideIndex++;
+  renderOnboardingSlide();
+}
+function renderOnboardingPillarsList(){
+  const wrap = document.getElementById('onboardingSlideBody');
+  wrap.innerHTML = `
+    <div style="text-align:center; padding:20px 0 10px;">
+      <h1 style="font-size:22px; font-weight:700; margin:0 0 12px;">أهلًا بيك في رحلتك</h1>
+      <p style="font-size:14px; color:var(--muted); line-height:1.8; margin:0 0 20px; padding:0 8px;">هدفنا نساعدك توازن حياتك كاملة في <b style="color:var(--text);">٧ أركان</b>، مش ركن واحد بس.</p>
+    </div>
+    <div style="margin-bottom:20px;">
+      ${PILLARS.map(p => `
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #EDE8D8;">
+          <div style="width:34px; height:34px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:19px;">${p.icon}</div>
+          <p style="font-size:15px; font-weight:600; margin:0;">${p.title}</p>
+        </div>
+      `).join('')}
+    </div>
+    <button class="btn-primary" onclick="finishOnboarding()">يلا نبدأ رحلتي 🌿</button>
+  `;
 }
 
 function finishOnboarding(){
@@ -3339,7 +3395,7 @@ const PILLARS = [
 // ---------- ميزان حياتك: تتبع "تفاعل" مش "تفوق" — الهدف توازن مش أعلى درجة ----------
 // كل قيمة هنا = مفاتيح markToolOpened الأساسية لكل ركن (نفس المفاتيح المستخدمة لشارة "ابدأ من هنا")
 const PILLAR_TOOL_KEYS = {
-  1: ['spiritual_circle','tasleem_compass','rabbek','asma','prophets','worship','tawba','spiritual_report'],
+  1: ['spiritual_circle','tasleem_compass','mirror_test','rabbek','asma','prophets','worship','tawba','spiritual_report'],
   2: ['selfknow','tabiei','ehkily','merat','flash','daftar','report','disorder_guide','trait_guide'],
   3: ['family_wound','relcheck_3','spouse','children','siblings','extended_family','support_guide','family_report'],
   4: ['circle','relcheck_4','social_skills','rahm','neighbor','coworkers','support_guide','social_report'],
@@ -6882,7 +6938,7 @@ function goToPillar(id){
       { key:"tasleem_compass", onclick:"startTasleemCompass()", icon:"🧭", title:"بوصلة التسليم", sub:"من إيمان زائف باللسان إلى تسليم حقيقي بالقلب", img:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(45,30,10,.75)" },
       { key:"rabbek", onclick:"openRabbekScreen()", icon:"🤲", title:"علاقتك بربك", sub:"الخوف والرجاء والحب .. لمين موجّهين؟", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,35,.72)" },
       { key:"asma", onclick:"openAsmaScreen()", icon:"📿", title:"أسماء الله الحسنى", sub:"معنى، أثر نفسي، وتطبيق عملي لكل اسم", img:"https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
-      { key:"prophets", onclick:"openProphetsScreen()", icon:"📖", title:"قصص الأنبياء والتسليم", sub:"٢٢ نبيًا .. إزاي طبّقوا التسليم لله", img:"https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,15,10,.75)" },
+      { key:"prophets", onclick:"openProphetsScreen()", icon:"📖", title:"مرآتك: مين شبه وجعك؟", sub:"اختبار الـ٢٢ سؤال .. اعرف مرآتك من الأنبياء", img:"https://images.unsplash.com/photo-1684090090291-adb1f15f0cd5?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,15,10,.75)" },
       { key:"worship", onclick:"openWorshipScreen()", icon:"📿", title:"متابعة عباداتك", sub:"الصلاة، القرآن، والأذكار يوميًا", img:"https://images.unsplash.com/photo-1621419202928-c6b8c1493043?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(90,70,20,.78)" },
       { key:"tawba", onclick:"openTawbaScreen()", icon:"🕊️", title:"التوبة والعودة", sub:"لحظة رجوعك لله بعد أي غلطة", img:"https://images.unsplash.com/photo-1506564461966-4107c88f6d29?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,45,60,.55)" },
       { key:"spiritual_report", onclick:"openSpiritualReport()", icon:"📊", title:"تقريرك الروحاني", sub:"كل خطواتك في الركن ده في مكان واحد", img:"https://images.unsplash.com/photo-1543269865-cbf427effbad?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,25,35,.75)" },
@@ -7533,7 +7589,7 @@ const SPIRITUAL_TOOL_MAP = {
   worship: { fn:"openWorshipScreen()", label:"متابعة عباداتك" },
   tawba: { fn:"openTawbaScreen()", label:"التوبة والعودة" },
   asma: { fn:"openAsmaScreen()", label:"أسماء الله الحسنى" },
-  prophets: { fn:"openProphetsScreen()", label:"قصص الأنبياء والتسليم" },
+  prophets: { fn:"openProphetsScreen()", label:"مرآتك: مين شبه وجعك؟" },
 };
 let spiritualCircleAnswers = [];
 function startSpiritualCircleAssessment(){
@@ -7630,7 +7686,7 @@ const TASLEEM_COMPASS_QUESTIONS = [
 const TASLEEM_COMPASS_LABELS = { self_god:"أنا إله حياتي", dunya_pride:"غرور الدنيا", cause_effect:"منطق الإلحاد (السبب والنتيجة)", arrogance_resentment:"الكبر والسخط" };
 const TASLEEM_TOOL_MAP = {
   self_god: { fn:"openTawbaScreen()", label:"التوبة والعودة" },
-  dunya_pride: { fn:"openProphetsScreen()", label:"قصص الأنبياء والتسليم" },
+  dunya_pride: { fn:"openProphetsScreen()", label:"مرآتك: مين شبه وجعك؟" },
   cause_effect: { fn:"openRabbekScreen()", label:"علاقتك بربك" },
   arrogance_resentment: { fn:"openWorshipScreen()", label:"متابعة عباداتك" },
 };
@@ -8233,10 +8289,168 @@ function openProphetOfDay(){
   showScreen('screen-prophets');
 }
 
+// ---------- اختبار "مرآتك: مين شبه وجعك؟" — الـ22 سؤال من الفصل التمهيدي لكتاب مرآة الأنبياء ----------
+const MIRROR_TEST_QUESTIONS = [
+  "حسّيت من صغرك إنك عملت غلطة وحشة، وخفت إن حد يرفضك بسببها؟",
+  "مريت بمرحلة كنت بتتعب وتصبر وتتعلم فيها لوحدك، من غير حد ياخد باله؟",
+  "حاولت تغيّر حد قريب منك أو حاجة في حياتك، وهو مش سامعك خالص، لحد ما وصلت لليأس؟",
+  "قابلت حد متكبر أو متسلط عليك، وحسّيت إنك لازم تواجهه رغم خوفك؟",
+  "اتمسّكت بحاجة إنت متأكد إنها صح، ولقيت ناس حواليك بتسخر منك أو بتقلل من قرارك؟",
+  "فقدت حد أو حاجة غالية عليك بشكل غيّر حياتك تمامًا؟",
+  "عشت وسط ناس أو بيئة حسّيت إنها فاسدة، وإنك غريب فيها؟",
+  "اتحطيت في موقف صعب من غير ما يكون ذنبك، واتطلب منك تسلّم وترضى بيه؟",
+  "انتظرت حاجة أو حد لفترة طويلة جدًا، وحسّيت اليأس بيقرب منك؟",
+  "اتخنت من حد قريب جدًا منك (أخ، صاحب، شريك)؟",
+  "مرضت أو عانيت جسديًا لفترة طويلة، وحسّيتها ابتلاء بجد؟",
+  "حسّيت بالغربة أو الرفض من ناس المفروض يكونوا سندك الأول؟",
+  "خفت جدًا من موقف أو حد، وهربت منه بدل ما تواجهه؟",
+  "اتحملت غلطة أو فتنة مش غلطتك، عشان تحمي ناس تانية؟",
+  "وعدت بحاجة كان صعب جدًا تحافظ عليها، لكنك أوفيت بيها لآخرها؟",
+  "حصلتلك سلطة أو مسؤولية، وحسّيت وزنها وخفت من ظلم مش قاصده؟",
+  "جاتلك نعمة كبيرة (فلوس، نجاح، جمال)، وحسّيت إنها ممكن تبعدك عن ربنا؟",
+  "حسّيت إنك محتاج تفضل ثابت على مبدأك، وسط ناس كتير حواليك بتنحرف عنه؟",
+  "غضبت وهربت من موقف أو مسؤولية، وبعدين رجعت تعتذر وتصلح اللي اتكسر؟",
+  "انتظرت حاجة تمنّيتها بشدة، رغم إن كل حاجة حواليك كانت بتقول \"مستحيل\"؟",
+  "اتهموك ظلم بحاجة عملتها لأجل حد تاني، وحسّيت بالوحدة رغم إنك بريء؟",
+  "حسّيت إن أكتر من وجع من اللي فاتوا مجتمعين عليك في وقت واحد؟",
+];
+// كل سؤال (بالترتيب) بيوصّل لأي عنصر في MERAT_PATTERNS — نفس ترقيم الكتاب بالظبط (١=آدم... ٢٢=محمد ﷺ)
+const MIRROR_TEST_MAP = [
+  "guilt_return","unseen_effort","isolation","facing_arrogance","standing_firm_mockery",
+  "sacrifice","corrupt_environment","letting_go_grudge","grief","envy_betrayal",
+  "chronic_illness","biased_rejection","fear_confrontation","unjust_blame","keeping_promise",
+  "power_fairness","gratitude_success","standing_alone_deviation","anger","long_wait_hope",
+  "false_accusation","muhammad_combined",
+];
+let mirrorTestChecked = [];
+function startMirrorTest(){
+  markToolOpened('mirror_test');
+  mirrorTestChecked = new Array(MIRROR_TEST_QUESTIONS.length).fill(false);
+  showScreen('screen-mirror-test');
+  renderMirrorTestQuestions();
+}
+function renderMirrorTestQuestions(){
+  const wrap = document.getElementById('mirrorTestBody');
+  wrap.innerHTML = `
+    <p style="font-size:13px; color:var(--muted); line-height:1.8; margin:14px 0;">حط ✔ قدام أي سؤال حسّيت إنه بيتكلم عنك فعلًا، من غير ما تفكر كتير — أول إحساس بيجيلك هو الأصح.</p>
+    ${MIRROR_TEST_QUESTIONS.map((q,i) => `
+      <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #EDE8D8; cursor:pointer;" onclick="toggleMirrorCheck(${i})">
+        <div id="mirrorCheck_${i}" style="width:24px; height:24px; border-radius:6px; border:2px solid var(--gold); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; margin-top:2px;"></div>
+        <p style="font-size:14px; margin:0; line-height:1.6;">${i+1}. ${q}</p>
+      </div>
+    `).join('')}
+    <button class="btn-primary" onclick="revealMirrorTestResult()">اعرف مرآتك ←</button>
+  `;
+}
+function toggleMirrorCheck(i){
+  mirrorTestChecked[i] = !mirrorTestChecked[i];
+  const el = document.getElementById('mirrorCheck_' + i);
+  el.textContent = mirrorTestChecked[i] ? '✔' : '';
+  el.style.background = mirrorTestChecked[i] ? 'var(--gold)' : 'transparent';
+}
+function getMuhammadCombinedEntry(){
+  return {
+    id: "muhammad_combined",
+    title: "لما الوجع بيتجمّع مش بيبقى وجع واحد",
+    icon: "🌙",
+    prophetTitle: "سيدنا محمد ﷺ — كل الابتلاءات في رحلة واحدة",
+    psych: "لو حسّيت إن أكتر من وجع من اللي فاتوا مجتمعين عليك في وقت واحد، ده طبيعي جدًا — الحياة نفسها مش وجع واحد، والقلب بيحمل أكتر من ندبة في نفس الوقت.",
+    prophet: "رحلة سيدنا محمد ﷺ جمعت اليتم، والفقد، والرفض، والغربة، والحرب، والخيانة — كل الابتلاءات اللي مرّ بيها الأنبياء قبله مجتمعة في حياة واحدة. ومع كل ده، وصل للعفو والرحمة، حتى مع أشد أعدائه.",
+    submission: "لو جمعت كذا وجع مع بعض، يمكن دي إشارة إن رحلتك أقرب لرحلة سيدنا محمد ﷺ اللي جمعت كل الابتلاءات، ومع كده وصلت للعفو والرحمة — مش لازم يكون عندك سبب واحد بس، ولازم تدّي كل وجع حقه.",
+  };
+}
+function revealMirrorTestResult(){
+  const counts = {};
+  mirrorTestChecked.forEach((checked, i) => {
+    if(checked){
+      const patternId = MIRROR_TEST_MAP[i];
+      counts[patternId] = (counts[patternId] || 0) + 1;
+    }
+  });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,3);
+  const result = { matches: sorted.map(([id]) => id), date: new Date().toISOString() };
+  const previous = JSON.parse(localStorage.getItem('eihyaha_mirror_test_previous') || 'null');
+  const current = JSON.parse(localStorage.getItem('eihyaha_mirror_test_result') || 'null');
+  if(current) localStorage.setItem('eihyaha_mirror_test_previous', JSON.stringify(current));
+  localStorage.setItem('eihyaha_mirror_test_result', JSON.stringify(result));
+  syncSpiritualSummaryToCloud();
+  renderMirrorTestResult(sorted, previous);
+}
+function renderMirrorTestResult(sorted, previous){
+  const wrap = document.getElementById('mirrorTestBody');
+  if(sorted.length === 0){
+    wrap.innerHTML = `
+      <div class="layer-card l1" style="margin-top:14px;">
+        <p class="layer-text">ما اخترتش أي سؤال — جرب تاني وحط ✔ على اللي حسّيت إنه بيتكلم عنك.</p>
+      </div>
+      <button class="btn-ghost" onclick="startMirrorTest()">أعد الاختبار</button>
+    `;
+    return;
+  }
+  const cards = sorted.map(([id, count]) => {
+    const entry = id === 'muhammad_combined' ? getMuhammadCombinedEntry() : MERAT_PATTERNS.find(p => p.id === id);
+    if(!entry) return '';
+    return `
+      <div class="card" style="cursor:pointer;" onclick="${id === 'muhammad_combined' ? '' : `showProphetDetail('${id}')`}">
+        <p class="card-title" style="margin-bottom:4px;">${entry.icon || '📖'} ${entry.prophetTitle}</p>
+        <p style="font-size:13px; color:var(--muted); margin:0 0 6px;">اتشابهت في ${count} من أصل 22 سؤال</p>
+        <p style="font-size:14px; color:var(--text); line-height:1.6; margin:0;">${entry.psych}</p>
+        ${id !== 'muhammad_combined' ? `<p style="font-size:12.5px; color:var(--gold); font-weight:700; margin-top:8px;">اقرأ القصة كاملة ←</p>` : ''}
+      </div>
+    `;
+  }).join('');
+  let trendHtml = '';
+  if(previous){
+    const sameTop = previous.matches[0] === sorted[0][0];
+    trendHtml = `<div class="layer-card l2"><p class="layer-text" style="font-size:13px;">${sameTop ? 'نفس أقرب نبي لوجعك زي المرة اللي فاتت — ده طبيعي، مش كل وجع بيتغيّر بسرعة.' : 'أقرب نبي لوجعك اتغيّر عن آخر مرة — يستاهل تلاحظ إيه اللي اتغيّر في حياتك.'}</p></div>`;
+  }
+  wrap.innerHTML = `
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin:14px 0 12px;">🪞 أقرب 3 أنبياء لوجعك دلوقتي</p>
+    ${cards}
+    ${trendHtml}
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:20px 0 14px;"></div>
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:8px;">وقفة قبل ما تبدأ</p>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">اكتب هنا إيه اللي حسّيته وانت بتجاوب — أول إحساس، من غير تحليل:</p>
+    <textarea id="mirrorTestReflection" placeholder="اكتب براحتك..." style="min-height:60px;"></textarea>
+    <button class="btn-primary" onclick="saveMirrorTestReflection()">احفظ واستمر</button>
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:20px 0 14px;"></div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">أو حابب تكتب وجعك بكلامك انت بدل الأسئلة؟</p>
+    <textarea id="mirrorTestFreeText" placeholder="اكتب اللي حاسس بيه..." style="min-height:50px;"></textarea>
+    <button class="btn-ghost" onclick="analyzeMirrorFreeText()">حلّل كلامي</button>
+    <div id="mirrorFreeTextResult"></div>
+    <button class="btn-ghost" onclick="startMirrorTest()" style="margin-top:14px;">🔄 أعد الاختبار</button>
+  `;
+}
+function saveMirrorTestReflection(){
+  const text = document.getElementById('mirrorTestReflection').value.trim();
+  if(text){
+    const log = JSON.parse(localStorage.getItem('eihyaha_mirror_reflections') || '[]');
+    log.unshift({ text, date: new Date().toISOString() });
+    localStorage.setItem('eihyaha_mirror_reflections', JSON.stringify(log.slice(0,100)));
+  }
+  alert('اتحفظت. ابدأ رحلتك بالفصول اللي فوق، وسيبها مرجع ترجع له كل مرة تحس فيها إنك لوحدك في وجعك.');
+}
+function analyzeMirrorFreeText(){
+  const text = document.getElementById('mirrorTestFreeText').value.trim();
+  const wrap = document.getElementById('mirrorFreeTextResult');
+  if(!text){ wrap.innerHTML = ''; return; }
+  const match = matchProphetLinkBest(text);
+  if(!match){
+    wrap.innerHTML = `<div class="layer-card l3" style="margin-top:10px;"><p class="layer-text">مالقتش تطابق واضح — جرب تفصّل أكتر شوية.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<div style="margin-top:10px;">${renderProphetLinkCard(match.entry, match.positive)}</div>`;
+}
+
 function openProphetsScreen(){
   markToolOpened('prophets');
   const body = document.getElementById('prophetsBody');
   body.innerHTML = `
+    <div class="layer-card l2" style="margin-top:14px; cursor:pointer;" onclick="startMirrorTest()">
+      <p class="layer-title" style="color:var(--text);">🪞 اختبار: مين شبه وجعك؟</p>
+      <p class="layer-text" style="margin-top:6px;">22 سؤال بسيط يوضّحلك أقرب 3 أنبياء لتجربتك دلوقتي — ابدأ بيهم قبل ما تقرأ باقي القصص.</p>
+    </div>
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:16px 0;"></div>
     <input type="text" id="prophetsSearchInput" placeholder="دوّر باسم النبي أو الموضوع (مثلاً: صبر، خوف، حزن...)" oninput="renderProphetsList()" style="margin-bottom:12px;">
     <div id="prophetsListWrap"></div>
   `;
@@ -12327,6 +12541,16 @@ renderHomeTasksPreview();
 renderHomeDailyFlash();
 renderHomeSpiritualTouch();
 renderHealingEntryPoint();
+
+// ---------- كشف حالة الاتصال بالإنترنت وعرض شاشة واضحة بدل التوقف الصامت ----------
+function updateOfflineOverlay(){
+  const overlay = document.getElementById('offlineOverlay');
+  if(!overlay) return;
+  overlay.style.display = navigator.onLine ? 'none' : 'flex';
+}
+window.addEventListener('online', updateOfflineOverlay);
+window.addEventListener('offline', updateOfflineOverlay);
+updateOfflineOverlay();
 
 // بوابة تسجيل دخول إجبارية — بتظهر في كل مرة يتفتح فيها التطبيق، بصرف النظر
 // عن أي جلسة سابقة، بناءً على طلب صريح من صاحب المشروع لحساسية بيانات التطبيق.
