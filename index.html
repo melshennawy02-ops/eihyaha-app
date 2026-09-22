@@ -2073,10 +2073,24 @@ async function loadAdminUnmatchedQueries(){
   const wrap = document.getElementById('adminUnmatchedWrap');
   const docs = await firestoreListAll('unmatched_queries');
   if(!wrap) return;
-  const items = docs.map(parseFirestoreDoc).sort((a,b) => new Date(b.date) - new Date(a.date));
-  renderCompactHistory('adminUnmatchedWrap', 'adminUnmatched', items,
-    q => `<p style="font-size:13.5px; color:var(--text); padding:6px 0; border-bottom:1px solid #EDE8D8;">"${q.text}"</p>`,
-    q => q.date ? q.date.slice(0,10) : null, 5, 'مفيش عبارات مسجّلة لسه.');
+  const items = docs.map(parseFirestoreDoc);
+  // تجميع العبارات المتشابهة مع بعض (بعد التجذير) عشان "تعبان من الدنيا" و"تعبانة من الدنيا" يتحسبوا نفس التكرار
+  const groups = {};
+  items.forEach(q => {
+    if(!q.text) return;
+    const sig = tokenizeArabic(q.text).map(stemArabicWord).sort().join(' ');
+    if(!groups[sig]) groups[sig] = { examples:[], count:0, lastDate:q.date };
+    groups[sig].examples.push(q.text);
+    groups[sig].count++;
+    if(new Date(q.date) > new Date(groups[sig].lastDate)) groups[sig].lastDate = q.date;
+  });
+  const grouped = Object.values(groups).sort((a,b) => b.count - a.count || new Date(b.lastDate) - new Date(a.lastDate));
+  renderCompactHistory('adminUnmatchedWrap', 'adminUnmatched', grouped,
+    g => `
+      <div style="padding:6px 0; border-bottom:1px solid #EDE8D8;">
+        <p style="font-size:13.5px; color:var(--text); margin:0;">"${g.examples[0]}"${g.count > 1 ? ` <span style="color:var(--gold); font-weight:700;">(اتكررت ${g.count} مرة${g.examples.length > 1 ? '، منها: "' + g.examples.slice(1,3).join('", "') + '"' : ''})</span>` : ''}</p>
+      </div>`,
+    g => g.lastDate ? g.lastDate.slice(0,10) : null, 5, 'مفيش عبارات مسجّلة لسه.');
 }
 
 // ---------- ترتيب الأركان في الصفحة الرئيسية (إعداد عام لكل المستخدمين، أدمن فقط) ----------
@@ -7807,7 +7821,7 @@ function renderSpiritualCircleResult(result, freeText){
         </div>
       </div>
     `).join('')}
-    ${freeMatch ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch.entry, freeMatch.positive)}` : ''}
+    ${freeMatch ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch.entry, freeMatch.positive, freeMatch.second)}` : ''}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="restartSpiritualCircleAssessment()">🔄 أعد التقييم</div>
     <div class="choice-btn" style="text-align:center; margin-top:10px;" onclick="startTasleemCompass()">🧭 عايز تعرف السبب الأعمق؟ جرّب بوصلة التسليم ←</div>
@@ -7915,7 +7929,7 @@ function renderTasleemCompassResult(result, freeText){
         </div>
       </div>
     `).join('')}
-    ${freeMatch ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch.entry, freeMatch.positive)}` : ''}
+    ${freeMatch ? `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(freeMatch.entry, freeMatch.positive, freeMatch.second)}` : ''}
     ${trendHtml}
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="restartTasleemCompass()">🔄 أعد التقييم</div>
@@ -8037,7 +8051,7 @@ async function analyzeRabbekText(){
     if(crossMatch){
       result.innerHTML = `
         <p style="font-size:12px; color:var(--gold); font-weight:700; margin:0 0 6px;">كلامك قريب من موقف في ركن تاني في التطبيق:</p>
-        ${renderProphetLinkCard(crossMatch.entry, crossMatch.positive)}
+        ${renderProphetLinkCard(crossMatch.entry, crossMatch.positive, crossMatch.second)}
       `;
     } else {
       result.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:10px 0;">اتسجّل كلامك في مرآتك اليومية، لكن مش لاقي نمط مطابق بالظبط — جرب تختار من القائمة تحت أقرب حاجة لإحساسك.</p>`;
@@ -8601,7 +8615,7 @@ function analyzeMirrorFreeText(){
     wrap.innerHTML = `<div class="layer-card l3" style="margin-top:10px;"><p class="layer-text">مالقتش تطابق واضح — جرب تفصّل أكتر شوية.</p></div>`;
     return;
   }
-  wrap.innerHTML = `<div style="margin-top:10px;">${renderProphetLinkCard(match.entry, match.positive)}</div>`;
+  wrap.innerHTML = `<div style="margin-top:10px;">${renderProphetLinkCard(match.entry, match.positive, match.second)}</div>`;
 }
 
 function openProphetsScreen(){
@@ -9226,7 +9240,24 @@ function normalizeArabic(s){
     .replace(/[ًٌٍَُِّْـ]/g, '')
     .trim();
 }
-const ARABIC_STOPWORDS = new Set(['في','من','علي','الي','عن','مع','هو','هي','انا','انت','ده','دي','دول','اللي','كل','او','و','ب','ل','لا','مش','بس','كده','عشان','علشان','يا','ان','مافيش','فيه','بقي','قوي','جدا','اوي','بشكل','حتي']);
+const ARABIC_STOPWORDS = new Set(['في','من','علي','الي','عن','مع','هو','هي','انا','انت','ده','دي','دول','اللي','كل','او','و','ب','ل','لا','مش','بس','كده','عشان','علشان','يا','ان','مافيش','فيه','بقي','قوي','جدا','اوي','بشكل','حتي','حاجة','حاجه','حد','خالص','فعلا','فعلًا','تقريبا','تقريبًا','برضو','برضه','لسه','لسة','دلوقتي','النهاردة','النهارده','امبارح','بكرة','بكره','شوية','شويه','اوى','خلاص','يعني','كمان','ممكن','عايز','عاوز','عاوزة','عايزة']);
+// تجذير خفيف: بيشيل لاحقات وبادئات شائعة عشان "تعبان" و"تعبانة" و"بتعب" يتحسبوا نفس الكلمة تقريبًا في المقارنة
+function stemArabicWord(word){
+  let w = word;
+  const suffixes = ['تين','كما','هما','كم','هن','نا','تي','ين','ون','ية','يه','ات','ها','هم','ك','ه','ة','ي'];
+  for(const suf of suffixes){
+    if(w.length - suf.length >= 2 && w.endsWith(suf)){ w = w.slice(0, -suf.length); break; }
+  }
+  if(w.startsWith('وال') && w.length > 4) w = w.slice(3);
+  else if(w.startsWith('بال') && w.length > 4) w = w.slice(3);
+  else if(w.startsWith('فال') && w.length > 4) w = w.slice(3);
+  else if(w.startsWith('ال') && w.length > 3) w = w.slice(2);
+  if(w.startsWith('و') && w.length > 3) w = w.slice(1);
+  return w;
+}
+function stemmedWordSet(words){
+  return new Set(Array.from(words).map(stemArabicWord));
+}
 function tokenizeArabic(text){
   return normalizeArabic(text)
     .replace(/[^\u0600-\u06FF\s]/g, ' ')
@@ -9237,11 +9268,13 @@ function tokenizeArabic(text){
 // مستخدمة في كل محركات "اكتب بكلامك" بالتطبيق (مش بس أداة الأنبياء)
 function scoreKeywordList(rawNorm, inputWords, keywords){
   let score = 0;
+  const inputStemmed = stemmedWordSet(inputWords);
   keywords.forEach(k => {
     const kNorm = normalizeArabic(k);
     if(rawNorm.includes(kNorm)) score += 3; // تطابق الجملة كاملة إشارة قوية
     const kWords = tokenizeArabic(k);
     score += kWords.filter(w => inputWords.has(w)).length; // تطابق كلمة بكلمة
+    score += kWords.filter(w => !inputWords.has(w) && inputStemmed.has(stemArabicWord(w))).length * 0.8; // تطابق بعد التجذير (وزن أقل شوية من التطابق الحرفي)
   });
   return score;
 }
@@ -9249,8 +9282,9 @@ function scoreProphetLink(text, positive){
   const table = positive ? PROPHET_LINK_TABLE_POSITIVE : PROPHET_LINK_TABLE;
   const rawNorm = normalizeArabic(text || '');
   const inputWords = new Set(tokenizeArabic(text));
-  if(inputWords.size === 0) return { entry:null, score:0 };
-  let best = null, bestScore = 0;
+  if(inputWords.size === 0) return { entry:null, score:0, second:null, secondScore:0 };
+  const inputStemmed = stemmedWordSet(inputWords);
+  let best = null, bestScore = 0, second = null, secondScore = 0;
   table.forEach(entry => {
     let score = 0;
     entry.keywords.forEach(k => {
@@ -9258,10 +9292,12 @@ function scoreProphetLink(text, positive){
       if(rawNorm.includes(kNorm)) score += 3; // تطابق الجملة كاملة إشارة قوية
       const kWords = tokenizeArabic(k);
       score += kWords.filter(w => inputWords.has(w)).length; // تطابق كلمة بكلمة (أكتر تسامحًا)
+      score += kWords.filter(w => !inputWords.has(w) && inputStemmed.has(stemArabicWord(w))).length * 0.8; // تطابق بعد التجذير
     });
-    if(score > bestScore){ bestScore = score; best = entry; }
+    if(score > bestScore){ second = best; secondScore = bestScore; best = entry; bestScore = score; }
+    else if(score > secondScore){ second = entry; secondScore = score; }
   });
-  return { entry:best, score:bestScore };
+  return { entry:best, score:bestScore, second, secondScore };
 }
 // حد أدنى للثقة عشان مانديش نتيجة عشوائية على تشابه كلمة واحدة عامة بين نصين مختلفين تمامًا في المعنى
 const PROPHET_LINK_MIN_SCORE = 3;
@@ -9278,7 +9314,18 @@ function matchProphetLinkBest(text){
     logUnmatchedQuery(text);
     return null;
   }
-  return pos.score > neg.score ? { entry:pos.entry, positive:true } : { entry:neg.entry, positive:false };
+  const primary = pos.score > neg.score
+    ? { entry:pos.entry, positive:true, score:pos.score, altSecond:pos.second, altSecondScore:pos.secondScore, altSecondPositive:true }
+    : { entry:neg.entry, positive:false, score:neg.score, altSecond:neg.second, altSecondScore:neg.secondScore, altSecondPositive:false };
+  // النمط التاني من نفس القايمة (لو قريب في الدرجة)، أو من القايمة التانية لو أقرب منه
+  const crossCandidate = primary.positive ? { entry:neg.entry, score:neg.score, positive:false } : { entry:pos.entry, score:pos.score, positive:true };
+  let secondBest = { entry:primary.altSecond, score:primary.altSecondScore, positive:primary.altSecondPositive };
+  if(crossCandidate.entry && crossCandidate.score > secondBest.score) secondBest = crossCandidate;
+  const result = { entry:primary.entry, positive:primary.positive };
+  if(secondBest.entry && secondBest.entry.id !== primary.entry.id && secondBest.score >= PROPHET_LINK_MIN_SCORE - 1 && secondBest.score >= primary.score * 0.6){
+    result.second = { entry:secondBest.entry, positive:secondBest.positive };
+  }
+  return result;
 }
 // تسجيل العبارات اللي محدش لاقيلها تطابق — عشان نعرف إيه المحتوى الناقص فعليًا (بدون أي بيانات شخصية)
 function logUnmatchedQuery(text){
@@ -9294,13 +9341,17 @@ function getProphetLinkById(id, positive){
 }
 // بدل ما نكرر محتوى الركن الروحاني هنا، بنعمل لينك مباشر يفتحه في مكانه الأصلي —
 // المصدر الوحيد للمحتوى الفعلي فضل الركن الروحاني نفسه (MERAT_PATTERNS و ASMA_ALLAH_BANK)
-function renderProphetLinkCard(entry, positive){
+function renderProphetLinkCard(entry, positive, secondMatch){
   if(!entry) return '';
   const pattern = MERAT_PATTERNS.find(x => x.id === entry.prophetId);
   const prophetShortTitle = pattern ? pattern.prophetTitle.split(' —')[0] : '';
   const asmaName = PROPHET_ASMA_MAP[entry.prophetId] || '';
   const prophetBtn = pattern ? `<div class="choice-btn" style="margin:0; text-align:center;" onclick="showProphetDetail('${entry.prophetId}'); showScreen('screen-prophets');">📖 اطّلع على قصة ${prophetShortTitle} (الركن الروحاني) ←</div>` : '';
   const asmaBtn = asmaName ? `<div class="choice-btn" style="margin:0; text-align:center;" onclick="openAsmaByName('${asmaName}')">📿 اطّلع على اسم الله «${asmaName}» ومعناه وتطبيقه ←</div>` : '';
+  const secondHtml = secondMatch && secondMatch.entry ? `
+    <div class="layer-card l3" style="margin-top:10px;">
+      <p class="layer-text" style="font-size:12.5px;">كلامك قريب كمان من: <b>${secondMatch.entry.encourageMsg || secondMatch.entry.tawbaDirection || ''}</b></p>
+    </div>` : '';
   if(positive){
     return `
       <div class="layer-card l1" style="border-color:var(--gold);">
@@ -9310,7 +9361,8 @@ function renderProphetLinkCard(entry, positive){
       <div style="display:flex; flex-direction:column; gap:8px; margin:10px 0;">
         ${prophetBtn}
         ${asmaBtn}
-      </div>`;
+      </div>
+      ${secondHtml}`;
   }
   return `
     <div class="layer-card l2">
@@ -9325,7 +9377,8 @@ function renderProphetLinkCard(entry, positive){
       <p class="layer-title" style="color:var(--gold);">🤲 اتجاه الاستغفار</p>
       <p class="layer-text" style="color:#fff; margin-top:8px;">${entry.tawbaDirection}</p>
       <div class="choice-btn" style="text-align:center; margin-top:10px; color:#fff; background:rgba(255,255,255,.12); border-color:var(--gold);" onclick="openTawbaFromLink('${entry.id}')">🤲 سجّل استغفارك في ركن التوبة دلوقتي ←</div>
-    </div>`;
+    </div>
+    ${secondHtml}`;
 }
 function openTawbaFromLink(entryId){
   const entry = getProphetLinkById(entryId, false);
@@ -9472,7 +9525,7 @@ function analyzeBankFreeText(bankKey, text){
   const trait = matchTraitGuide(text);
   wrap.innerHTML = `
     <p style="font-size:13px; color:var(--muted); margin:14px 0 10px;">من كلامك بكلماتك انت:</p>
-    ${best ? renderProphetLinkCard(best.entry, best.positive) : (trait ? '' : `<div class="layer-card l1"><p class="layer-text">مفيش تطابق مباشر لغاية دلوقتي — استمر تكتب لنفسك بصدق، وده كافي كخطوة أولى.</p></div>`)}
+    ${best ? renderProphetLinkCard(best.entry, best.positive, best.second) : (trait ? '' : `<div class="layer-card l1"><p class="layer-text">مفيش تطابق مباشر لغاية دلوقتي — استمر تكتب لنفسك بصدق، وده كافي كخطوة أولى.</p></div>`)}
     ${trait ? renderTraitGuideCard(trait, returnFn) : ''}
     <button class="btn-ghost" onclick="${returnFn}()">رجوع للقائمة</button>
   `;
@@ -10671,7 +10724,7 @@ function sendFreeText(){
         bot.textContent = "كلامك قريب من موقف في ركن تاني في التطبيق:";
         win.appendChild(bot);
         const cardWrap = document.createElement('div');
-        cardWrap.innerHTML = renderProphetLinkCard(crossMatch.entry, crossMatch.positive);
+        cardWrap.innerHTML = renderProphetLinkCard(crossMatch.entry, crossMatch.positive, crossMatch.second);
         win.appendChild(cardWrap);
         const choicesWrap = document.createElement('div');
         choicesWrap.className = 'choices';
@@ -11067,7 +11120,7 @@ function analyzeMeratFreeText(){
     wrap.innerHTML = `<div class="layer-card l3" style="margin-top:10px;"><p class="layer-text">مالقتش تطابق واضح — جرب تفصّل أكتر شوية، أو اختار من القائمة فوق.</p></div>`;
     return;
   }
-  wrap.innerHTML = `<div style="margin-top:10px;">${renderProphetLinkCard(match.entry, match.positive)}</div>`;
+  wrap.innerHTML = `<div style="margin-top:10px;">${renderProphetLinkCard(match.entry, match.positive, match.second)}</div>`;
 }
 
 // تلخيص سطر واحد لكل قصة نبي — القصة الكاملة بقت حصريًا في "قصص الأنبياء والتسليم" بالركن الروحاني
@@ -11758,7 +11811,7 @@ async function saveJournal(){
     }
     if(woundKey) html += `<div style="margin-top:8px; text-align:center;">${buildWoundSuggestionHtml(woundKey)}</div>`;
     if(crossPillarMatch){
-      html += `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(crossPillarMatch.entry, crossPillarMatch.positive)}`;
+      html += `<p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 4px;">📝 من كلامك بكلماتك انت</p>${renderProphetLinkCard(crossPillarMatch.entry, crossPillarMatch.positive, crossPillarMatch.second)}`;
     }
     matchWrap.innerHTML = html;
   } else {
