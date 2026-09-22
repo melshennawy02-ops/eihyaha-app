@@ -7194,9 +7194,9 @@ function goToPillar(id){
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
       { key:"selfknow", onclick:"openSelfKnowScreen()", icon:"🧠", title:"اعرف نفسك", sub:"مين أنت؟ .. مشاعرك وأفكارك وسلوكك", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
+      { key:"merat", onclick:"startMerat()", icon:"🪞", title:"مرآة العقل", sub:"افهم أنماطك الفكرية والشعورية", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,20,20,.68)" },
       { key:"tabiei", onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
       { key:"ehkily", onclick:"startEhkily()", icon:"💬", title:"طبيبك النفسي السري", sub:"احكيلي — مساحة آمنة ومجهولة", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
-      { key:"merat", onclick:"startMerat()", icon:"🪞", title:"مرآة العقل", sub:"افهم أنماطك الفكرية والشعورية", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,20,20,.68)" },
       { key:"flash", onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
       { key:"daftar", onclick:"openDaftarScreen()", icon:"📓", title:"مرآتي اليومية", sub:"تتبع مزاجك وطاقتك يوميًا", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(25,20,15,.68)" },
       { key:"report", onclick:"startReport()", icon:"📋", title:"جهزني للدكتور", sub:"تقرير مبسط قبل زيارة المتخصص", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
@@ -11011,20 +11011,63 @@ const MERAT_PATTERNS = [
   },
 ];
 
+const MERAT_QUICK_ENTRY = [
+  { label:"حاسس بالوحدة ومحدش فاهمني", id:"isolation" },
+  { label:"غضبت واتخذت قرار سريع ندمت عليه", id:"anger" },
+  { label:"خايف أواجه حد أقوى مني", id:"fear_confrontation" },
+  { label:"حاسس بذنب من غلطة عملتها", id:"guilt_return" },
+  { label:"اتخنت من حد قريب مني", id:"envy_betrayal" },
+  { label:"بصبر على مرض أو ألم طويل", id:"chronic_illness" },
+  { label:"بحس إني بتحمّل مسؤولية مش عادلة", id:"unjust_blame" },
+  { label:"بستنى حاجة من زمان وحاسس باليأس", id:"long_wait_hope" },
+];
 function startMerat(){
   markToolOpened('merat');
   const body = document.getElementById('meratBody');
   body.innerHTML = `
-    <p style="font-size:15px; color:var(--muted); margin-bottom:14px;">اختار النمط الأقرب لإحساسك دلوقتي:</p>
-    ${MERAT_PATTERNS.map(p => `
-      <div class="tool-row" onclick="showMeratResult('${p.id}')">
-        <div class="icon-circle">${p.icon}</div>
-        <div><div class="card-title">${p.title}</div></div>
-        <div class="arrow">‹</div>
-      </div>
-    `).join('')}
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin:14px 0 8px;">حاسس بإيه دلوقتي؟</p>
+    <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:14px;">
+      ${MERAT_QUICK_ENTRY.map(q => `<div class="choice-btn" style="margin:0; white-space:nowrap; flex-shrink:0;" onclick="showMeratResult('${q.id}')">${q.label}</div>`).join('')}
+    </div>
+    <div style="height:1px; background:var(--gold); opacity:.3; margin-bottom:14px;"></div>
+    <input type="text" id="meratSearchInput" placeholder="دوّر باسم النمط (مثلاً: غضب، خوف، فقد...)" oninput="renderMeratList()" style="margin-bottom:12px;">
+    <div id="meratListWrap"></div>
+    <div style="height:1px; background:var(--gold); opacity:.3; margin:18px 0 14px;"></div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">أو مش لاقي نفسك في اللي فوق؟ اكتب اللي حاسس بيه بكلامك:</p>
+    <textarea id="meratFreeText" placeholder="اكتب اللي حاسس بيه..." style="min-height:60px;"></textarea>
+    <button class="btn-ghost" onclick="analyzeMeratFreeText()">حلّل كلامي</button>
+    <div id="meratFreeTextResult"></div>
   `;
+  renderMeratList();
   showScreen('screen-merat');
+}
+function renderMeratList(){
+  const wrap = document.getElementById('meratListWrap');
+  const q = (document.getElementById('meratSearchInput').value || '').trim();
+  const filtered = q ? MERAT_PATTERNS.filter(p => normalizeArabic(p.title).includes(normalizeArabic(q))) : MERAT_PATTERNS;
+  if(filtered.length === 0){
+    wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:16px 0;">مفيش نتائج مطابقة، جرب كلمة تانية</p>`;
+    return;
+  }
+  wrap.innerHTML = filtered.map(p => `
+    <div class="tool-row" onclick="showMeratResult('${p.id}')">
+      <div class="icon-circle">${p.icon}</div>
+      <div><div class="card-title">${p.title}</div></div>
+      <div class="arrow">‹</div>
+    </div>
+  `).join('');
+}
+function analyzeMeratFreeText(){
+  const text = document.getElementById('meratFreeText').value.trim();
+  const wrap = document.getElementById('meratFreeTextResult');
+  if(!text){ wrap.innerHTML = ''; return; }
+  if(checkSafety(text)){ showSafety(); return; }
+  const match = matchProphetLinkBest(text);
+  if(!match){
+    wrap.innerHTML = `<div class="layer-card l3" style="margin-top:10px;"><p class="layer-text">مالقتش تطابق واضح — جرب تفصّل أكتر شوية، أو اختار من القائمة فوق.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<div style="margin-top:10px;">${renderProphetLinkCard(match.entry, match.positive)}</div>`;
 }
 
 // تلخيص سطر واحد لكل قصة نبي — القصة الكاملة بقت حصريًا في "قصص الأنبياء والتسليم" بالركن الروحاني
