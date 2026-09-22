@@ -1718,9 +1718,10 @@ async function reviewSpecialistAndRefresh(uid, decision){
 // ---------- إحصائيات عامة للتطبيق: عدد الزيارات وعدد المستخدمين المسجّلين ----------
 async function loadAdminStats(){
   const wrap = document.getElementById('adminStatsWrap');
-  const [visitDocs, usersDocs, ...pillarDocs] = await Promise.all([
+  const [visitDocs, usersDocs, toolEventDocs, ...pillarDocs] = await Promise.all([
     firestoreListAll('visit_log'),
     firestoreListAll('users'),
+    firestoreListAll('tool_events'),
     firestoreListAll('spiritual_summary'), firestoreListAll('family_summary'), firestoreListAll('social_summary'),
     firestoreListAll('personal_summary'), firestoreListAll('professional_summary'), firestoreListAll('financial_summary'), firestoreListAll('health_summary'),
   ]);
@@ -1742,6 +1743,30 @@ async function loadAdminStats(){
 
   const pillarLabels = ['الروحاني','العائلي','الاجتماعي','الشخصي','المهني','المادي','الصحي'];
 
+  // ---------- معدل العودة (Retention): كام مستخدم رجع بعد يوم أو أسبوع من أول زيارة ----------
+  const users = usersDocs.map(parseFirestoreDoc);
+  const eligibleDay = users.filter(u => u.created_at && (now - new Date(u.created_at)) / 86400000 >= 1);
+  const eligibleWeek = users.filter(u => u.created_at && (now - new Date(u.created_at)) / 86400000 >= 7);
+  const returnedDay = eligibleDay.filter(u => u.last_visit && (new Date(u.last_visit) - new Date(u.created_at)) / 86400000 >= 1);
+  const returnedWeek = eligibleWeek.filter(u => u.last_visit && (new Date(u.last_visit) - new Date(u.created_at)) / 86400000 >= 7);
+  const retentionDay = eligibleDay.length > 0 ? ((returnedDay.length / eligibleDay.length) * 100).toFixed(0) : null;
+  const retentionWeek = eligibleWeek.length > 0 ? ((returnedWeek.length / eligibleWeek.length) * 100).toFixed(0) : null;
+
+  // ---------- معدل الإكمال لكل أداة تشخيص: كام حد بدأ مقابل كام حد خلّص ----------
+  const toolEvents = toolEventDocs.map(parseFirestoreDoc);
+  const toolLabels = {
+    circle:'تشخيص الاجتماعي', family_circle:'تشخيص العائلي', professional_circle:'تشخيص المهني',
+    financial_circle:'تشخيص المادي', health_circle:'تشخيص الصحي', spiritual_circle:'أضعف نقطة روحانية',
+    tasleem_compass:'بوصلة التسليم', mirror_test:'مرآتك: مين شبه وجعك؟', family_wound:'الجرح العائلي',
+    coworker_exchange:'تبادل الأدوار مع الزملاء', coworker_burnout:'إرهاق الزملاء', field_discovery:'اكتشف مجالك',
+  };
+  const completionRows = Object.keys(toolLabels).map(key => {
+    const started = toolEvents.filter(e => e.key === key && e.event === 'started').length;
+    const completed = toolEvents.filter(e => e.key === key && e.event === 'completed').length;
+    const rate = started > 0 ? Math.round((completed / started) * 100) : null;
+    return { key, label: toolLabels[key], started, completed, rate };
+  }).filter(r => r.started > 0).sort((a,b) => a.rate - b.rate);
+
   if(!wrap) return;
   wrap.innerHTML = `
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -1758,16 +1783,46 @@ async function loadAdminStats(){
       <div style="text-align:center; background:var(--sand); border-radius:10px; padding:8px;"><p style="font-size:18px; font-weight:700; margin:0;">${yearCount}</p><p style="font-size:11px; color:var(--muted); margin:2px 0 0;">آخر سنة</p></div>
     </div>
 
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">معدل العودة (Retention)</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <div style="text-align:center; background:var(--navy-dark); border-radius:10px; padding:10px;"><p style="font-size:20px; font-weight:700; margin:0; color:var(--gold);">${retentionDay !== null ? retentionDay + '٪' : '—'}</p><p style="font-size:10.5px; color:rgba(255,255,255,.8); margin:2px 0 0;">رجعوا بعد يوم (من ${eligibleDay.length})</p></div>
+      <div style="text-align:center; background:var(--navy-dark); border-radius:10px; padding:10px;"><p style="font-size:20px; font-weight:700; margin:0; color:var(--gold);">${retentionWeek !== null ? retentionWeek + '٪' : '—'}</p><p style="font-size:10.5px; color:rgba(255,255,255,.8); margin:2px 0 0;">رجعوا بعد أسبوع (من ${eligibleWeek.length})</p></div>
+    </div>
+
     <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">استخدام الأركان (عدد المستخدمين اللي بدأوا كل ركن)</p>
     ${pillarDocs.map((docs,i) => `
       <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
         <span>${pillarLabels[i]}</span><span style="color:var(--muted);">${docs.length}</span>
       </div>
     `).join('')}
-    <p style="font-size:11px; color:var(--muted); margin-top:10px;">"الزيارات" = كل مرة يتفتح فيها التطبيق. "استخدام الأركان" = عدد المستخدمين اللي عندهم ملخص محفوظ في الركن ده على الأقل مرة.</p>
+
+    ${completionRows.length > 0 ? `
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">معدل إكمال التشخيصات (بدأوا ← خلّصوا)</p>
+    ${completionRows.map(r => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;">
+          <span>${r.label}</span><span style="color:${r.rate < 50 ? '#B23A34' : 'var(--muted)'}; font-weight:700;">${r.rate}٪ (${r.completed}/${r.started})</span>
+        </div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;">
+          <div style="width:${r.rate}%; height:100%; background:${r.rate < 50 ? '#B23A34' : 'var(--gold)'}; border-radius:3px;"></div>
+        </div>
+      </div>
+    `).join('')}
+    <p style="font-size:10.5px; color:var(--muted); margin-top:4px;">نسبة أقل من 50٪ (باللون الأحمر) بتعني إن أكتر من نص اللي بدأوا التشخيص ده سابوه في النص — يستاهل تراجع أسئلته.</p>
+    ` : ''}
+
+    <p style="font-size:11px; color:var(--muted); margin-top:16px;">"الزيارات" = كل مرة يتفتح فيها التطبيق. "استخدام الأركان" = عدد المستخدمين اللي عندهم ملخص محفوظ في الركن ده على الأقل مرة. "معدل العودة" بيتحسب بس للمستخدمين اللي حسابهم أقدم من يوم/أسبوع، عشان الحساب يبقى عادل.</p>
   `;
 }
 // كل جلسة (تبويب/فتحة تطبيق) بتتحسب زيارة واحدة بس، وبتتسجل في سجل يومي عشان نقدر نحلل الاتجاه بمرور الوقت
+async function recordUserVisit(){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  if(!auth) return;
+  try{
+    const existing = await firestoreGetDoc('users', auth.uid) || {};
+    await firestoreSetDoc('users', auth.uid, { ...existing, last_visit: new Date().toISOString() });
+  }catch(err){ /* فشل تسجيل الزيارة مش هيأثر على استخدام التطبيق */ }
+}
 async function logAppVisit(){
   if(sessionStorage.getItem('eihyaha_visit_logged')) return;
   sessionStorage.setItem('eihyaha_visit_logged', '1');
@@ -2547,6 +2602,7 @@ function showAuthError(msg){
 // ---------- الدخول للتطبيق بعد نجاح تسجيل الدخول/الحساب ----------
 async function enterApp(){
   document.getElementById('bottomNav').style.display = 'flex';
+  recordUserVisit();
   await loadPillarOrder(); // كل مستخدم بياخد نفس الترتيب اللي حدده الأدمن
   await loadAdminEmails();
   checkAnnouncement();
@@ -2650,7 +2706,7 @@ async function doSignUp(){
     else showAuthError('حصل خطأ: ' + error);
     return;
   }
-  const profileFields = { username, email, fullName, age: age || '', gender: gender || '', maritalStatus: maritalStatus || '', livingWith: livingWith || '', employmentType: employmentType || '', role:'user' };
+  const profileFields = { username, email, fullName, age: age || '', gender: gender || '', maritalStatus: maritalStatus || '', livingWith: livingWith || '', employmentType: employmentType || '', role:'user', created_at: new Date().toISOString() };
   await firestoreSetDoc('users', data.localId, profileFields);
   localStorage.setItem('eihyaha_profile', JSON.stringify(profileFields));
   saveAuthSession(data.localId, username, email);
@@ -3777,6 +3833,7 @@ function answerCircle(qIndex, oIndex){
 }
 function getCircleHistory(){ return JSON.parse(localStorage.getItem('eihyaha_circle_history') || '[]'); }
 function revealCircleResult(){
+  markToolCompleted('circle');
   const scores = {};
   circleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = circleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -4123,6 +4180,7 @@ function renderCoworkerExchangeResultFromCategory(category, freeText){
   `;
 }
 function revealCoworkerExchangeResult(){
+  markToolCompleted('coworker_exchange');
   const tally = { balanced:0, give:0, take:0, toxic:0 };
   coworkerExchangeAnswers.forEach(t => tally[t]++);
   let category = 'balanced';
@@ -4271,6 +4329,7 @@ function renderCoworkerBurnoutResultFromScore(score, freeText){
   `;
 }
 function revealCoworkerBurnoutResult(){
+  markToolCompleted('coworker_burnout');
   const score = coworkerBurnoutAnswers.reduce((a,b) => a+b, 0);
   const historyEntry = { score, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_coworker_burnout', JSON.stringify(historyEntry));
@@ -4493,6 +4552,7 @@ function answerProfessionalCircle(qIndex, oIndex){
 }
 function getProfessionalCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_professional_circle_assessment') || 'null'); }
 function revealProfessionalCircleResult(){
+  markToolCompleted('professional_circle');
   const scores = {};
   professionalCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = professionalCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -4872,6 +4932,7 @@ function answerFieldDiscoveryFreeTextCB(qIndex){
 }
 function getFieldDiscoveryResult(){ return JSON.parse(localStorage.getItem('eihyaha_field_discovery') || 'null'); }
 function revealFieldDiscoveryResult(){
+  markToolCompleted('field_discovery');
   if(fieldDiscoveryAnswers.length === 0){
     const wrap = document.getElementById('fieldDiscoveryBody');
     wrap.innerHTML = `
@@ -5328,6 +5389,7 @@ function answerFinancialCircle(qIndex, oIndex){
 }
 function getFinancialCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_financial_circle_assessment') || 'null'); }
 function revealFinancialCircleResult(){
+  markToolCompleted('financial_circle');
   const scores = {};
   financialCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = financialCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -5780,6 +5842,7 @@ function answerHealthCircle(qIndex, oIndex){
 }
 function getHealthCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_health_circle_assessment') || 'null'); }
 function revealHealthCircleResult(){
+  markToolCompleted('health_circle');
   const scores = {};
   healthCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = healthCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -6487,6 +6550,7 @@ function answerFamilyCircle(qIndex, oIndex){
 }
 function getFamilyCircleHistory(){ return JSON.parse(localStorage.getItem('eihyaha_family_circle_history') || '[]'); }
 function revealFamilyCircleResult(){
+  markToolCompleted('family_circle');
   const scores = {};
   familyCircleAnswers.forEach(a => { if(a.score !== null) scores[a.circle] = a.score; });
   const freeText = familyCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -6599,9 +6663,18 @@ function renderFamilyEnvironmentCard(){
 }
 
 // ---------- تتبع عام: هل جرّب المستخدم أداة معيّنة قبل كده؟ (لعلامة "ابدأ من هنا") ----------
+function logToolEvent(key, event){
+  try{
+    firestoreWrite('tool_events', { key, event, date: new Date().toISOString() });
+  }catch(err){ /* تتبع تحليلي بس، مش لازم يعطّل الاستخدام */ }
+}
 function markToolOpened(key){
   const opened = JSON.parse(localStorage.getItem('eihyaha_tools_opened') || '{}');
-  if(!opened[key]){ opened[key] = true; localStorage.setItem('eihyaha_tools_opened', JSON.stringify(opened)); }
+  if(!opened[key]){ opened[key] = true; localStorage.setItem('eihyaha_tools_opened', JSON.stringify(opened)); logToolEvent(key, 'started'); }
+}
+function markToolCompleted(key){
+  const completed = JSON.parse(localStorage.getItem('eihyaha_tools_completed') || '{}');
+  if(!completed[key]){ completed[key] = true; localStorage.setItem('eihyaha_tools_completed', JSON.stringify(completed)); logToolEvent(key, 'completed'); }
 }
 function isToolOpened(key){
   const opened = JSON.parse(localStorage.getItem('eihyaha_tools_opened') || '{}');
@@ -7631,6 +7704,7 @@ function answerSpiritualCircle(qIndex, oIndex){
 }
 function getSpiritualCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_spiritual_circle_assessment') || 'null'); }
 function revealSpiritualCircleResult(){
+  markToolCompleted('spiritual_circle');
   const scores = {};
   spiritualCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = spiritualCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -7730,6 +7804,7 @@ function answerTasleemCompass(qIndex, oIndex){
 }
 function getTasleemCompassAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_tasleem_compass_assessment') || 'null'); }
 function revealTasleemCompassResult(){
+  markToolCompleted('tasleem_compass');
   const scores = {};
   tasleemCompassAnswers.forEach(a => { scores[a.axis] = (scores[a.axis]||0) + a.score; });
   const freeText = tasleemCompassAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -8360,6 +8435,7 @@ function getMuhammadCombinedEntry(){
   };
 }
 function revealMirrorTestResult(){
+  markToolCompleted('mirror_test');
   const counts = {};
   mirrorTestChecked.forEach((checked, i) => {
     if(checked){
@@ -9413,6 +9489,7 @@ function summarizeWoundResult(r){
   return parts.length ? parts.join(' + ') : 'فطرة سليمة غالبًا';
 }
 function revealWoundResult(){
+  markToolCompleted('family_wound');
   const momScore = woundAnswers.filter(a => a.type==='mom').reduce((s,a)=>s+a.score,0);
   const dadScore = woundAnswers.filter(a => a.type==='dad').reduce((s,a)=>s+a.score,0);
   const freeText = woundAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
