@@ -8157,6 +8157,14 @@ function renderWorshipScreen(){
       </div>
     </div>
 
+    <div class="card" style="background:linear-gradient(rgba(255,255,255,.9), rgba(255,255,255,.9)), url('https://images.unsplash.com/photo-1509316785289-025f5b846b35?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
+      <p class="card-title" style="margin-bottom:10px;">🤲 الاستغفار</p>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <p style="font-size:15px; margin:0; flex:1;">كام مرة استغفرت النهاردة؟</p>
+        <input type="number" min="0" id="istighfarInput" value="${w.istighfarCount || 0}" style="width:70px; text-align:center;" onchange="setIstighfarCount(this.value)">
+      </div>
+    </div>
+
     <div class="card" style="background:linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url('https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
       <p class="card-title" style="margin-bottom:10px;">الأذكار</p>
       <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
@@ -8212,6 +8220,12 @@ async function toggleWorshipBool(field){
 async function setQuranPages(value){
   const w = getWorshipToday();
   w.quranPages = Math.max(0, Number(value) || 0);
+  await saveWorshipAndSync(w);
+}
+
+async function setIstighfarCount(value){
+  const w = getWorshipToday();
+  w.istighfarCount = Math.max(0, Number(value) || 0);
   await saveWorshipAndSync(w);
 }
 
