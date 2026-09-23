@@ -1719,10 +1719,11 @@ async function reviewSpecialistAndRefresh(uid, decision){
 // ---------- إحصائيات عامة للتطبيق: عدد الزيارات وعدد المستخدمين المسجّلين ----------
 async function loadAdminStats(){
   const wrap = document.getElementById('adminStatsWrap');
-  const [visitDocs, usersDocs, toolEventDocs, ...pillarDocs] = await Promise.all([
+  const [visitDocs, usersDocs, toolEventDocs, compassResultDocs, ...pillarDocs] = await Promise.all([
     firestoreListAll('visit_log'),
     firestoreListAll('users'),
     firestoreListAll('tool_events'),
+    firestoreListAll('compass_results'),
     firestoreListAll('spiritual_summary'), firestoreListAll('family_summary'), firestoreListAll('social_summary'),
     firestoreListAll('personal_summary'), firestoreListAll('professional_summary'), firestoreListAll('financial_summary'), firestoreListAll('health_summary'),
   ]);
@@ -1756,10 +1757,12 @@ async function loadAdminStats(){
   // ---------- معدل الإكمال لكل أداة تشخيص: كام حد بدأ مقابل كام حد خلّص ----------
   const toolEvents = toolEventDocs.map(parseFirestoreDoc);
   const toolLabels = {
+    signup:'إتمام إنشاء حساب جديد', compass:'بوصلتك (التشخيص العام)',
     circle:'تشخيص الاجتماعي', family_circle:'تشخيص العائلي', professional_circle:'تشخيص المهني',
     financial_circle:'تشخيص المادي', health_circle:'تشخيص الصحي', spiritual_circle:'أضعف نقطة روحانية',
     tasleem_compass:'بوصلة التسليم', mirror_test:'مرآتك: مين شبه وجعك؟', family_wound:'الجرح العائلي',
     coworker_exchange:'تبادل الأدوار مع الزملاء', coworker_burnout:'إرهاق الزملاء', field_discovery:'اكتشف مجالك',
+    mbti:'اختبار الشخصية (MBTI)', dark_triad:'المثلث المظلم',
   };
   const completionRows = Object.keys(toolLabels).map(key => {
     const started = toolEvents.filter(e => e.key === key && e.event === 'started').length;
@@ -1767,6 +1770,26 @@ async function loadAdminStats(){
     const rate = started > 0 ? Math.round((completed / started) * 100) : null;
     return { key, label: toolLabels[key], started, completed, rate };
   }).filter(r => r.started > 0).sort((a,b) => a.rate - b.rate);
+
+  // ---------- "طبّقتها" مقابل "قريتها بس" على مستوى كل المستخدمين مجتمعين ----------
+  const pillarDocsParsed = pillarDocs.map(docs => docs.map(parseFirestoreDoc));
+  const [spiritualS, familyS, socialS, personalS, professionalS, financialS, healthS] = pillarDocsParsed;
+  const sumField = (docs, field) => docs.reduce((s,d) => s + (Number(d[field]) || 0), 0);
+  const totalAppliedAllPillars =
+    sumField(spiritualS,'asma_applied_count') + sumField(spiritualS,'prophet_applied_count') + sumField(spiritualS,'closeness_applied_count') +
+    sumField(familyS,'applied_count') + sumField(socialS,'applied_count') + sumField(personalS,'merat_applied_count') +
+    sumField(professionalS,'applied_count') + sumField(financialS,'applied_count') + sumField(healthS,'applied_count');
+  const totalReadSpiritual = sumField(spiritualS,'asma_read_count') + sumField(spiritualS,'prophets_read_count');
+  const totalAppliedSpiritual = sumField(spiritualS,'asma_applied_count') + sumField(spiritualS,'prophet_applied_count');
+  const spiritualApplyRate = totalReadSpiritual > 0 ? Math.round((totalAppliedSpiritual / totalReadSpiritual) * 100) : null;
+
+  // ---------- توزيع "أضعف نقطة" (البوصلة العامة) على كل المستخدمين ----------
+  const pillarNameMap = { spiritual:'الروحاني', family:'العائلي', personal:'الشخصي', social:'الاجتماعي', professional:'المهني', financial:'المادي', health:'الصحي' };
+  const compassResults = compassResultDocs.map(parseFirestoreDoc);
+  const weakestCounts = {};
+  compassResults.forEach(r => { if(r.weakestPillar) weakestCounts[r.weakestPillar] = (weakestCounts[r.weakestPillar]||0) + 1; });
+  const weakestTotal = compassResults.length;
+  const weakestRows = Object.entries(weakestCounts).sort((a,b) => b[1]-a[1]).map(([pillar,count]) => ({ pillar: pillarNameMap[pillar] || pillar, count, pct: Math.round((count/weakestTotal)*100) }));
 
   if(!wrap) return;
   wrap.innerHTML = `
@@ -1790,12 +1813,43 @@ async function loadAdminStats(){
       <div style="text-align:center; background:var(--navy-dark); border-radius:10px; padding:10px;"><p style="font-size:20px; font-weight:700; margin:0; color:var(--gold);">${retentionWeek !== null ? retentionWeek + '٪' : '—'}</p><p style="font-size:10.5px; color:rgba(255,255,255,.8); margin:2px 0 0;">رجعوا بعد أسبوع (من ${eligibleWeek.length})</p></div>
     </div>
 
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">"طبّقتها" مقابل "قريتها بس" — كل المستخدمين مع بعض</p>
+    <div style="text-align:center; background:var(--navy-dark); border-radius:10px; padding:12px; margin-bottom:8px;">
+      <p style="font-size:24px; font-weight:700; margin:0; color:var(--gold);">${totalAppliedAllPillars}</p>
+      <p style="font-size:11px; color:rgba(255,255,255,.8); margin:4px 0 0;">إجمالي خطوة "طبّقتها" في كل الأركان مجتمعة</p>
+    </div>
+    ${spiritualApplyRate !== null ? `
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;">
+        <span>نسبة التطبيق الفعلي (الركن الروحاني تحديدًا)</span><span style="color:${spiritualApplyRate < 30 ? '#B23A34' : 'var(--muted)'}; font-weight:700;">${spiritualApplyRate}٪</span>
+      </div>
+      <div style="height:6px; background:var(--sand); border-radius:3px;">
+        <div style="width:${Math.min(spiritualApplyRate,100)}%; height:100%; background:${spiritualApplyRate < 30 ? '#B23A34' : 'var(--gold)'}; border-radius:3px;"></div>
+      </div>
+      <p style="font-size:10.5px; color:var(--muted); margin-top:4px;">من إجمالي ${totalReadSpiritual} قراءة (أسماء الله + قصص الأنبياء)، اتطبّق منها ${totalAppliedSpiritual} فعليًا. النسبة دي بس في الركن الروحاني، لأنه الوحيد اللي عنده عداد "قراءة" منفصل عن "تطبيق".</p>
+    </div>` : ''}
+
     <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">استخدام الأركان (عدد المستخدمين اللي بدأوا كل ركن)</p>
     ${pillarDocs.map((docs,i) => `
       <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
         <span>${pillarLabels[i]}</span><span style="color:var(--muted);">${docs.length}</span>
       </div>
     `).join('')}
+
+    ${weakestRows.length > 0 ? `
+    <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">توزيع "أضعف نقطة" من البوصلة العامة (${weakestTotal} نتيجة)</p>
+    ${weakestRows.map(r => `
+      <div style="margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;">
+          <span>${r.pillar}</span><span style="color:var(--muted); font-weight:700;">${r.pct}٪ (${r.count})</span>
+        </div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;">
+          <div style="width:${r.pct}%; height:100%; background:var(--gold); border-radius:3px;"></div>
+        </div>
+      </div>
+    `).join('')}
+    <p style="font-size:10.5px; color:var(--muted); margin-top:4px;">لو ركن واحد متكرر بشكل واضح، ده مؤشر تسويقي وتطويري قوي — يستاهل تركّز محتواك على المشكلة دي تحديدًا.</p>
+    ` : ''}
 
     ${completionRows.length > 0 ? `
     <p style="font-size:13px; font-weight:700; color:var(--text); margin:16px 0 8px;">معدل إكمال التشخيصات (بدأوا ← خلّصوا)</p>
@@ -2725,6 +2779,7 @@ async function doSignUp(){
   await firestoreSetDoc('users', data.localId, profileFields);
   localStorage.setItem('eihyaha_profile', JSON.stringify(profileFields));
   saveAuthSession(data.localId, username, email);
+  logToolEvent('signup', 'completed');
   offerBiometricSetup(data.refreshToken);
   enterApp();
 }
@@ -2921,6 +2976,7 @@ function renderAuthFields(mode){
   }
 }
 
+let signupStartLogged = false;
 function setAuthMode(mode){
   const btn = document.getElementById('authSubmitBtn');
   document.getElementById('tabSignin').style.background = mode === 'signin' ? 'var(--sand)' : 'transparent';
@@ -2930,7 +2986,10 @@ function setAuthMode(mode){
   renderAuthFields(mode);
   if(mode === 'signin'){ btn.textContent = 'دخول'; btn.onclick = doSignIn; }
   else if(mode === 'specialist'){ btn.textContent = 'إرسال طلب التسجيل كمتخصص'; btn.onclick = doSignUpSpecialist; }
-  else { btn.textContent = 'إنشاء الحساب'; btn.onclick = doSignUp; }
+  else {
+    btn.textContent = 'إنشاء الحساب'; btn.onclick = doSignUp;
+    if(!signupStartLogged){ signupStartLogged = true; logToolEvent('signup', 'started'); }
+  }
   document.getElementById('authError').style.display = 'none';
 }
 
@@ -9073,6 +9132,7 @@ const MBTI_TYPES = {
 
 let mbtiAnswers = [];
 function startMbtiTest(){
+  markToolOpened('mbti');
   mbtiAnswers = [];
   renderMbtiQuestion(0);
 }
@@ -9094,6 +9154,7 @@ function answerMbti(qIndex, choice){
   renderMbtiQuestion(qIndex + 1);
 }
 function revealMbtiResult(){
+  markToolCompleted('mbti');
   const pairs = [['E','I'], ['S','N'], ['T','F'], ['J','P']];
   let type = '';
   pairs.forEach(([x,y]) => {
@@ -9769,6 +9830,7 @@ function goBackFromRelCheck(){
   goToPillar(relCheckOrigin);
 }
 function startDarkTriadTool(){
+  markToolOpened('dark_triad');
   const wrap = document.getElementById('relCheckBody');
   wrap.innerHTML = `
     <p style="font-size:12px; color:var(--muted); margin:14px 0 8px; line-height:1.7;">فكّر في ${relCheckContext} وانت بتجاوب. ملاحظة: الهدف إنك تراقب النمط، مش إنك تطلق تشخيص نهائي — ده مش دورك ولا دورنا.</p>
@@ -9806,6 +9868,7 @@ function answerDarkTriad(oIndex){
 }
 function getRelCheckHistory(){ return JSON.parse(localStorage.getItem('eihyaha_relcheck_history') || '[]'); }
 function revealDarkTriadResult(){
+  markToolCompleted('dark_triad');
   const wrap = document.getElementById('relCheckBody');
   let level, text, cardClass;
   if(darkTriadScore <= 4){
@@ -10351,6 +10414,7 @@ const COMPASS_ALL_QUESTIONS = [...COMPASS_JOURNEY_QUESTIONS.map(q => ({...q, typ
 let compassAnswers = [];
 let compassQuestionOrder = [];
 function startCompassTest(){
+  markToolOpened('compass');
   compassAnswers = [];
   compassQuestionOrder = shuffledOptionIndices(COMPASS_ALL_QUESTIONS);
   renderCompassQuestion(0);
@@ -10391,6 +10455,7 @@ function computeCombinedJourneyStages(){
   });
 }
 function revealCompassResult(){
+  markToolCompleted('compass');
   const pillarScores = { spiritual:0, family:0, personal:0, social:0, professional:0, financial:0, health:0 };
   compassAnswers.filter(a => a.type === 'pillar').forEach(a => { pillarScores[a.pillar] += a.score; });
   const weakestPillar = Object.entries(pillarScores).sort((a,b) => b[1]-a[1])[0][0];
@@ -10399,6 +10464,7 @@ function revealCompassResult(){
   const previous = getCompassResult();
   const result = { pillarScores, weakestPillar, journeyStageKey: currentIndex !== -1 ? stages[currentIndex].key : null, date:new Date().toISOString() };
   localStorage.setItem('eihyaha_compass_result', JSON.stringify(result));
+  firestoreWrite('compass_results', { weakestPillar, date: result.date });
   renderCompassResult(result, stages, currentIndex, previous);
 }
 function getCompassResult(){ return JSON.parse(localStorage.getItem('eihyaha_compass_result') || 'null'); }
