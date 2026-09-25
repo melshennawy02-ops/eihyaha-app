@@ -522,6 +522,16 @@
     <div style="padding:0 16px;" id="tawbaBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: KHALWA (ذنوب الخلوات والتوبة منها) ===================== -->
+  <div class="screen" id="screen-khalwa">
+    <div class="topbar">
+      <div class="backbtn" onclick="history.back()">→</div>
+      <h1>ذنوب الخلوات والتوبة منها</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="khalwaBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: KNOW YOURSELF (اعرف نفسك) ===================== -->
   <div class="screen" id="screen-self-know">
     <div class="topbar">
@@ -1165,6 +1175,16 @@
       <div style="width:48px;"></div>
     </div>
     <div style="padding:0 16px;" id="statsBody"></div>
+  </div>
+
+  <!-- ===================== SCREEN: FULL REPORT (التقرير الشامل) ===================== -->
+  <div class="screen" id="screen-full-report">
+    <div class="topbar">
+      <div class="backbtn" onclick="history.back()">→</div>
+      <h1>تقريرك الشامل</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="fullReportBody"></div>
   </div>
 
   <!-- ===================== SCREEN: SETTINGS (الإعدادات) ===================== -->
@@ -3055,6 +3075,221 @@ async function checkOwnSpecialistCompleteness(){
   `;
 }
 
+// ===================== التقرير الشامل لكل الأركان (مربوط بتاريخ «بوصلتك») =====================
+const FULL_REPORT_PILLARS = [
+  { key:'spiritual',    id:1, report:'openSpiritualReport()' },
+  { key:'personal',     id:2, report:'openPersonalReport()' },
+  { key:'family',       id:3, report:'openFamilyReport()' },
+  { key:'social',       id:4, report:'openSocialReport()' },
+  { key:'professional', id:5, report:'openProfessionalReport()' },
+  { key:'financial',    id:6, report:'openFinancialReport()' },
+  { key:'health',       id:7, report:'openHealthReport()' },
+];
+const COMPASS_HISTORY_KEY = 'eihyaha_compass_history';
+
+function getCompassHistory(){
+  let h = [];
+  try { h = JSON.parse(localStorage.getItem(COMPASS_HISTORY_KEY) || '[]'); } catch(e){ h = []; }
+  // أول مرة بعد التحديث: نزرع التاريخ من آخر نتيجة محفوظة عشان محدش يبدأ من الصفر
+  if(!h.length){
+    const last = getCompassResult();
+    if(last && last.pillarScores){ h = [last]; try { localStorage.setItem(COMPASS_HISTORY_KEY, JSON.stringify(h)); } catch(e){} }
+  }
+  return h.sort((a,b) => new Date(a.date) - new Date(b.date));
+}
+function pushCompassHistory(result){
+  const h = getCompassHistory().filter(x => x.date !== result.date);
+  h.push({ pillarScores: result.pillarScores, weakestPillar: result.weakestPillar, date: result.date });
+  try { localStorage.setItem(COMPASS_HISTORY_KEY, JSON.stringify(h.slice(-24))); } catch(e){}
+}
+
+// أقصى درجة "تعب" ممكنة لكل ركن — محسوبة من أسئلة البوصلة نفسها، فلو الأسئلة اتغيرت الحساب يفضل صح
+function getCompassPillarMax(){
+  const max = {};
+  COMPASS_PILLAR_QUESTIONS.forEach(q => {
+    max[q.pillar] = (max[q.pillar] || 0) + Math.max(...q.options.map(o => o.score));
+  });
+  return max;
+}
+// نحوّل درجة التعب لنسبة "صحة الركن" من 100 (أعلى = أحسن)
+function compassPillarHealth(entry){
+  const max = getCompassPillarMax();
+  const out = {};
+  FULL_REPORT_PILLARS.forEach(p => {
+    const m = max[p.key] || 1;
+    const s = (entry.pillarScores && entry.pillarScores[p.key]) || 0;
+    out[p.key] = Math.round(100 - (s / m) * 100);
+  });
+  return out;
+}
+function compassOverallHealth(entry){
+  const h = compassPillarHealth(entry);
+  const vals = Object.values(h);
+  return Math.round(vals.reduce((a,b) => a+b, 0) / vals.length);
+}
+
+// ألوان متوافقة مع الثيم: في الثيم الليلي الكروت غامقة فبنفتّح الأخضر والأحمر عشان يتقروا
+function fullReportColors(){
+  const dark = (localStorage.getItem('eihyaha_theme') || 'classic') === 'midnight';
+  return dark ? { good:'#5CC392', bad:'#F08A80' } : { good:'#2E7D5B', bad:'#B23A34' };
+}
+function fullReportDirection(delta){
+  const c = fullReportColors();
+  if(delta > 0) return { icon:'⬆️', text:'بيتحرك للإيجاب', color:c.good };
+  if(delta < 0) return { icon:'⬇️', text:'بيتحرك للسلب', color:c.bad };
+  return { icon:'➖', text:'ثابت', color:'var(--muted)' };
+}
+
+function getPillarLastDeepDiagnostic(key){
+  const map = {
+    spiritual:'eihyaha_spiritual_circle_assessment', family:'eihyaha_family_circle_assessment',
+    social:'eihyaha_circle_assessment', professional:'eihyaha_professional_circle_assessment',
+    financial:'eihyaha_financial_circle_assessment', health:'eihyaha_health_circle_assessment',
+  };
+  if(!map[key]) return null;
+  try { const r = JSON.parse(localStorage.getItem(map[key]) || 'null'); return r && r.date ? r.date : null; } catch(e){ return null; }
+}
+
+function openFullReport(){
+  renderFullReport();
+  showScreen('screen-full-report');
+}
+
+function renderFullReport(){
+  const body = document.getElementById('fullReportBody');
+  const history = getCompassHistory();
+
+  if(!history.length){
+    body.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <p style="font-size:40px; margin:0;">🧭</p>
+        <p class="card-title" style="margin:8px 0;">التقرير الشامل بيبدأ من «بوصلتك»</p>
+        <p style="font-size:14px; color:var(--muted); line-height:1.8; margin:0 0 12px;">البوصلة بتقيس الأركان السبعة مع بعض، وكل مرة تاخدها بنقارنها باللي قبلها عشان تعرف انت رايح فين.</p>
+        <button class="btn-primary" onclick="startCompassTest()">خد بوصلتك دلوقتي</button>
+      </div>`;
+    return;
+  }
+
+  const latest = history[history.length - 1];
+  const previous = history.length > 1 ? history[history.length - 2] : null;
+  const first = history[0];
+  const nowH = compassPillarHealth(latest);
+  const prevH = previous ? compassPillarHealth(previous) : null;
+  const firstH = compassPillarHealth(first);
+  const overallNow = compassOverallHealth(latest);
+  const overallPrev = previous ? compassOverallHealth(previous) : null;
+  const overallFirst = compassOverallHealth(first);
+  const dirPrev = previous ? fullReportDirection(overallNow - overallPrev) : null;
+  const dirFirst = history.length > 2 ? fullReportDirection(overallNow - overallFirst) : null;
+  const daysSince = Math.floor((Date.now() - new Date(latest.date)) / 86400000);
+
+  const engagement = getPillarEngagement();
+  const engById = {}; engagement.forEach(e => engById[e.id] = e);
+  const goals = buildCrossPillarGoalsSummary();
+  const goalsByKey = {}; goals.forEach(g => goalsByKey[g.key] = g);
+
+  const rows = FULL_REPORT_PILLARS.map(p => {
+    const pillar = PILLARS.find(x => x.id === p.id);
+    const delta = prevH ? nowH[p.key] - prevH[p.key] : 0;
+    return { ...p, title:pillar.title, icon:pillar.icon, health:nowH[p.key], delta,
+             sinceFirst: nowH[p.key] - firstH[p.key], eng: engById[p.id], goal: goalsByKey[p.key],
+             lastDeep: getPillarLastDeepDiagnostic(p.key) };
+  }).sort((a,b) => a.health - b.health);
+
+  // استنتاجات ذكية
+  const insights = [];
+  if(prevH){
+    const improved = [...rows].sort((a,b) => b.delta - a.delta)[0];
+    const declined = [...rows].sort((a,b) => a.delta - b.delta)[0];
+    if(improved.delta > 0) insights.push(`🌱 أكتر ركن اتحسّن من آخر بوصلة: <b>${improved.title}</b> (+${improved.delta}%). اللي بتعمله فيه شغّال — كمّل.`);
+    if(declined.delta < 0) insights.push(`⚠️ أكتر ركن نزل: <b>${declined.title}</b> (${declined.delta}%). ده مش فشل — ده إشارة إن الركن ده محتاج انتباهك الفترة الجاية.`);
+  }
+  const weakest = rows[0];
+  if(weakest.eng && weakest.eng.openedCount === 0){
+    insights.push(`🔍 <b>${weakest.title}</b> هو أضعف ركن عندك، ولسه مافتحتش ولا أداة فيه. أول خطوة فيه هتفرق معاك أكتر من أي حاجة تانية.`);
+  }
+  const busyStrong = rows.filter(r => r.health >= 75 && r.eng && r.eng.ratio >= 0.5);
+  if(busyStrong.length && weakest.health < 50){
+    insights.push(`⚖️ وقتك رايح أكتر في <b>${busyStrong.map(r => r.title.replace('الركن ','')).join(' و')}</b> وهما أصلًا كويسين — جرّب تدّي جزء من الاهتمام ده لـ<b>${weakest.title.replace('الركن ','')}</b>.`);
+  }
+  const totalWorked = goals.reduce((s,g) => s + g.worked, 0);
+  if(totalWorked > 0) insights.push(`🎯 عندك ${totalWorked} هدف فرّق معاك فعلًا في حياتك — ده تقدّم حقيقي مش مجرد أرقام.`);
+  if(!previous) insights.push(`📅 دي أول بوصلة ليك. خدها تاني بعد أسبوعين عشان التقرير يقدر يقولك انت بتتحرك للإيجاب ولا للسلب.`);
+
+  const fc = fullReportColors();
+  const barColor = v => v >= 75 ? fc.good : v >= 50 ? 'var(--gold)' : fc.bad;
+
+  body.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <p style="font-size:13px; color:var(--muted); margin:0;">توازن حياتك الكلي</p>
+      <p style="font-size:44px; font-weight:800; color:var(--text); margin:4px 0;">${overallNow}%</p>
+      ${dirPrev ? `
+        <p style="font-size:16px; font-weight:700; color:${dirPrev.color}; margin:0;">${dirPrev.icon} ${dirPrev.text}</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">مقارنة بآخر بوصلة (${overallPrev}% يوم ${new Date(previous.date).toLocaleDateString('ar-EG')})</p>
+      ` : `<p style="font-size:13px; color:var(--muted); margin:0;">من أول بوصلة ليك — ${new Date(latest.date).toLocaleDateString('ar-EG')}</p>`}
+      ${dirFirst ? `<p style="font-size:13px; color:var(--text); margin:8px 0 0;">ومن أول بوصلة خدتها: ${dirFirst.icon} ${overallFirst}% ← ${overallNow}%</p>` : ''}
+    </div>
+
+    ${history.length > 1 ? `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:10px;">📈 رحلتك مع البوصلة (${history.length} مرات)</p>
+      <div style="display:flex; align-items:flex-end; gap:6px; height:90px;">
+        ${history.slice(-8).map(h => { const v = compassOverallHealth(h); return `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+            <span style="font-size:11px; color:var(--muted);">${v}%</span>
+            <div style="width:100%; height:${Math.max(v*0.7,4)}px; background:${barColor(v)}; border-radius:4px 4px 0 0;"></div>
+          </div>`; }).join('')}
+      </div>
+      <div style="display:flex; gap:6px; margin-top:4px;">
+        ${history.slice(-8).map(h => `<span style="flex:1; text-align:center; font-size:10px; color:var(--muted);">${new Date(h.date).toLocaleDateString('ar-EG',{day:'numeric',month:'numeric'})}</span>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${insights.length ? `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">💡 قراءة سريعة لحالك</p>
+      ${insights.map(t => `<p style="font-size:14.5px; color:var(--text); line-height:1.8; margin:0 0 8px;">${t}</p>`).join('')}
+    </div>` : ''}
+
+    <p class="card-title" style="margin:18px 4px 8px;">الأركان السبعة — من الأضعف للأقوى</p>
+    ${rows.map(r => {
+      const d = fullReportDirection(r.delta);
+      return `
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <span style="font-size:24px;">${r.icon}</span>
+          <p style="flex:1; font-size:15px; font-weight:700; color:var(--text); margin:0;">${r.title}</p>
+          <span style="font-size:16px; font-weight:800; color:${barColor(r.health)};">${r.health}%</span>
+        </div>
+        <div style="height:8px; background:var(--sand); border-radius:4px; margin-bottom:8px;">
+          <div style="width:${Math.max(r.health,3)}%; height:100%; background:${barColor(r.health)}; border-radius:4px;"></div>
+        </div>
+        ${prevH ? `<p style="font-size:13px; color:${d.color}; margin:0 0 4px; font-weight:700;">${d.icon} ${d.text}${r.delta ? ` (${r.delta > 0 ? '+' : ''}${r.delta}%)` : ''}</p>` : ''}
+        <p style="font-size:12.5px; color:var(--muted); margin:0; line-height:1.7;">
+          ${r.eng ? `🛠️ استخدمت ${r.eng.openedCount} من ${r.eng.total} أدوات` : ''}
+          ${r.goal ? ` · 🎯 ${r.goal.worked}/${r.goal.total} هدف فرّق` : ''}
+          ${r.lastDeep ? ` · 🔬 آخر تشخيص عميق: ${new Date(r.lastDeep).toLocaleDateString('ar-EG')}` : ''}
+        </p>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn-ghost" style="flex:1; margin:0;" onclick="${r.report}">📄 تقرير الركن</button>
+          <button class="btn-ghost" style="flex:1; margin:0;" onclick="${PILLAR_ENTRY_TOOL[r.key].fn}">ابدأ ←</button>
+        </div>
+      </div>`;
+    }).join('')}
+
+    <div class="card" style="text-align:center;">
+      <p class="card-title" style="margin-bottom:6px;">🧭 الخطوة الجاية</p>
+      <p style="font-size:14.5px; color:var(--text); line-height:1.8; margin:0 0 10px;">ابدأ بـ<b>${PILLAR_ENTRY_TOOL[weakest.key].label}</b> في ${weakest.title}.</p>
+      <button class="btn-primary" onclick="${PILLAR_ENTRY_TOOL[weakest.key].fn}">ابدأ دلوقتي</button>
+      <p style="font-size:13px; color:var(--muted); margin:12px 0 8px;">${daysSince >= 14 ? `آخر بوصلة كانت من ${daysSince} يوم — وقت مناسب تعيدها وتشوف اتحركت فين.` : `آخر بوصلة من ${daysSince === 0 ? 'النهاردة' : daysSince + ' يوم'} — أنسب وقت تعيدها بعد أسبوعين من آخر مرة.`}</p>
+      <button class="btn-ghost" onclick="startCompassTest()">🧭 خد بوصلتك تاني</button>
+    </div>
+
+    <p style="font-size:12px; color:var(--muted); text-align:center; line-height:1.7; margin:10px 0 20px;">النسب مبنية على إجاباتك في «بوصلتك» — هي مراية لإحساسك بنفسك في الوقت ده، مش تشخيص ولا حكم عليك.</p>
+  `;
+  window.scrollTo(0,0);
+}
+
 function openStatsScreen(){
   renderStatsScreen();
   showScreen('screen-stats');
@@ -3097,7 +3332,19 @@ function renderStatsScreen(){
   const engagement = getPillarEngagement();
   const touchedCount = engagement.filter(e => e.openedCount > 0).length;
 
+  const fullHistory = getCompassHistory();
+  const fullLatest = fullHistory.length ? compassOverallHealth(fullHistory[fullHistory.length-1]) : null;
+  const fullPrev = fullHistory.length > 1 ? compassOverallHealth(fullHistory[fullHistory.length-2]) : null;
+  const fullDir = fullPrev !== null ? fullReportDirection(fullLatest - fullPrev) : null;
   body.innerHTML = `
+    <div class="card" onclick="openFullReport()" style="cursor:pointer; display:flex; align-items:center; gap:12px; border:2px solid var(--gold);">
+      <div style="font-size:30px;">📋</div>
+      <div style="flex:1;">
+        <p style="font-size:16px; font-weight:800; color:var(--text); margin:0;">تقريرك الشامل لكل الأركان</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0; line-height:1.6;">${fullLatest === null ? 'خد بوصلتك عشان يتبني تقريرك' : `توازنك الكلي ${fullLatest}%${fullDir ? ` — <b style="color:${fullDir.color};">${fullDir.icon} ${fullDir.text}</b>` : ''}`}</p>
+      </div>
+      <div style="color:var(--gold); font-size:18px;">←</div>
+    </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
       <div class="card" style="text-align:center; margin:0;">
         <p style="font-size:26px; font-weight:700; margin:0; color:var(--text);">${moodEntries.length}</p>
@@ -8236,6 +8483,7 @@ function renderWorshipScreen(){
         <p style="font-size:15px; margin:0; flex:1;">كام مرة استغفرت النهاردة؟</p>
         <input type="number" min="0" id="istighfarInput" value="${w.istighfarCount || 0}" style="width:70px; text-align:center;" onchange="setIstighfarCount(this.value)">
       </div>
+      <button class="btn-ghost" style="margin-top:10px;" onclick="openKhalwaScreen()">🌙 ذنوب الخلوات والتوبة منها</button>
     </div>
 
     <div class="card" style="background:linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url('https://images.unsplash.com/photo-1742626157111-59f3f1019a8a?fm=jpg&q=60&w=700&auto=format&fit=crop') center/cover no-repeat;">
@@ -8409,7 +8657,7 @@ async function openSpiritualReport(){
       <p style="font-size:12px; color:var(--muted); margin:0;">${getSpiritualCircleAssessment() ? 'شوف نتيجتك تاني ←' : 'لسه ما عملتش التقييم ده — ابدأه دلوقتي ←'}</p>
     </div>
 
-    <p style="font-size:12px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الروحاني بس حاليًا — تقرير شامل لكل الأركان السبعة هييجي في مرحلة لاحقة.</p>
+    <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openFullReport()">📋 شوف تقريرك الشامل لكل الأركان ←</div>
   `;
 }
 
@@ -8776,6 +9024,331 @@ function getTawbaCount(){
   return getTawbaLog().length;
 }
 
+// ===================== ذنوب الخلوات والتوبة منها =====================
+// خصوصية مشددة: ولا حاجة في القسم ده بتتبعت لـ Firestore أو لوحة الأدمن أو الإحصائيات
+// (مفيش markToolOpened / logToolEvent / firestoreWrite هنا عن قصد). العداد محفوظ على الجهاز بس.
+const KHALWA_SINS = [
+  {
+    id:'k_porn', icon:'📱', title:'مشاهدة المحتوى الإباحي أو المحرّم',
+    desc:'من الموبايل أو النت، في الوقت اللي محدش شايفك فيه.',
+    why:'غالبًا مش بيبدأ بشهوة بس — بيبدأ بهروب: ملل، وحدة، ضغط، أو سهر من غير هدف. الموبايل في الإيد والباب مقفول، فالطريق بيبقى أقصر من المقاومة.',
+    effects:{
+      spirit:'بيعمل حاجز بينك وبين لذة الطاعة — تلاقي نفسك بتصلي بجسمك وقلبك بعيد، وبتستحي تدعي.',
+      nafs:'دايرة متكررة: توتر ← هروب ← ندم وخزي ← توتر أكبر. ومع التكرار ناس كتير بتلاحظ إنها محتاجة محتوى أكتر عشان توصل لنفس الإحساس، وإن الاستمتاع بالحاجات العادية بيقل.',
+      body:'سهر متأخر واضطراب نوم، وإرهاق وصعوبة تركيز في اليوم اللي بعده.'
+    },
+    family:'بيزرع مقارنة ظالمة بين شريك حياتك الحقيقي وصور مش حقيقية، فيقل القرب والرضا بينكم. والسر نفسه بيعمل مسافة: حد في البيت بيبقى "موجود ومش موجود". والولاد بيحسّوا بالمسافة دي حتى لو محدش قالها.',
+    steps:['اقفل الباب اللي بيدخل منه: فلتر محتوى على الموبايل، وسيب الموبايل برّه أوضة النوم بالليل.','اعرف "ساعتك الخطر" (الوقت والمكان والمزاج) وحط فيها بديل جاهز: وضوء، مشي، مكالمة لحد تحبه.','لما الفكرة تيجي، قوم من مكانك فورًا — المقاومة وانت قاعد أصعب بكتير.','لو اتكرر رغم محاولاتك الجادة، ده ممكن يكون إدمان سلوكي محتاج متخصص، مش ضعف إيمان بس.'],
+    text:'﴿قُل لِّلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ ۚ ذَٰلِكَ أَزْكَىٰ لَهُمْ﴾ — النور ٣٠',
+    links:[{label:'💑 علاقتك بشريك حياتك', fn:'openSpouseScreen()'},{label:'😴 نومك', fn:'openSleepScreen()'},{label:'🪞 مرآة العقل', fn:'startMerat()'}],
+    specialist:true
+  },
+  {
+    id:'k_gaze', icon:'👁️', title:'النظر إلى ما حرّم الله',
+    desc:'تعمّد النظر لصور أو أجساد أو مشاهد محرّمة وانت لوحدك.',
+    why:'النظرة بتبان صغيرة و"مش مستاهلة"، وده بالظبط خطرها — هي أول خطوة في سلسلة. والسوشيال ميديا بتقدّمها لك من غير ما تدوّر.',
+    effects:{
+      spirit:'القلب بيتعلق بالصورة، والتعلق ده بياخد من مساحة ربنا جوّاك.',
+      nafs:'الصورة بتفضل راجعة في دماغك في أوقات مش مناسبة، وبتشتت تركيزك وبتقلل رضاك.',
+      body:'الانشغال الذهني المستمر بيرهق وبيسرق من طاقتك وتركيزك.'
+    },
+    family:'العين اللي بتلف برّه البيت بتقل قيمتها للي جوّه. غض البصر هو هدية صامتة لشريك حياتك — بتقوله: إنت كفاية.',
+    steps:['النظرة الأولى المفاجئة مش عليك — المهم ماتكمّلش ولا تعيد.','نضّف الفيد بتاعك: إلغاء متابعة وكتم لأي حساب بيجرّك.','خلّي عندك ذكر سريع جاهز لحظة النظرة: "اللهم طهّر قلبي وحصّن فرجي".'],
+    text:'«يا عليّ، لا تُتبِع النظرةَ النظرة، فإن لك الأولى وليست لك الآخرة» — أبو داود والترمذي',
+    links:[{label:'💑 علاقتك بشريك حياتك', fn:'openSpouseScreen()'},{label:'🪞 مرآة العقل', fn:'startMerat()'}],
+    specialist:false
+  },
+  {
+    id:'k_habit', icon:'🔁', title:'العادة السرية',
+    desc:'وأشدها لما تكون مرتبطة بمشاهدة محرّمة أو خيال محرّم، أو تتحول لعادة مسيطرة.',
+    why:'كتير بتكون وسيلة تفريغ لتوتر أو وحدة أو ملل مش متشافين — فالمشكلة الحقيقية تحتها، مش هي بس.',
+    effects:{
+      spirit:'جمهور العلماء على منعها، ومعاها بيجي إحساس ثقيل بالذنب بيبعدك عن الدعاء والقرب.',
+      nafs:'لما تتحول لعادة، بتدخل دايرة: ضغط ← تفريغ ← ذنب ← ضغط. والمشكلة إن الذنب نفسه بيبقى وقود للمرة الجاية لو اتحول لجلد ذات.',
+      body:'ماتصدّقش الخرافات المنتشرة عن الضرر الجسدي — الأثر الحقيقي في الإرهاق والسهر وفقدان التحكم والوقت، مش في كلام تخويف مالوش أساس.'
+    },
+    family:'لو انت متجوز، الاعتماد عليها بيقلل الرغبة والتواصل مع شريك حياتك، وده حق ليه عليك زي ما حقك عليه. ولو لسه ماتجوزتش، التعوّد عليها بيأثر على بداية حياتك الزوجية.',
+    steps:['دوّر على اللي تحتها: إمتى بتحصل؟ بعد ضغط؟ وحدة؟ ملل؟ — عالج ده الأول.','ماتفضلش في السرير صاحي من غير نوم. قوم.','الصيام حل نبوي حقيقي، والرياضة بتفرّغ نفس الطاقة بطريقة صحية.','لو وقعت، ماتجلدش نفسك — استغفر وكمّل. جلد الذات بيرجّعك للدايرة.'],
+    text:'«يا معشر الشباب، من استطاع منكم الباءة فليتزوج… ومن لم يستطع فعليه بالصوم فإنه له وِجاء» — متفق عليه',
+    links:[{label:'🏃 الحركة والرياضة', fn:'openMovementScreen()'},{label:'💑 علاقتك بشريك حياتك', fn:'openSpouseScreen()'},{label:'🪞 مرآة العقل', fn:'startMerat()'}],
+    specialist:true
+  },
+  {
+    id:'k_sites', icon:'🌐', title:'الدخول على مواقع أو حسابات محرّمة',
+    desc:'مواقع أو حسابات فيها محتوى فاحش أو مخالف للشرع.',
+    why:'الخوارزميات بتتعلّم منك: ضغطة واحدة بتجيب عشرة شبهها. فالموضوع بيكبر لوحده لو ماقطعتهوش.',
+    effects:{
+      spirit:'كل مرة بتدخل وتقول "آخر مرة" بتضعف ثقتك في نفسك وفي عهدك مع ربنا.',
+      nafs:'إحساس دايم بالقلق من الانكشاف، وحياة بوشّين.',
+      body:'وقت ضايع وسهر، ويوم بعده تقيل.'
+    },
+    family:'الحساب السري بيبقى باب سري في البيت. ولو اتكشف، الثقة اللي بتتكسر بتاخد سنين عشان تتبني تاني.',
+    steps:['امسح الحسابات والتطبيقات دي نهائيًا، مش تخفيها.','امسح سجل البحث وأعد ضبط الاقتراحات عشان الخوارزمية "تنساك".','فعّل حدود وقت الشاشة وخلّي كلمة السر مع حد تثق فيه لو تقدر.'],
+    text:'﴿يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَتَّبِعُوا خُطُوَاتِ الشَّيْطَانِ﴾ — النور ٢١',
+    links:[{label:'💑 علاقتك بشريك حياتك', fn:'openSpouseScreen()'},{label:'😴 نومك', fn:'openSleepScreen()'}],
+    specialist:false
+  },
+  {
+    id:'k_chats', icon:'💬', title:'المحادثات والعلاقات السرية المحرّمة',
+    desc:'رسايل أو مكالمات عاطفية أو جنسية برّه إطار الجواز.',
+    why:'غالبًا بتبدأ بجوع عاطفي: حد مش حاسس إنه مسموع أو متقدّر، فيلاقي "حد فاهمه" في الشات. الإحساس حقيقي، بس الطريق غلط.',
+    effects:{
+      spirit:'الكلام اللي بيتقال في السر وماتقدرش تقوله قدام الناس، ربنا شاهد عليه.',
+      nafs:'تعلق عاطفي وإدمان على الاهتمام، وقلق وتوتر دايمين من الانكشاف.',
+      body:'سهر وتوتر مستمر بيأثر على النوم والتركيز.'
+    },
+    family:'ده من أخطر ذنوب الخلوات على البيت: بيسحب المشاعر والاهتمام اللي هما حق شريك حياتك، وبيهدم الأمان. ولو اتكشف، أثره على الأولاد كبير.',
+    steps:['اقطع فورًا ونهائيًا — مفيش "رسالة وداع أخيرة"، دي باب رجوع.','احظر الرقم والحساب.','اسأل نفسك بصدق: إيه الاحتياج اللي كنت بتدوّر عليه؟ واشتغل عليه في النور، مع شريك حياتك أو مع متخصص.'],
+    text:'«لا يخلُوَنّ رجلٌ بامرأة إلا كان ثالثَهما الشيطان» — الترمذي',
+    links:[{label:'💑 علاقتك بشريك حياتك', fn:'openSpouseScreen()'},{label:'👶 علاقتك بأولادك', fn:'openChildrenScreen()'},{label:'🤝 الركن الاجتماعي', fn:'goToPillar(4)'}],
+    specialist:false
+  },
+  {
+    id:'k_listen', icon:'🎧', title:'الاستماع أو مشاهدة ما لا يجوز',
+    desc:'محتوى فاحش أو بيحرّض على المعصية، مع تعمّد إخفائه عن الناس.',
+    why:'"هو أنا بعمل حاجة؟ ده أنا بس بسمع/بتفرج" — بس اللي بيدخل ودنك وعينك كل يوم بيشكّل تفكيرك من غير ما تحس.',
+    effects:{
+      spirit:'القلب بيتطبّع على المعصية فيبطّل يستنكرها.',
+      nafs:'الأفكار والمشاهد بتتكرر في دماغك وبتأثر على مزاجك واختياراتك.',
+      body:'غالبًا بيجي مع سهر وقعدة طويلة قدام الشاشة.'
+    },
+    family:'اللي بتخبيه عن أهل بيتك بيعمل مسافة، واللي بتتعوّد عليه بيطلع في كلامك وتعاملك معاهم.',
+    steps:['قاعدة بسيطة: اللي تستحي تشغّله قدام أهلك، ماتشغّلوش لوحدك.','بدّله بمحتوى يغذّيك: قرآن، بودكاست مفيد، حاجة بتحبها وحلال.'],
+    text:'﴿إِنَّ السَّمْعَ وَالْبَصَرَ وَالْفُؤَادَ كُلُّ أُولَٰئِكَ كَانَ عَنْهُ مَسْئُولًا﴾ — الإسراء ٣٦',
+    links:[{label:'🪞 مرآة العقل', fn:'startMerat()'},{label:'👶 علاقتك بأولادك', fn:'openChildrenScreen()'}],
+    specialist:false
+  },
+  {
+    id:'k_substances', icon:'💊', title:'تعاطي المحرّمات في الخفاء',
+    desc:'مخدرات أو مسكرات أو غيرها.',
+    why:'في الأغلب بيبدأ هروب من ألم نفسي أو ضغط أو صحبة، وبعدين الجسم نفسه بيطلبه. هنا الموضوع مش إرادة بس — ده ممكن يكون إدمان حقيقي.',
+    effects:{
+      spirit:'الخمر والمخدرات بيغيّبوا العقل، والعقل هو اللي بتقف بيه قدام ربنا.',
+      nafs:'قلق، اكتئاب، تقلّب مزاج، وفي بعض المواد ممكن يوصل لأعراض ذهانية.',
+      body:'ضرر مباشر على الكبد والقلب والمخ، وخطر جرعة زيادة، والخطر بيزيد جدًا لو اتخلطت مواد ببعض.'
+    },
+    family:'الإدمان بيسحب فلوس البيت ووقته وأمانه، والأولاد بيكبروا في قلق. والكذب اللي بيحتاجه عشان يستخبى بيهد الثقة.',
+    steps:['ماتحاولش توقف فجأة لوحدك من غير استشارة طبية — الانسحاب من بعض المواد ممكن يكون خطر.','كلّم دكتور نفسي أو مركز علاج إدمان — ده مش عيب، ده شجاعة.','ابعد عن الصحبة والأماكن المرتبطة بيه.','لو في خطر فوري (جرعة زيادة، فقدان وعي)، اطلب الإسعاف فورًا.'],
+    text:'﴿وَلَا تُلْقُوا بِأَيْدِيكُمْ إِلَى التَّهْلُكَةِ﴾ — البقرة ١٩٥',
+    links:[{label:'😮‍💨 التعب والإرهاق', fn:'openFatigueScreen()'},{label:'🩺 الركن الصحي', fn:'goToPillar(7)'},{label:'👪 الركن العائلي', fn:'goToPillar(3)'}],
+    specialist:true, specialistKey:'psychiatrist'
+  },
+  {
+    id:'k_cheat', icon:'🎭', title:'الكذب والغش لما مفيش رقابة',
+    desc:'في الشغل أو الدراسة أو التعاملات، لما تفتكر إن محدش هيكتشف.',
+    why:'الإحساس إن "الكل بيعمل كده" أو إن الظروف صعبة. بس الرقابة الحقيقية مش الكاميرا.',
+    effects:{
+      spirit:'البركة بتتشال من الرزق اللي فيه غش.',
+      nafs:'قلق من الانكشاف، واحترام النفس بيقل من جوّه حتى لو محدش عرف.',
+      body:'التوتر المستمر بيتعب الجسم على المدى الطويل.'
+    },
+    family:'الأولاد بيتعلموا الأمانة بالقدوة مش بالكلام. والفلوس اللي فيها غش بتدخل البيت ومعاها قلق.',
+    steps:['رجّع الحقوق لأصحابها لو تقدر — ده شرط أساسي في التوبة من حقوق الناس.','خلّي عندك سؤال ثابت: "لو الموقف ده اتصوّر، هبقى مرتاح؟"'],
+    text:'«من غشّنا فليس منّا» — مسلم',
+    links:[{label:'💼 الركن المهني', fn:'goToPillar(5)'},{label:'💰 الركن المادي', fn:'goToPillar(6)'}],
+    specialist:false
+  },
+  {
+    id:'k_spying', icon:'🔍', title:'التجسس وتتبّع عورات الناس',
+    desc:'تفتيش موبايلات الناس أو حساباتهم أو التدوير على أسرارهم من غير حق.',
+    why:'ساعات بيكون شك أو غيرة أو قلق، وساعات فضول. بس الشك مابيتعالجش بالتفتيش — التفتيش بيولّد شك أكتر.',
+    effects:{
+      spirit:'اللي بيتتبع عورات الناس، ربنا بيكشف عورته — وده وعيد صريح.',
+      nafs:'دايرة قلق وشك مابتخلصش، وكل حاجة بتلاقيها بتفتح سؤال جديد.',
+      body:'توتر وأرق.'
+    },
+    family:'تفتيش موبايل شريك حياتك أو ولادك من غير سبب حقيقي بيكسر الأمان. ولو في شك جاد، الحل مواجهة هادية وصريحة أو استشارة، مش تجسس.',
+    steps:['لو في شك حقيقي، اتكلم بصراحة بدل ما تفتّش.','اسأل نفسك: الشك ده جاي من دليل ولا من جرح قديم؟'],
+    text:'﴿اجْتَنِبُوا كَثِيرًا مِّنَ الظَّنِّ إِنَّ بَعْضَ الظَّنِّ إِثْمٌ ۖ وَلَا تَجَسَّسُوا﴾ — الحجرات ١٢',
+    links:[{label:'💑 علاقتك بشريك حياتك', fn:'openSpouseScreen()'},{label:'🩹 جرح العيلة', fn:'openFamilyWoundScreen()'},{label:'🤝 الركن الاجتماعي', fn:'goToPillar(4)'}],
+    specialist:false
+  },
+  {
+    id:'k_double', icon:'🎭', title:'الاستهانة بمراقبة الله',
+    desc:'إنك تبان كويس قدام الناس، وتسيب نفسك للمعصية لما تبقى لوحدك.',
+    why:'ده مش ذنب واحد — ده "الجذر" تحت كل ذنوب الخلوات. لما نظر الناس يبقى أهم عندك من نظر ربنا.',
+    effects:{
+      spirit:'ده اللي الحديث حذّر منه: حسنات كالجبال بتضيع بسبب انتهاك الخلوات.',
+      nafs:'انقسام داخلي: "أنا الحقيقي مين؟" — وده من أكتر الحاجات اللي بتسبب إحساس بالفراغ وعدم الرضا.',
+      body:'الضغط النفسي المزمن بيطلع في الجسم: صداع، شد، تعب من غير سبب واضح.'
+    },
+    family:'البيت بيحس بالفرق بين كلامك وحقيقتك، حتى لو مش فاهم ليه. والأولاد بيتعلموا إن الدين "شكل".',
+    steps:['اعمل لنفسك عبادة سرية زي ما كان عندك ذنب سري: ركعتين بالليل، صدقة محدش يعرفها.','قبل ما تعمل أي حاجة وانت لوحدك: "ربنا شايفني دلوقتي".'],
+    text:'﴿يَسْتَخْفُونَ مِنَ النَّاسِ وَلَا يَسْتَخْفُونَ مِنَ اللَّهِ وَهُوَ مَعَهُمْ﴾ — النساء ١٠٨',
+    links:[{label:'🧭 بوصلة التسليم', fn:'startTasleemCompass()'},{label:'🕊️ علاقتك بربك', fn:'goToPillar(1)'},{label:'🪞 مرآة العقل', fn:'startMerat()'}],
+    specialist:false
+  }
+];
+
+const KHALWA_STREAK_KEY = 'eihyaha_khalwa_streak';
+
+function getKhalwaStreak(){
+  try { return JSON.parse(localStorage.getItem(KHALWA_STREAK_KEY)) || null; } catch(e){ return null; }
+}
+function saveKhalwaStreak(s){
+  try { localStorage.setItem(KHALWA_STREAK_KEY, JSON.stringify(s)); } catch(e){}
+}
+function khalwaDaysSince(iso){
+  const start = new Date(iso); start.setHours(0,0,0,0);
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.max(0, Math.round((now - start) / 86400000));
+}
+
+function openKhalwaScreen(){
+  renderKhalwaList();
+  showScreen('screen-khalwa');
+}
+
+function renderKhalwaStreakCard(){
+  const s = getKhalwaStreak();
+  if(!s){
+    return `
+      <div class="card" style="text-align:center;">
+        <p class="card-title" style="margin-bottom:6px;">🌱 عهد جديد مع ربنا</p>
+        <p style="font-size:14px; color:var(--muted); margin:0 0 10px; line-height:1.7;">عدّاد "أيام الثبات" — مش هيتكتب فيه اسم أي ذنب، ومحفوظ على موبايلك بس.</p>
+        <button class="btn-primary" onclick="startKhalwaStreak()">ابدأ العهد النهاردة</button>
+      </div>`;
+  }
+  const days = khalwaDaysSince(s.start);
+  const best = Math.max(s.best || 0, days);
+  return `
+    <div class="card" style="text-align:center;">
+      <p class="card-title" style="margin-bottom:4px;">🌱 أيام الثبات</p>
+      <p style="font-size:40px; font-weight:800; color:var(--gold); margin:4px 0;">${days}</p>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 10px;">${days === 0 ? 'النهاردة أول يوم — وأول يوم هو أصعب يوم.' : `أطول فترة ثبات ليك: ${best} يوم`}</p>
+      <button class="btn-ghost" onclick="relapseKhalwaStreak()">وقعت… هبدأ من جديد</button>
+      <p id="khalwaStreakMsg" style="font-size:14px; color:var(--text); margin-top:10px; line-height:1.7;"></p>
+    </div>`;
+}
+
+function startKhalwaStreak(){
+  saveKhalwaStreak({ start: new Date().toISOString(), best: 0 });
+  renderKhalwaList();
+}
+
+function relapseKhalwaStreak(){
+  const s = getKhalwaStreak() || { best:0 };
+  const days = s.start ? khalwaDaysSince(s.start) : 0;
+  saveKhalwaStreak({ start: new Date().toISOString(), best: Math.max(s.best || 0, days) });
+  renderKhalwaList();
+  const msg = document.getElementById('khalwaStreakMsg');
+  if(msg) msg.innerHTML = `الوقوع مش نهاية الطريق — ${days > 0 ? `إنت صمدت ${days} يوم، ودي قوة حقيقية اتبنت جواك ومش هتضيع.` : 'المهم إنك رجعت.'} استغفر، واعرف إيه اللي وقّعك المرة دي، وكمّل.<br>«وأتبِع السيئةَ الحسنةَ تمحُها» — الترمذي`;
+}
+
+function resetKhalwaStreak(){
+  if(!confirm('تمسح العداد خالص من على الموبايل؟')) return;
+  try { localStorage.removeItem(KHALWA_STREAK_KEY); } catch(e){}
+  renderKhalwaList();
+}
+
+function renderKhalwaList(){
+  const body = document.getElementById('khalwaBody');
+  body.innerHTML = `
+    <div class="card" style="background:var(--sand);">
+      <p style="font-size:13px; color:var(--muted); margin:0; line-height:1.7;">🔒 القسم ده خاص بيك تمامًا: مفيش حاجة فيه بتتبعت لأي سيرفر، ولا بتظهر لأي حد، ولا حتى بيتسجل إنك فتحته.</p>
+    </div>
+
+    <div class="card">
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:0;">
+        النبي ﷺ وصف ناس جايين يوم القيامة بحسنات زي الجبال، وبيقوموا الليل زينا — لكن ربنا يجعلها هباءً منثورًا، لأنهم
+        <b>«إذا خلوا بمحارم الله انتهكوها»</b> <span style="color:var(--muted); font-size:13px;">— ابن ماجه</span>
+      </p>
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:10px 0 0;">
+        بس ماتقراش ده وتقفل. نفس الرب اللي شايفك في خلوتك هو اللي بيقول:
+        <b>﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ ۚ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا﴾</b>
+        <span style="color:var(--muted); font-size:13px;">— الزمر ٥٣</span>
+      </p>
+    </div>
+
+    ${renderKhalwaStreakCard()}
+
+    <p class="card-title" style="margin:18px 4px 8px;">اختار اللي عايز تشتغل عليه</p>
+    ${KHALWA_SINS.map((k,i) => `
+      <div class="card" onclick="showKhalwaDetail(${i})" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
+        <div style="font-size:26px;">${k.icon}</div>
+        <div style="flex:1;">
+          <p style="font-size:15px; font-weight:700; color:var(--text); margin:0;">${i+1}. ${k.title}</p>
+          <p style="font-size:13px; color:var(--muted); margin:4px 0 0; line-height:1.6;">${k.desc}</p>
+        </div>
+        <div style="color:var(--gold); font-size:18px;">←</div>
+      </div>
+    `).join('')}
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">🤲 شروط التوبة الصادقة</p>
+      <p style="font-size:14px; color:var(--text); line-height:1.9; margin:0;">
+        ١. إنك تبطّل الذنب فعلًا.<br>
+        ٢. إنك تندم عليه من قلبك.<br>
+        ٣. إنك تعزم ماترجعلوش.<br>
+        ٤. ولو فيه حق لحد، ترجّعه له.<br>
+        <span style="color:var(--muted);">ولو رجعت ووقعت، التوبة لسه مفتوحة — ربنا مابيملّش لحد ما إنت تملّ.</span>
+      </p>
+      <p style="font-size:14px; color:var(--text); line-height:1.9; margin:10px 0 0;">
+        ⚠️ واستر على نفسك: توبتك بينك وبين ربنا، ومش مطلوب منك تحكي ذنبك لحد — «كل أمتي معافى إلا المجاهرين» <span style="color:var(--muted); font-size:13px;">— متفق عليه</span>. الاستثناء الوحيد: المتخصص اللي بيساعدك تتعافى.
+      </p>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <button class="btn-primary" onclick="openTawbaScreen()">📝 سجّل رجوعك في "التوبة والعودة"</button>
+      ${getKhalwaStreak() ? `<button class="btn-ghost" style="margin-top:8px;" onclick="resetKhalwaStreak()">مسح العداد من الموبايل</button>` : ''}
+      <p style="font-size:13px; color:var(--muted); margin:12px 0 0; line-height:1.7;">لو إحساس الذنب تقيل عليك لدرجة إنك بتفكر تأذي نفسك، <span onclick="showSafety()" style="color:var(--gold); font-weight:700; cursor:pointer; text-decoration:underline;">دوس هنا</span> — إنت تستاهل المساعدة.</p>
+    </div>
+  `;
+  window.scrollTo(0,0);
+}
+
+function showKhalwaDetail(i){
+  const k = KHALWA_SINS[i];
+  const body = document.getElementById('khalwaBody');
+  const specKey = k.specialistKey || 'therapist';
+  body.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <div style="font-size:36px;">${k.icon}</div>
+      <p style="font-size:18px; font-weight:800; color:var(--text); margin:6px 0;">${k.title}</p>
+      <p style="font-size:14px; color:var(--muted); margin:0; line-height:1.7;">${k.desc}</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:6px;">🧠 ليه بيحصل في الخلوة؟</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:0;">${k.why}</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">🩺 أثره عليك</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:0 0 8px;"><b style="color:var(--gold);">على الروح:</b> ${k.effects.spirit}</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:0 0 8px;"><b style="color:var(--gold);">على النفس:</b> ${k.effects.nafs}</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:0;"><b style="color:var(--gold);">على الجسد:</b> ${k.effects.body}</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:6px;">👪 أثره على البيت</p>
+      <p style="font-size:15px; color:var(--text); line-height:1.9; margin:0;">${k.family}</p>
+      <p style="font-size:13px; color:var(--muted); line-height:1.7; margin:8px 0 0;">﴿وَلَهُنَّ مِثْلُ الَّذِي عَلَيْهِنَّ بِالْمَعْرُوفِ﴾ — البقرة ٢٢٨: الحقوق في البيت متبادلة، والأمانة في الخلوة جزء منها.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">🛤️ خطة التوبة العملية</p>
+      ${k.steps.map((s,n) => `<p style="font-size:15px; color:var(--text); line-height:1.9; margin:0 0 6px;"><b style="color:var(--gold);">${n+1}.</b> ${s}</p>`).join('')}
+    </div>
+
+    <div class="card" style="background:var(--sand); text-align:center;">
+      <p style="font-size:16px; color:var(--text); line-height:2; margin:0;">${k.text}</p>
+    </div>
+
+    ${k.specialist ? `
+      <div class="card">
+        <p style="font-size:14px; color:var(--text); line-height:1.8; margin:0 0 8px;">لو حاولت بجد ومش قادر توقف، ده مش معناه إن إيمانك ضعيف — ممكن يكون تعلق أو إدمان محتاج مساعدة متخصصة، زي أي مرض محتاج دكتور.</p>
+        <button class="btn-primary" onclick="browseSpecialistsByCategory('${specKey}')">🔍 شوف ${specKey === 'psychiatrist' ? 'دكتور نفسي' : 'استشاري نفسي'} مناسب</button>
+      </div>` : ''}
+
+    <p class="card-title" style="margin:16px 4px 8px;">كمّل من هنا</p>
+    ${k.links.map(l => `<button class="btn-ghost" style="margin-bottom:8px;" onclick="${l.fn}">${l.label}</button>`).join('')}
+
+    <button class="btn-primary" style="margin-top:8px;" onclick="renderKhalwaList()">→ رجوع للقائمة</button>
+  `;
+  window.scrollTo(0,0);
+}
+
 function openTawbaScreen(){
   markToolOpened('tawba');
   const adam = MERAT_PATTERNS.find(x => x.id === 'guilt_return');
@@ -8799,6 +9372,14 @@ function openTawbaScreen(){
       <p id="tawbaStatus" style="font-size:13px; color:#9FB3AE; margin-top:8px; text-align:center;"></p>
     </div>
     <div id="tawbaResultWrap"></div>
+    <div class="card" onclick="openKhalwaScreen()" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
+      <div style="font-size:26px;">🌙</div>
+      <div style="flex:1;">
+        <p style="font-size:15px; font-weight:700; color:var(--text); margin:0;">ذنوب الخلوات والتوبة منها</p>
+        <p style="font-size:13px; color:var(--muted); margin:4px 0 0;">أشهر ١٠ ذنوب في الخفاء — أثرها عليك وعلى بيتك، وخطة عملية للرجوع. خاص بيك تمامًا.</p>
+      </div>
+      <div style="color:var(--gold); font-size:18px;">←</div>
+    </div>
   `;
   showScreen('screen-tawba');
 }
@@ -10257,7 +10838,7 @@ async function openPersonalReport(){
         <p class="card-title" style="margin-bottom:6px;">معرفتك بنفسك</p>
         <p style="font-size:12.5px; color:var(--text); margin:0;">${stateLabels[selfState]}</p>
       </div>` : ''}
-    <p style="font-size:10.5px; color:var(--muted); text-align:center; margin-top:14px;">التقرير ده خاص بالركن الشخصي بس حاليًا — تقرير شامل لكل الأركان السبعة هييجي في مرحلة لاحقة.</p>
+    <div class="choice-btn" style="text-align:center; margin-top:14px;" onclick="openFullReport()">📋 شوف تقريرك الشامل لكل الأركان ←</div>
   `;
 }
 
@@ -10463,7 +11044,9 @@ function revealCompassResult(){
   const currentIndex = stages.findIndex(s => !s.done);
   const previous = getCompassResult();
   const result = { pillarScores, weakestPillar, journeyStageKey: currentIndex !== -1 ? stages[currentIndex].key : null, date:new Date().toISOString() };
+  if(previous && previous.pillarScores) getCompassHistory(); // يضمن إن النتيجة القديمة اتحفظت في التاريخ قبل ما تتستبدل
   localStorage.setItem('eihyaha_compass_result', JSON.stringify(result));
+  pushCompassHistory(result);
   firestoreWrite('compass_results', { weakestPillar, date: result.date });
   renderCompassResult(result, stages, currentIndex, previous);
 }
@@ -10488,6 +11071,7 @@ function renderCompassResult(result, stages, currentIndex, previous){
       ${comparisonHtml}
     </div>
     <div class="choice-btn" style="text-align:center; margin-top:14px; background:var(--navy-dark); color:#fff; border-color:var(--gold);" onclick="${tool.fn}">ابدأ بـ${tool.label} ←</div>
+    <div class="choice-btn" style="text-align:center; border-color:var(--gold); font-weight:700;" onclick="openFullReport()">📋 تقريرك الشامل — اتحركت للإيجاب ولا للسلب؟ ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="openJourneyScreen()">شوف رحلتك كاملة ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="shareApp('challenge', 'خدت «بوصلتك» في تطبيق «إحياها باستمتاع» ووجّهتني لـ${tool.pillarName}. جرّبها انت كمان وقارن نتيجتك بنتيجتي — بلطف مش منافسة 😊: ')">👥 ادعُ حد يجرب البوصلة ويقارن بلطف ←</div>
     <div class="choice-btn" style="text-align:center;" onclick="goHome()">رجوع للرئيسية</div>
