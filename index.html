@@ -1187,6 +1187,16 @@
     <div style="padding:0 16px;" id="fullReportBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: CASE FILE (ملف الحالة) ===================== -->
+  <div class="screen" id="screen-case-file">
+    <div class="topbar">
+      <div class="backbtn" onclick="history.back()">→</div>
+      <h1>ملف حالتك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="caseFileBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: SETTINGS (الإعدادات) ===================== -->
   <div class="screen" id="screen-settings">
     <div class="topbar">
@@ -2381,7 +2391,8 @@ function getSpecialistStartingPrice(s){
   });
   return prices.length ? Math.min(...prices) : null;
 }
-async function browseSpecialistsByCategory(categoryKey){
+async function browseSpecialistsByCategory(categoryKey, focusKey){
+  browseSpecialistsFocus = (focusKey && SPECIALIST_FOCUS_KEYWORDS[focusKey]) ? focusKey : null;
   const category = SPECIALIST_CATEGORIES.find(c => c.key === categoryKey);
   document.getElementById('specialistsBrowseTitle').textContent = category.title;
   const wrap = document.getElementById('specialistsBrowseBody');
@@ -2449,6 +2460,9 @@ function renderBrowseSpecialistsList(){
     list.sort((a,b) => (Number(b.experience)||0) - (Number(a.experience)||0));
   } else if(browseSpecialistsSort === 'offers'){
     list = list.filter(s => s.offerActive === 'yes' && s.offerText);
+  } else if(browseSpecialistsFocus){
+    // «الأنسب»: لو جاي من ترشيح التقرير الشامل، اللي تخصصه قريب من حالته يطلع الأول
+    list.sort((a,b) => specialistFocusScore(b) - specialistFocusScore(a));
   }
   if(list.length === 0){ wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; padding:20px 0;">مفيش نتايج.</p>`; return; }
   wrap.innerHTML = list.map(s => {
@@ -2459,6 +2473,7 @@ function renderBrowseSpecialistsList(){
       <div style="flex:1;">
         <div class="card-title" style="font-size:14px;">${s.fullName || 'بدون اسم'}</div>
         <div class="card-sub">${s.identityTagline || s.specialty || ''}</div>
+        ${specialistFocusScore(s) > 0 ? `<div style="font-size:11.5px; font-weight:700; color:var(--gold); margin-top:3px;">🎯 قريب من حالتك</div>` : ''}
       </div>
       <span style="font-size:12px; font-weight:700; color:var(--gold); white-space:nowrap;">${price ? 'من ' + price + ' ج' : ''}${s.offerActive === 'yes' ? ' 🔥' : ''}</span>
     </div>
@@ -3251,6 +3266,8 @@ function renderFullReport(){
       ${insights.map(t => `<p style="font-size:14.5px; color:var(--text); line-height:1.8; margin:0 0 8px;">${t}</p>`).join('')}
     </div>` : ''}
 
+    ${renderSpecialistRecommendationCard()}
+
     <p class="card-title" style="margin:18px 4px 8px;">الأركان السبعة — من الأضعف للأقوى</p>
     ${rows.map(r => {
       const d = fullReportDirection(r.delta);
@@ -3288,6 +3305,237 @@ function renderFullReport(){
     <p style="font-size:12px; color:var(--muted); text-align:center; line-height:1.7; margin:10px 0 20px;">النسب مبنية على إجاباتك في «بوصلتك» — هي مراية لإحساسك بنفسك في الوقت ده، مش تشخيص ولا حكم عليك.</p>
   `;
   window.scrollTo(0,0);
+}
+
+// ===================== ترشيح المتخصص + ملف الحالة (مبني على التقرير الشامل) =====================
+// الخصوصية: ملف الحالة بيتبني على الموبايل وبيتبعت بإيد المستخدم بس (مشاركة/نسخ) — مش بيتخزن في Firestore.
+// مش بيدخل فيه: نصوص مرآتي اليومية، التوبة، ذنوب الخلوات، أو أي كلام مكتوب بإيد المستخدم.
+
+const SPECIALIST_FOCUS_KEYWORDS = {
+  family:       ['زوج','زوجي','زواج','اسري','اسره','عائلي','اطفال','تربيه','ابناء','والدين','مراهق'],
+  social:       ['علاقات','اجتماعي','تواصل','صداقه','خجل','حدود'],
+  personal:     ['قلق','اكتئاب','توتر','مشاعر','صدمات','طفوله','ثقه','شخصيه','وعي','نفسي'],
+  spiritual:    ['روحاني','ايماني','قراني','ديني','اسلامي'],
+  professional: ['مهني','وظيفي','مسار','قياده','اداره','انتاجيه','كاريير','اعمال'],
+  financial:    ['مالي','ماليه','فلوس','ريادة','رياده','استثمار','اعمال'],
+  health:       ['صحه','نوم','تغذيه','ادمان','ضغوط','جسد'],
+};
+const EMOTIONAL_PILLARS = ['personal','family','social','spiritual'];
+const GOAL_PILLARS = ['professional','financial','health'];
+
+function arCountWord(n, few, many){ return (n >= 3 && n <= 10) ? `${n} ${few}` : `${n} ${many}`; }
+// أسباب الترشيح مكتوبة للمستخدم (إنت)، وفي ملف الحالة بتتقري للمتخصص (هو)
+function toThirdPerson(t){
+  return t.replace(/عندك/g,'عنده').replace(/تسجيلاتك/g,'تسجيلاته').replace(/نومك/g,'نومه').replace(/طاقتك/g,'طاقته').replace(/يساعدك تتحرك/g,'يساعده يتحرك');
+}
+function getRecentJournalSignals(){
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('eihyaha_journal') || '[]'); } catch(e){ local = []; }
+  const daily = local.filter(e => e.anxiety !== undefined).slice(0, 14); // الأحدث الأول
+  const avg = f => daily.length ? Number((daily.reduce((s,e) => s + Number(e[f]||0), 0) / daily.length).toFixed(1)) : null;
+  const moodCounts = {};
+  local.filter(e => e.type === 'mood').slice(0, 30).forEach(e => { const l = e.subLabel || e.moodLabel; if(l) moodCounts[l] = (moodCounts[l]||0) + 1; });
+  const topMoods = Object.entries(moodCounts).sort((a,b) => b[1]-a[1]).slice(0,3).map(([l,c]) => `${l} (${c})`);
+  return { days: daily.length, anxiety: avg('anxiety'), energy: avg('energy'), sleep: avg('sleep'), topMoods };
+}
+
+// المحرك: بيرجّع نوع المتخصص الأساسي + بديل + أسباب مفهومة للمستخدم
+function computeSpecialistRecommendation(){
+  const history = getCompassHistory();
+  if(!history.length) return null;
+  const latest = history[history.length - 1];
+  const prev = history.length > 1 ? history[history.length - 2] : null;
+  const h = compassPillarHealth(latest);
+  const ph = prev ? compassPillarHealth(prev) : null;
+  const j = getRecentJournalSignals();
+  const name = k => PILLAR_ENTRY_TOOL[k].pillarName;
+  const reasons = [];
+  let urgentLevel = false;
+
+  // ١) إشارات تستاهل طبيب نفسي — بس لو في بيانات متابعة كفاية (٥ أيام على الأقل)
+  if(j.days >= 5){
+    if(j.anxiety >= 8){ urgentLevel = true; reasons.push(`متوسط القلق في آخر ${arCountWord(j.days,'تسجيلات','تسجيل')} عالي جدًا (${j.anxiety} من 10)`); }
+    if(j.sleep !== null && j.sleep <= 4 && j.energy !== null && j.energy <= 3){ urgentLevel = true; reasons.push(`نومك قليل (حوالي ${j.sleep} ساعات) وطاقتك منخفضة (${j.energy} من 10) بشكل مستمر`); }
+  }
+  if(h.personal <= 25 && h.health <= 25 && j.anxiety !== null && j.anxiety >= 7){
+    urgentLevel = true; reasons.push('الركن الشخصي والصحي الاتنين في أضعف حالاتهم مع قلق عالي');
+  }
+
+  const weakEmotional = EMOTIONAL_PILLARS.filter(k => h[k] <= 50).sort((a,b) => h[a]-h[b]);
+  const declinedEmotional = ph ? EMOTIONAL_PILLARS.filter(k => h[k] - ph[k] <= -25) : [];
+  const weakGoal = GOAL_PILLARS.filter(k => h[k] <= 50).sort((a,b) => h[a]-h[b]);
+  const moderateAnxiety = j.days >= 5 && j.anxiety >= 6 && j.anxiety < 8;
+
+  let primary = null, secondary = null, focus = null;
+
+  if(urgentLevel){
+    primary = 'psychiatrist';
+    focus = 'personal';
+    if(weakEmotional.length) secondary = 'therapist';
+  } else if(weakEmotional.length || declinedEmotional.length || moderateAnxiety){
+    primary = 'therapist';
+    focus = weakEmotional[0] || declinedEmotional[0] || 'personal';
+    if(weakEmotional.length) reasons.push(`${weakEmotional.map(name).join(' و')} ${weakEmotional.length > 1 ? 'محتاجين' : 'محتاج'} دعم (${weakEmotional.map(k => h[k] + '%').join('، ')})`);
+    declinedEmotional.filter(k => !weakEmotional.includes(k)).forEach(k => reasons.push(`${name(k)} نزل من آخر بوصلة (${ph[k]}% ← ${h[k]}%)`));
+    if(moderateAnxiety) reasons.push(`القلق عندك متكرر (متوسط ${j.anxiety} من 10 في آخر تسجيلاتك)`);
+    if(weakGoal.length) secondary = 'coach';
+  } else if(weakGoal.length){
+    primary = 'coach';
+    focus = weakGoal[0];
+    reasons.push(`${weakGoal.map(name).join(' و')} محتاج${weakGoal.length > 1 ? 'ين' : ''} خطة عملية وأهداف واضحة (${weakGoal.map(k => h[k] + '%').join('، ')})`);
+    reasons.push('ومفيش إشارات ضغط نفسي واضحة — فالأنسب حد يساعدك تتحرك، مش علاج');
+  }
+
+  const overall = compassOverallHealth(latest);
+  return { primary, secondary, focus, reasons, overall, urgentLevel, journal:j, health:h, prevHealth:ph, date:latest.date };
+}
+
+function specialistCategoryTitle(key){
+  const c = SPECIALIST_CATEGORIES.find(x => x.key === key);
+  return c ? c.title : '';
+}
+
+function renderSpecialistRecommendationCard(){
+  const rec = computeSpecialistRecommendation();
+  if(!rec) return '';
+  if(!rec.primary){
+    return `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:6px;">🤝 محتاج متخصص؟</p>
+        <p style="font-size:14.5px; color:var(--text); line-height:1.8; margin:0 0 10px;">الصورة عندك متوازنة ومفيش إشارات بتقول إنك محتاج متخصص دلوقتي. ولو حابب تطوّر نفسك أو توصل لهدف أسرع، الكوتش ممكن يفرق معاك.</p>
+        <button class="btn-ghost" onclick="browseSpecialistsByCategory('coach')">🎯 شوف الكوتشز</button>
+      </div>`;
+  }
+  const lead = {
+    psychiatrist: 'اللي ظاهر في متابعتك يستاهل تقييم من <b>دكتور نفسي</b> — ده مش معناه إن في حاجة كبيرة، معناه إن الأعراض دي بتتعالج أسرع وأسهل مع طبيب.',
+    therapist: 'الأنسب ليك دلوقتي <b>استشاري نفسي</b> — حد تتكلم معاه وتفهم معاه اللي بيحصل جواك وفي علاقاتك.',
+    coach: 'الأنسب ليك <b>لايف كوتش</b> — حد يساعدك تحط خطة وأهداف وتتحرك فيها خطوة بخطوة.',
+  }[rec.primary];
+  return `
+    <div class="card" style="border:2px solid var(--gold);">
+      <p class="card-title" style="margin-bottom:6px;">🤝 مين المتخصص اللي ممكن يفيدك؟</p>
+      <p style="font-size:14.5px; color:var(--text); line-height:1.8; margin:0 0 8px;">${lead}</p>
+      ${rec.reasons.length ? `<p style="font-size:13px; color:var(--muted); margin:0 0 4px;">ليه؟</p>
+      ${rec.reasons.map(r => `<p style="font-size:14px; color:var(--text); line-height:1.7; margin:0 0 4px;">• ${r}</p>`).join('')}` : ''}
+      <button class="btn-primary" style="margin-top:10px;" onclick="browseSpecialistsByCategory('${rec.primary}', '${rec.focus}')">🔍 شوف ${specialistCategoryTitle(rec.primary)} مناسب لحالتك</button>
+      ${rec.secondary ? `<button class="btn-ghost" style="margin-top:8px;" onclick="browseSpecialistsByCategory('${rec.secondary}', '${rec.secondary === 'coach' ? (GOAL_PILLARS.find(k => rec.health[k] <= 50) || rec.focus) : rec.focus}')">وممكن كمان: ${specialistCategoryTitle(rec.secondary)}</button>` : ''}
+      <button class="btn-ghost" style="margin-top:8px;" onclick="openCaseFile()">📄 جهّز ملف حالتك للمتخصص</button>
+      ${rec.urgentLevel ? `<p style="font-size:13px; color:var(--muted); line-height:1.7; margin:10px 0 0;">ولو حاسس إنك في خطر أو بتفكر تأذي نفسك، <span onclick="showSafety()" style="color:var(--gold); font-weight:700; cursor:pointer; text-decoration:underline;">دوس هنا فورًا</span>.</p>` : ''}
+      <p style="font-size:12px; color:var(--muted); line-height:1.6; margin:10px 0 0;">الترشيح ده مبني على إجاباتك ومتابعتك في التطبيق — اقتراح يساعدك تختار، مش تشخيص.</p>
+    </div>`;
+}
+
+// ---------- ترتيب المتخصصين حسب مناسبتهم لحالة المستخدم ----------
+let browseSpecialistsFocus = null;
+function specialistFocusScore(s){
+  if(!browseSpecialistsFocus) return 0;
+  const words = SPECIALIST_FOCUS_KEYWORDS[browseSpecialistsFocus] || [];
+  const text = normalizeArabic([s.specialty, s.identityTagline, s.bio].filter(Boolean).join(' '));
+  return words.filter(w => text.includes(normalizeArabic(w))).length;
+}
+
+// ---------- ملف الحالة ----------
+function buildCaseFileText(userNote){
+  const rec = computeSpecialistRecommendation();
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const lines = [];
+  lines.push('📄 ملف حالة — تطبيق «إحياها باستمتاع»');
+  lines.push(`التاريخ: ${new Date().toLocaleDateString('ar-EG')}`);
+  if(auth && (auth.username || auth.email)) lines.push(`الاسم في التطبيق: ${auth.username || auth.email}`);
+  lines.push('');
+  if(!rec){
+    lines.push('لسه مفيش نتيجة «بوصلتك» — الملف هيبقى أدق بعد ما تاخدها.');
+  } else {
+    const j = rec.journal;
+    const dir = rec.prevHealth ? fullReportDirection(rec.overall - compassOverallHealth(getCompassHistory().slice(-2)[0])) : null;
+    lines.push(`▪️ توازن الحياة الكلي: ${rec.overall}%${dir ? ` — ${dir.text}` : ''} (آخر بوصلة: ${new Date(rec.date).toLocaleDateString('ar-EG')})`);
+    lines.push('');
+    lines.push('▪️ الأركان (من الأضعف للأقوى):');
+    Object.keys(rec.health).sort((a,b) => rec.health[a] - rec.health[b]).forEach(k => {
+      const d = rec.prevHealth ? rec.health[k] - rec.prevHealth[k] : 0;
+      lines.push(`  - ${PILLAR_ENTRY_TOOL[k].pillarName}: ${rec.health[k]}%${rec.prevHealth ? (d > 0 ? ` ⬆️ +${d}` : d < 0 ? ` ⬇️ ${d}` : ' ➖') : ''}`);
+    });
+    lines.push('');
+    if(j.days){
+      lines.push(`▪️ المتابعة اليومية (آخر ${arCountWord(j.days,'تسجيلات','تسجيل')}):`);
+      if(j.anxiety !== null) lines.push(`  - متوسط القلق: ${j.anxiety} من 10`);
+      if(j.energy !== null) lines.push(`  - متوسط الطاقة: ${j.energy} من 10`);
+      if(j.sleep !== null) lines.push(`  - متوسط النوم: ${j.sleep} ساعات`);
+      if(j.topMoods.length) lines.push(`  - أكتر مشاعر اتسجلت: ${j.topMoods.join('، ')}`);
+      lines.push('');
+    }
+    if(rec.primary){
+      lines.push(`▪️ ترشيح التطبيق: ${specialistCategoryTitle(rec.primary)}${rec.secondary ? ` (وممكن ${specialistCategoryTitle(rec.secondary)})` : ''}`);
+      rec.reasons.forEach(r => lines.push(`  - ${toThirdPerson(r)}`));
+      lines.push('');
+    }
+  }
+  if(userNote && userNote.trim()){
+    lines.push('▪️ كلمة من صاحب الحالة:');
+    lines.push(userNote.trim());
+    lines.push('');
+  }
+  lines.push('ملحوظة: الأرقام دي من تقييم المستخدم لنفسه داخل التطبيق — مؤشرات تساعد في بداية الجلسة، مش تشخيص.');
+  return lines.join('\n');
+}
+
+function openCaseFile(){
+  renderCaseFile();
+  showScreen('screen-case-file');
+}
+
+function renderCaseFile(){
+  const body = document.getElementById('caseFileBody');
+  const preview = buildCaseFileText('');
+  body.innerHTML = `
+    <div class="card" style="background:var(--sand);">
+      <p style="font-size:13px; color:var(--muted); line-height:1.7; margin:0;">🔒 الملف ده بيتعمل على موبايلك بس، ومش بيتبعت لأي حد غير لما <b>إنت</b> تبعته بإيدك. ومش فيه أي حاجة كتبتها في مرآتي اليومية أو التوبة أو ذنوب الخلوات — أرقام ومؤشرات بس.</p>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">📄 شكل الملف</p>
+      <pre style="white-space:pre-wrap; font-family:inherit; font-size:13.5px; color:var(--text); line-height:1.8; margin:0; direction:rtl;">${preview.replace(/</g,'&lt;')}</pre>
+    </div>
+    <div class="card">
+      <p class="card-title" style="margin-bottom:6px;">✍️ حابب تضيف كلمة للمتخصص؟ (اختياري)</p>
+      <textarea id="caseFileNote" placeholder="مثلاً: بقالي شهرين مش بنام كويس بسبب ضغط الشغل..." style="min-height:70px;"></textarea>
+      <p style="font-size:12px; color:var(--muted); margin:6px 0 0;">الكلمة دي مش بتتحفظ في أي مكان — بتتضاف للملف وقت ما تبعته بس.</p>
+    </div>
+    <button class="btn-primary" onclick="shareCaseFile()">📤 ابعت الملف</button>
+    <button class="btn-ghost" style="margin-top:8px;" onclick="shareCaseFileWhatsApp()">💬 ابعته واتساب</button>
+    <button class="btn-ghost" style="margin-top:8px;" onclick="copyCaseFile()">📋 انسخ الملف</button>
+    <p id="caseFileStatus" style="font-size:13px; color:var(--muted); text-align:center; margin:10px 0 20px;"></p>
+  `;
+  window.scrollTo(0,0);
+}
+function getCaseFileFinalText(){
+  const note = document.getElementById('caseFileNote');
+  const txt = note ? note.value : '';
+  if(txt && checkSafety(txt)){ showSafety(); }
+  return buildCaseFileText(txt);
+}
+async function shareCaseFile(){
+  const text = getCaseFileFinalText();
+  if(navigator.share){
+    try { await navigator.share({ title:'ملف حالتي', text }); return; } catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  copyCaseFile();
+}
+function shareCaseFileWhatsApp(){
+  const text = getCaseFileFinalText();
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+async function copyCaseFile(){
+  const text = getCaseFileFinalText();
+  const status = document.getElementById('caseFileStatus');
+  try {
+    await navigator.clipboard.writeText(text);
+    if(status) status.textContent = '✅ اتنسخ — الصقه في رسالة للمتخصص.';
+  } catch(e){
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); if(status) status.textContent = '✅ اتنسخ — الصقه في رسالة للمتخصص.'; }
+    catch(err){ if(status) status.textContent = 'مقدرتش أنسخ تلقائيًا — استخدم زرار "ابعت الملف".'; }
+    ta.remove();
+  }
 }
 
 function openStatsScreen(){
@@ -13359,6 +13607,7 @@ async function requestSpecialistSession(specialistId, specialistName, sessionLab
       }})
     });
     alert(`تم إرسال طلبك لـ${specialistName}! هيتواصل معاك قريبًا لتأكيد الميعاد.`);
+    if(getCompassHistory().length && confirm('تحب تجهّز «ملف حالتك» عشان تبعته للمتخصص لما يتواصل معاك؟ بيوفّر عليك تعيد الحكاية من الأول.')) openCaseFile();
   }catch(err){
     alert('حصل خطأ، حاول تاني.');
   }
