@@ -3818,16 +3818,18 @@ function renderSettingsSection(){
       <div class="choice-btn" style="text-align:center;" onclick="openMySpecialistSessions()">شوف طلباتك ←</div>
     </div>
 
+    ${isNativeApp() ? '' : `
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">✨ اشتراكك المميز</p>
       <p class="card-sub" style="margin-bottom:10px;">شوف باقات الاشتراك المتاحة والعروض الحالية.</p>
       <div class="choice-btn" style="text-align:center;" onclick="openSubscriptionScreen()">شوف الباقات ←</div>
-    </div>
+    </div>`}
 
     <div class="card">
       <p class="card-title" style="margin-bottom:10px;">ℹ️ عن التطبيق</p>
       <p style="font-size:13px; color:var(--muted); line-height:1.7;">إحياها باستمتاع — تطبيق تنمية نفسية بمنظور قرآني.<br>محتوى الركن الروحاني ومرآة العقل مبني على كتب "مرآة الأنبياء" و"الاختيار الخفي" و"بوصلة التسليم".</p>
       <div class="choice-btn" style="text-align:center; margin-top:12px;" onclick="shareApp('general')">📤 شارك التطبيق مع حد تحبه</div>
+      <div class="choice-btn" style="text-align:center; margin-top:8px;" onclick="openPrivacyPolicy()">🔒 سياسة الخصوصية</div>
     </div>
   `;
 }
@@ -13531,8 +13533,20 @@ async function submitSpecialistApplication(){
   openSettingsScreen();
 }
 
+// ---------- نسخة الأندرويد (Google Play) ----------
+// جوجل بتشترط Google Play Billing لأي اشتراك بيفتح مميزات جوه التطبيق، فالاشتراك اليدوي بيظهر على الويب بس.
+function isNativeApp(){
+  try {
+    if(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) return true;
+  } catch(e){}
+  return /; wv\)/.test(navigator.userAgent || ''); // Android WebView
+}
+const PRIVACY_POLICY_URL = 'https://melshennawy02-ops.github.io/eihyaha-app/privacy.html';
+function openPrivacyPolicy(){ window.open(PRIVACY_POLICY_URL, '_blank'); }
+
 let cachedSubscriptionConfig = null;
 async function openSubscriptionScreen(){
+  if(isNativeApp()){ openSettingsScreen(); return; }
   const wrap = document.getElementById('subscriptionBody');
   wrap.innerHTML = `<p style="font-size:14px; color:var(--muted); text-align:center; margin-top:20px;">جاري التحميل...</p>`;
   showScreen('screen-subscription');
