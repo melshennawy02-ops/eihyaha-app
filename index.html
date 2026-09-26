@@ -2733,6 +2733,7 @@ async function enterApp(){
   } else {
     goHome();
   }
+  if(isProfileIncomplete()) setTimeout(showCompleteProfilePrompt, 800);
 }
 
 const ONBOARDING_SLIDES = [
@@ -2800,6 +2801,68 @@ function finishOnboarding(){
 }
 
 // ---------- مستخدم عادي: تسجيل حساب جديد ببيانات شخصية ----------
+// ---------- بيانات الملف الشخصي: كلها مطلوبة (التقارير والتشخيص بيعتمدوا عليها) ----------
+function validateProfileFields(f){
+  const age = Number(f.age);
+  if(!f.age || !Number.isFinite(age)) return 'اكتب عمرك';
+  if(age < 18) return 'التطبيق مخصّص للبالغين من ١٨ سنة وأكبر';
+  if(age > 100) return 'اكتب عمرك الصحيح';
+  if(!f.gender) return 'اختار النوع';
+  if(!f.maritalStatus) return 'اختار الحالة الاجتماعية';
+  if(!f.livingWith) return 'اختار إنت عايش مع مين';
+  if(!f.employmentType) return 'اختار نوع عملك';
+  return '';
+}
+function isProfileIncomplete(){
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
+  const p = getLocalProfile();
+  if(!auth || !p || !p.email) return false;          // لسه البيانات ماتحمّلتش — مانزعجوش
+  if(p.role && p.role !== 'user') return false;        // المتخصصين ليهم نموذج مختلف
+  return !!validateProfileFields(p);
+}
+function showCompleteProfilePrompt(){
+  if(document.getElementById('completeProfileOverlay')) return;
+  const p = getLocalProfile();
+  const opt = (labels, val) => `<option value="" disabled hidden ${!val ? 'selected' : ''}>اختار...</option>` + Object.entries(labels).map(([k,l]) => `<option value="${k}" ${val === k ? 'selected' : ''}>${l}</option>`).join('');
+  const box = document.createElement('div');
+  box.id = 'completeProfileOverlay';
+  box.style.cssText = 'position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; padding:16px;';
+  box.innerHTML = `
+    <div class="card" style="width:100%; max-width:420px; max-height:90vh; overflow-y:auto; margin:0;">
+      <p class="card-title" style="margin-bottom:6px;">📋 كمّل بياناتك</p>
+      <p style="font-size:13.5px; color:var(--muted); line-height:1.7; margin:0 0 12px;">محتاجين البيانات دي عشان تقاريرك وتشخيص كل ركن يطلعوا مظبوطين ليك. خاصة بيك بس.</p>
+      <label class="flabel">العمر</label>
+      <input type="number" id="cpAge" value="${p.age || ''}" placeholder="العمر" min="18" max="100">
+      <label class="flabel">النوع</label>
+      <select id="cpGender">${opt({ male:'ذكر', female:'أنثى' }, p.gender)}</select>
+      <label class="flabel">الحالة الاجتماعية</label>
+      <select id="cpMarital">${opt(MARITAL_STATUS_LABELS, p.maritalStatus)}</select>
+      <label class="flabel">بتعيش مع مين؟</label>
+      <select id="cpLiving">${opt(LIVING_WITH_LABELS, p.livingWith)}</select>
+      <label class="flabel">نوع عملك</label>
+      <select id="cpEmployment">${opt(EMPLOYMENT_TYPE_LABELS, p.employmentType)}</select>
+      <p id="cpError" style="font-size:13px; color:var(--danger); text-align:center; margin:8px 0 0;"></p>
+      <button class="btn-primary" style="margin-top:10px;" onclick="saveCompleteProfile()">حفظ ومتابعة</button>
+    </div>`;
+  document.body.appendChild(box);
+}
+async function saveCompleteProfile(){
+  const updated = {
+    age: document.getElementById('cpAge').value.trim(),
+    gender: document.getElementById('cpGender').value,
+    maritalStatus: document.getElementById('cpMarital').value,
+    livingWith: document.getElementById('cpLiving').value,
+    employmentType: document.getElementById('cpEmployment').value,
+  };
+  const err = validateProfileFields(updated);
+  if(err){ document.getElementById('cpError').textContent = err; return; }
+  const merged = { ...getLocalProfile(), ...updated };
+  localStorage.setItem('eihyaha_profile', JSON.stringify(merged));
+  firestoreSetDoc('users', getUserId(), merged).catch(() => {});
+  const o = document.getElementById('completeProfileOverlay');
+  if(o) o.remove();
+}
+
 async function doSignUp(){
   const fullName = document.getElementById('authFullName').value.trim();
   const username = document.getElementById('authUsername').value.trim();
@@ -2811,6 +2874,8 @@ async function doSignUp(){
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   if(!fullName || !username || !email || !password){ showAuthError('لازم تملأ الاسم واسم المستخدم والإيميل وكلمة المرور'); return; }
+  const profileError = validateProfileFields({ age, gender, maritalStatus, livingWith, employmentType });
+  if(profileError){ showAuthError(profileError); return; }
   if(!email.includes('@') || !email.includes('.')){ showAuthError('اكتب إيميل صحيح'); return; }
   if(password.length < 6){ showAuthError('كلمة المرور لازم تكون 6 حروف على الأقل'); return; }
 
@@ -2950,26 +3015,26 @@ function renderAuthFields(mode){
       <input type="text" id="authFullName" placeholder="الاسم الكامل">
       <label class="flabel">اسم المستخدم</label>
       <input type="text" id="authUsername" placeholder="مثال: mohamed_2026">
-      <label class="flabel">العمر (اختياري)</label>
-      <input type="number" id="authAge" placeholder="العمر">
-      <label class="flabel">النوع (اختياري)</label>
+      <label class="flabel">العمر</label>
+      <input type="number" id="authAge" placeholder="العمر" min="18" max="100">
+      <label class="flabel">النوع</label>
       <select id="authGender">
-        <option value="">تفضّل عدم التحديد</option>
+        <option value="" disabled selected hidden>اختار...</option>
         <option value="male">ذكر</option>
         <option value="female">أنثى</option>
       </select>
-      <label class="flabel">الحالة الاجتماعية (اختياري)</label>
+      <label class="flabel">الحالة الاجتماعية</label>
       <select id="authMaritalStatus">
-        <option value="">تفضّل عدم التحديد</option>
+        <option value="" disabled selected hidden>اختار...</option>
         <option value="single">أعزب / عزباء</option>
         <option value="engaged">مخطوب / مخطوبة</option>
         <option value="married">متزوج / متزوجة</option>
         <option value="divorced">مطلّق / مطلّقة</option>
         <option value="widowed">أرمل / أرملة</option>
       </select>
-      <label class="flabel">بتعيش مع مين؟ (اختياري)</label>
+      <label class="flabel">بتعيش مع مين؟</label>
       <select id="authLivingWith">
-        <option value="">تفضّل عدم التحديد</option>
+        <option value="" disabled selected hidden>اختار...</option>
         <option value="alone">لوحدي</option>
         <option value="family">مع أهلي (والدين/إخوة)</option>
         <option value="spouse_kids">مع زوجي/زوجتي وأولادي</option>
@@ -2977,15 +3042,16 @@ function renderAuthFields(mode){
         <option value="friends">مع أصدقاء</option>
         <option value="other">وضع مختلف</option>
       </select>
-      <label class="flabel">نوع عملك (اختياري)</label>
+      <label class="flabel">نوع عملك</label>
       <select id="authEmploymentType">
-        <option value="">تفضّل عدم التحديد</option>
+        <option value="" disabled selected hidden>اختار...</option>
         ${Object.entries(EMPLOYMENT_TYPE_LABELS).map(([k,l]) => `<option value="${k}">${l}</option>`).join('')}
       </select>
       <label class="flabel">الإيميل</label>
       <input type="email" id="authEmail" placeholder="name@example.com">
       <label class="flabel">كلمة المرور</label>
       <input type="password" id="authPassword" placeholder="6 حروف على الأقل">
+      <p style="font-size:12px; color:var(--muted); line-height:1.7; margin:10px 0 0;">🔒 كل البيانات دي مطلوبة عشان تقاريرك وتشخيص كل ركن يطلعوا دقيقين ليك — وهي خاصة بيك بس.</p>
     `;
   } else if(mode === 'specialist'){
     wrap.innerHTML = `
@@ -3928,26 +3994,26 @@ async function loadProfileEditForm(){
   card.innerHTML = `
     <p class="card-title" style="margin-bottom:12px;">بياناتك الشخصية</p>
     <label class="flabel">العمر</label>
-    <input type="number" id="editAge" value="${profile.age || ''}" placeholder="العمر">
+    <input type="number" id="editAge" value="${profile.age || ''}" placeholder="العمر" min="18" max="100">
     <label class="flabel">النوع</label>
     <select id="editGender">
-      <option value="" ${!profile.gender ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      <option value="" disabled hidden ${!profile.gender ? 'selected' : ''}>اختار...</option>
       <option value="male" ${profile.gender === 'male' ? 'selected' : ''}>ذكر</option>
       <option value="female" ${profile.gender === 'female' ? 'selected' : ''}>أنثى</option>
     </select>
     <label class="flabel">الحالة الاجتماعية</label>
     <select id="editMaritalStatus">
-      <option value="" ${!profile.maritalStatus ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      <option value="" disabled hidden ${!profile.maritalStatus ? 'selected' : ''}>اختار...</option>
       ${Object.entries(MARITAL_STATUS_LABELS).map(([k,l]) => `<option value="${k}" ${profile.maritalStatus === k ? 'selected' : ''}>${l}</option>`).join('')}
     </select>
     <label class="flabel">بتعيش مع مين؟</label>
     <select id="editLivingWith">
-      <option value="" ${!profile.livingWith ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      <option value="" disabled hidden ${!profile.livingWith ? 'selected' : ''}>اختار...</option>
       ${Object.entries(LIVING_WITH_LABELS).map(([k,l]) => `<option value="${k}" ${profile.livingWith === k ? 'selected' : ''}>${l}</option>`).join('')}
     </select>
     <label class="flabel">نوع عملك</label>
     <select id="editEmploymentType">
-      <option value="" ${!profile.employmentType ? 'selected' : ''}>تفضّل عدم التحديد</option>
+      <option value="" disabled hidden ${!profile.employmentType ? 'selected' : ''}>اختار...</option>
       ${Object.entries(EMPLOYMENT_TYPE_LABELS).map(([k,l]) => `<option value="${k}" ${profile.employmentType === k ? 'selected' : ''}>${l}</option>`).join('')}
     </select>
     <button class="btn-primary" style="margin-top:10px;" onclick="saveProfileEdit()">حفظ بياناتي</button>
@@ -3965,6 +4031,8 @@ async function saveProfileEdit(){
     employmentType: document.getElementById('editEmploymentType').value,
   };
   const status = document.getElementById('profileSaveStatus');
+  const profileError = validateProfileFields(updated);
+  if(profileError){ status.innerHTML = `<p style="font-size:12.5px; color:var(--danger); text-align:center; margin-top:8px;">${profileError}</p>`; return; }
   status.innerHTML = `<p style="font-size:12px; color:var(--muted); text-align:center; margin-top:8px;">جاري الحفظ...</p>`;
 
   // نبعت المستند بالكامل (مش الحقول المعدّلة بس) عشان firestoreSetDoc بيستبدل
