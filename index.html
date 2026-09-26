@@ -13906,13 +13906,38 @@ function importUserData(input){
   reader.readAsText(file);
 }
 async function confirmDeleteCloudAccount(){
-  if(!confirm('هيتم حذف حسابك نهائيًا من السحابة (كل ملخصات تقدمك في كل الأركان) بالإضافة لبياناتك المحلية. الإجراء ده لا يمكن التراجع عنه. متأكد؟')) return;
+  if(!confirm('هيتم حذف حسابك نهائيًا: حساب الدخول، وكل ملخصات تقدمك، ويومياتك، وسجل عباداتك، وطلبات الجلسات — من السحابة ومن الجهاز. الإجراء ده لا يمكن التراجع عنه. متأكد؟')) return;
+  const auth = JSON.parse(localStorage.getItem('eihyaha_auth') || 'null');
   const uid = getUserId();
+  let idToken = null;
+  if(auth && auth.email){
+    // تأكيد الهوية بكلمة السر — شرط لحذف حساب الدخول نفسه
+    const password = prompt('لتأكيد الحذف، اكتب كلمة المرور بتاعة حسابك:');
+    if(password === null) return;
+    const re = await authRequest('signInWithPassword', { email: auth.email, password, returnSecureToken: true });
+    if(re.error){ alert('كلمة المرور غلط أو في مشكلة في النت — ماتمش حذف أي حاجة. حاول تاني.'); return; }
+    idToken = re.data.idToken;
+  }
   if(uid && isLoggedIn()){
-    const collections = ['users','social_summary','family_summary','spiritual_summary','personal_summary','professional_summary','financial_summary','health_summary'];
-    await Promise.all(collections.map(c =>
-      fetch(`${FIRESTORE_BASE}/${c}/${uid}?key=${FIREBASE_API_KEY}`, { method:'DELETE' }).catch(() => {})
-    ));
+    // ١) المستندات اللي الـid بتاعها هو الـuid
+    const byId = ['users','social_summary','family_summary','spiritual_summary','personal_summary','professional_summary','financial_summary','health_summary','specialists'];
+    await Promise.all(byId.map(c => fetch(`${FIRESTORE_BASE}/${c}/${uid}?key=${FIREBASE_API_KEY}`, { method:'DELETE' }).catch(() => {})));
+    // ٢) المستندات اللي فيها الـuid كحقل (يوميات، عبادات، طلبات)
+    const byField = [['journal','uid'],['worship','uid'],['subscription_requests','uid'],['session_requests','userUid']];
+    for(const [col, field] of byField){
+      try{
+        const res = await fetch(`${FIRESTORE_BASE}:runQuery?key=${FIREBASE_API_KEY}`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ structuredQuery: { from:[{ collectionId: col }], where:{ fieldFilter:{ field:{ fieldPath: field }, op:'EQUAL', value:{ stringValue: uid } } } } })
+        });
+        const rows = res.ok ? await res.json() : [];
+        await Promise.all((rows || []).filter(r => r.document).map(r =>
+          fetch(`https://firestore.googleapis.com/v1/${r.document.name}?key=${FIREBASE_API_KEY}`, { method:'DELETE' }).catch(() => {})
+        ));
+      }catch(e){}
+    }
+    // ٣) حساب الدخول نفسه
+    if(idToken) await authRequest('delete', { idToken });
   }
   const keys = [];
   for(let i = 0; i < localStorage.length; i++){
@@ -13920,7 +13945,7 @@ async function confirmDeleteCloudAccount(){
     if(key.startsWith('eihyaha_')) keys.push(key);
   }
   keys.forEach(k => localStorage.removeItem(k));
-  alert('اتمسح حسابك بالكامل من السحابة والجهاز. هيتم إعادة تحميل التطبيق.');
+  alert('اتمسح حسابك وكل بياناتك من السحابة والجهاز. هيتم إعادة تحميل التطبيق.');
   location.reload();
 }
 
