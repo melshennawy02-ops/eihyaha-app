@@ -1197,6 +1197,16 @@
     <div style="padding:0 16px;" id="caseFileBody"></div>
   </div>
 
+  <!-- ===================== SCREEN: LIFT EYES (ارفع عينك) ===================== -->
+  <div class="screen" id="screen-lift-eyes">
+    <div class="topbar">
+      <div class="backbtn" onclick="history.back()">→</div>
+      <h1>👀 ارفع عينك</h1>
+      <div style="width:48px;"></div>
+    </div>
+    <div style="padding:0 16px;" id="liftEyesBody"></div>
+  </div>
+
   <!-- ===================== SCREEN: SETTINGS (الإعدادات) ===================== -->
   <div class="screen" id="screen-settings">
     <div class="topbar">
@@ -3268,6 +3278,8 @@ function renderFullReport(){
 
     ${renderSpecialistRecommendationCard()}
 
+    ${renderFullReportPhoneCard()}
+
     <p class="card-title" style="margin:18px 4px 8px;">الأركان السبعة — من الأضعف للأقوى</p>
     ${rows.map(r => {
       const d = fullReportDirection(r.delta);
@@ -3386,6 +3398,12 @@ function computeSpecialistRecommendation(){
     reasons.push('ومفيش إشارات ضغط نفسي واضحة — فالأنسب حد يساعدك تتحرك، مش علاج');
   }
 
+  const phoneHigh = getPhoneHighPillars();
+  if(phoneHigh.length >= 3){
+    reasons.push(`الموبايل واخد منك بشكل عالي في ${phoneHigh.length} أركان (${phoneHigh.map(name).join('، ')})`);
+    if(!primary){ primary = 'coach'; focus = 'personal'; }
+    else if(primary === 'coach' && moderateAnxiety){ primary = 'therapist'; }
+  }
   const overall = compassOverallHealth(latest);
   return { primary, secondary, focus, reasons, overall, urgentLevel, journal:j, health:h, prevHealth:ph, date:latest.date };
 }
@@ -4023,7 +4041,7 @@ const PILLARS = [
 // كل قيمة هنا = مفاتيح markToolOpened الأساسية لكل ركن (نفس المفاتيح المستخدمة لشارة "ابدأ من هنا")
 const PILLAR_TOOL_KEYS = {
   1: ['spiritual_circle','tasleem_compass','mirror_test','rabbek','asma','prophets','worship','tawba','spiritual_report'],
-  2: ['selfknow','tabiei','ehkily','merat','flash','daftar','report','disorder_guide','trait_guide'],
+  2: ['selfknow','tabiei','ehkily','merat','flash','lift_eyes','daftar','report','disorder_guide','trait_guide'],
   3: ['family_wound','relcheck_3','spouse','children','siblings','extended_family','support_guide','family_report'],
   4: ['circle','relcheck_4','social_skills','rahm','neighbor','coworkers','support_guide','social_report'],
   5: ['field_discovery','professional_circle','first_step','executive_prep','business_prep','boss','owner','freelancer','home_role','transition','growth_plan','ambition','professional_report'],
@@ -4377,6 +4395,7 @@ function startCircleAssessment(){
 }
 function restartCircleAssessment(){
   circleAnswers = [];
+  shuffleInPlace(CIRCLE_QUESTIONS);
   renderCircleQuestion(0);
 }
 function renderCircleQuestion(index){
@@ -4405,6 +4424,7 @@ function answerCircle(qIndex, oIndex){
 function getCircleHistory(){ return JSON.parse(localStorage.getItem('eihyaha_circle_history') || '[]'); }
 function revealCircleResult(){
   markToolCompleted('circle');
+  circleAnswers = splitPhoneAnswers('social', circleAnswers);
   const scores = {};
   circleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = circleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -4706,6 +4726,7 @@ function startCoworkerExchange(){
 }
 function restartCoworkerExchange(){
   coworkerExchangeAnswers = [];
+  shuffleInPlace(COWORKER_EXCHANGE_QUESTIONS);
   coworkerExchangeFreeTexts = [];
   renderCoworkerExchangeQuestion(0);
 }
@@ -4850,6 +4871,7 @@ function startCoworkerBurnout(){
 }
 function restartCoworkerBurnout(){
   coworkerBurnoutAnswers = [];
+  shuffleInPlace(COWORKER_BURNOUT_QUESTIONS);
   coworkerBurnoutFreeTexts = [];
   renderCoworkerBurnoutQuestion(0);
 }
@@ -5101,13 +5123,19 @@ function startProfessionalCircleAssessment(){
     restartProfessionalCircleAssessment();
   }
 }
+let professionalQuestionsRun = null;
+function getProfessionalQuestionsRun(){
+  if(!professionalQuestionsRun) professionalQuestionsRun = shuffleInPlace([...getProfessionalQuestions(professionalFamily), ...PHONE_QUESTIONS.professional]);
+  return professionalQuestionsRun;
+}
 function restartProfessionalCircleAssessment(){
   professionalCircleAnswers = [];
+  professionalQuestionsRun = null;
   renderProfessionalCircleQuestion(0);
 }
 function renderProfessionalCircleQuestion(index){
   const wrap = document.getElementById('professionalCircleBody');
-  const questions = getProfessionalQuestions(professionalFamily);
+  const questions = getProfessionalQuestionsRun();
   if(index >= questions.length){ revealProfessionalCircleResult(); return; }
   const q = questions[index];
   wrap.innerHTML = `
@@ -5120,18 +5148,19 @@ function renderProfessionalCircleQuestion(index){
   `;
 }
 function answerProfessionalCircleFreeTextCB(qIndex, text){
-  const q = getProfessionalQuestions(professionalFamily)[qIndex];
+  const q = getProfessionalQuestionsRun()[qIndex];
   professionalCircleAnswers.push({ circle:q.circle, score:1, freeText: text || null });
   renderProfessionalCircleQuestion(qIndex + 1);
 }
 function answerProfessionalCircle(qIndex, oIndex){
-  const q = getProfessionalQuestions(professionalFamily)[qIndex];
+  const q = getProfessionalQuestionsRun()[qIndex];
   professionalCircleAnswers.push({ circle:q.circle, score:q.options[oIndex].score });
   renderProfessionalCircleQuestion(qIndex + 1);
 }
 function getProfessionalCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_professional_circle_assessment') || 'null'); }
 function revealProfessionalCircleResult(){
   markToolCompleted('professional_circle');
+  professionalCircleAnswers = splitPhoneAnswers('professional', professionalCircleAnswers);
   const scores = {};
   professionalCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = professionalCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -5499,6 +5528,7 @@ function startFieldDiscovery(){
 }
 function restartFieldDiscovery(){
   fieldDiscoveryAnswers = [];
+  shuffleInPlace(FIELD_DISCOVERY_QUESTIONS);
   renderFieldDiscoveryQuestion(0);
 }
 function renderFieldDiscoveryQuestion(index){
@@ -5955,6 +5985,7 @@ function startFinancialCircleAssessment(){
 }
 function restartFinancialCircleAssessment(){
   financialCircleAnswers = [];
+  shuffleInPlace(FINANCIAL_CIRCLE_QUESTIONS);
   renderFinancialCircleQuestion(0);
 }
 function renderFinancialCircleQuestion(index){
@@ -6439,6 +6470,7 @@ function startHealthCircleAssessment(){
 }
 function restartHealthCircleAssessment(){
   healthCircleAnswers = [];
+  shuffleInPlace(HEALTH_CIRCLE_QUESTIONS);
   renderHealthCircleQuestion(0);
 }
 function renderHealthCircleQuestion(index){
@@ -6467,6 +6499,7 @@ function answerHealthCircle(qIndex, oIndex){
 function getHealthCircleAssessment(){ return JSON.parse(localStorage.getItem('eihyaha_health_circle_assessment') || 'null'); }
 function revealHealthCircleResult(){
   markToolCompleted('health_circle');
+  healthCircleAnswers = splitPhoneAnswers('health', healthCircleAnswers);
   const scores = {};
   healthCircleAnswers.forEach(a => { scores[a.circle] = (scores[a.circle]||0) + a.score; });
   const freeText = healthCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -7157,6 +7190,7 @@ function startFamilyCircleAssessment(){
 }
 function restartFamilyCircleAssessment(){
   familyCircleAnswers = [];
+  shuffleInPlace(FAMILY_CIRCLE_QUESTIONS);
   renderFamilyCircleQuestion(0);
 }
 function renderFamilyCircleQuestion(index){
@@ -7185,6 +7219,7 @@ function answerFamilyCircle(qIndex, oIndex){
 function getFamilyCircleHistory(){ return JSON.parse(localStorage.getItem('eihyaha_family_circle_history') || '[]'); }
 function revealFamilyCircleResult(){
   markToolCompleted('family_circle');
+  familyCircleAnswers = splitPhoneAnswers('family', familyCircleAnswers);
   const scores = {};
   familyCircleAnswers.forEach(a => { if(a.score !== null) scores[a.circle] = a.score; });
   const freeText = familyCircleAnswers.filter(a => a.freeText).map(a => a.freeText).join(' ');
@@ -7768,6 +7803,7 @@ function goToPillar(id){
       { key:"tabiei", onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
       { key:"ehkily", onclick:"startEhkily()", icon:"💬", title:"طبيبك النفسي السري", sub:"احكيلي — مساحة آمنة ومجهولة", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
       { key:"flash", onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
+      { key:"lift_eyes", onclick:"openLiftEyesScreen()", icon:"👀", title:"ارفع عينك", sub:"١٠٠ حاجة ترجّعلك وقتك من الموبايل", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,35,30,.70)" },
       { key:"daftar", onclick:"openDaftarScreen()", icon:"📓", title:"مرآتي اليومية", sub:"تتبع مزاجك وطاقتك يوميًا", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(25,20,15,.68)" },
       { key:"report", onclick:"startReport()", icon:"📋", title:"جهزني للدكتور", sub:"تقرير مبسط قبل زيارة المتخصص", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
     ];
@@ -8040,6 +8076,7 @@ let whoIsAllahAnswers = [];
 
 function renderWhoIsAllahQuiz(){
   whoIsAllahAnswers = [];
+  shuffleInPlace(WHO_IS_ALLAH_QUESTIONS);
   const wrap = document.getElementById('whoIsAllahQuiz');
   document.getElementById('whoIsAllahContent').style.display = 'none';
   document.getElementById('whoIsAllahContent').innerHTML = '';
@@ -8319,6 +8356,7 @@ function startSpiritualCircleAssessment(){
 }
 function restartSpiritualCircleAssessment(){
   spiritualCircleAnswers = [];
+  shuffleInPlace(SPIRITUAL_CIRCLE_QUESTIONS);
   renderSpiritualCircleQuestion(0);
 }
 function renderSpiritualCircleQuestion(index){
@@ -8419,6 +8457,7 @@ function startTasleemCompass(){
 }
 function restartTasleemCompass(){
   tasleemCompassAnswers = [];
+  shuffleInPlace(TASLEEM_COMPASS_QUESTIONS);
   renderTasleemCompassQuestion(0);
 }
 function renderTasleemCompassQuestion(index){
@@ -9065,10 +9104,10 @@ function renderMirrorTestQuestions(){
   const wrap = document.getElementById('mirrorTestBody');
   wrap.innerHTML = `
     <p style="font-size:13px; color:var(--muted); line-height:1.8; margin:14px 0;">حط ✔ قدام أي سؤال حسّيت إنه بيتكلم عنك فعلًا، من غير ما تفكر كتير — أول إحساس بيجيلك هو الأصح.</p>
-    ${MIRROR_TEST_QUESTIONS.map((q,i) => `
+    ${shuffleInPlace(MIRROR_TEST_QUESTIONS.map((q,i) => ({q,i}))).map(({q,i},n) => `
       <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #EDE8D8; cursor:pointer;" onclick="toggleMirrorCheck(${i})">
         <div id="mirrorCheck_${i}" style="width:24px; height:24px; border-radius:6px; border:2px solid var(--gold); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; margin-top:2px;"></div>
-        <p style="font-size:14px; margin:0; line-height:1.6;">${i+1}. ${q}</p>
+        <p style="font-size:14px; margin:0; line-height:1.6;">${n+1}. ${q}</p>
       </div>
     `).join('')}
     <button class="btn-primary" onclick="revealMirrorTestResult()">اعرف مرآتك ←</button>
@@ -9794,6 +9833,7 @@ let selfKnowAnswers = [];
 
 function renderSelfKnowQuiz(){
   selfKnowAnswers = [];
+  shuffleInPlace(SELF_KNOW_QUESTIONS);
   document.getElementById('selfKnowContent').style.display = 'none';
   document.getElementById('selfKnowContent').innerHTML = '';
   renderSelfKnowQuestion(0);
@@ -9822,6 +9862,9 @@ const SELF_KNOW_INTRO_MSGS = {
 };
 
 function revealSelfKnow(){
+  const phoneTags = selfKnowAnswers.filter(t => typeof t === 'string' && t.startsWith('phone:'));
+  if(phoneTags.length) savePhoneImpact('personal', phoneTags.reduce((sum,t) => sum + Number(t.split(':')[1] || 0), 0), phoneTags.length * 2);
+  selfKnowAnswers = selfKnowAnswers.filter(t => !(typeof t === 'string' && t.startsWith('phone:')));
   const counts = { clear:0, vague:0, lost:0 };
   selfKnowAnswers.forEach(t => counts[t] = (counts[t]||0) + 1);
   let dominant = 'vague', max = -1;
@@ -9965,6 +10008,7 @@ let mbtiAnswers = [];
 function startMbtiTest(){
   markToolOpened('mbti');
   mbtiAnswers = [];
+  shuffleInPlace(MBTI_QUESTIONS);
   renderMbtiQuestion(0);
 }
 function renderMbtiQuestion(index){
@@ -9975,8 +10019,7 @@ function renderMbtiQuestion(index){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:0 0 6px;">سؤال ${index+1} من ${MBTI_QUESTIONS.length} — نمط شخصيتك بالتفصيل</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${q.q}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      <div class="choice-btn" style="margin:0; text-align:right;" onclick="answerMbti(${index}, 'a')">${q.a.label}</div>
-      <div class="choice-btn" style="margin:0; text-align:right;" onclick="answerMbti(${index}, 'b')">${q.b.label}</div>
+      ${(Math.random() < 0.5 ? ['a','b'] : ['b','a']).map(k => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerMbti(${index}, '${k}')">${q[k].label}</div>`).join('')}
     </div>
   `;
 }
@@ -10476,6 +10519,7 @@ const WOUND_CONTENT = {
 let woundAnswers = [];
 function startWoundQuiz(){
   woundAnswers = [];
+  shuffleInPlace(WOUND_QUESTIONS);
   renderWoundQuestion(0);
 }
 function renderWoundQuestion(index){
@@ -10672,6 +10716,7 @@ function startDarkTriadTool(){
 function beginDarkTriadQuiz(){
   darkTriadPersonName = document.getElementById('darkTriadName').value.trim();
   darkTriadIndex = 0; darkTriadScore = 0; darkTriadFreeTexts = [];
+  shuffleInPlace(DARK_TRIAD_QUESTIONS);
   renderDarkTriadQuestion();
 }
 function renderDarkTriadQuestion(){
@@ -10681,7 +10726,7 @@ function renderDarkTriadQuestion(){
     <p style="font-size:11px; color:var(--gold); font-weight:700; margin:14px 0 6px;">سؤال ${darkTriadIndex+1} من ${DARK_TRIAD_QUESTIONS.length}</p>
     <p style="font-size:14px; font-weight:700; margin:0 0 12px; line-height:1.6;">${DARK_TRIAD_QUESTIONS[darkTriadIndex]}</p>
     <div style="display:flex; flex-direction:column; gap:8px;">
-      ${DARK_TRIAD_OPTIONS.map((o,i) => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerDarkTriad(${i})">${o.label}</div>`).join('')}
+      ${shuffledOptionIndices(DARK_TRIAD_OPTIONS).map(i => `<div class="choice-btn" style="margin:0; text-align:right;" onclick="answerDarkTriad(${i})">${DARK_TRIAD_OPTIONS[i].label}</div>`).join('')}
       ${freeTextOptionHtml('relCheckBody', 'answerDarkTriadFreeTextCB', 0)}
     </div>
   `;
@@ -11174,6 +11219,481 @@ function openJourneyScreen(){
 // ============================================================
 // بوصلتك الأولى — اختبار مدمج: مرحلتك في الرحلة النفسية + أضعف ركن محتاج شغل
 // ============================================================
+// ===================== 👀 ارفع عينك — أثر الموبايل على الأركان + ١٠٠ نشاط بدل الشاشة =====================
+// أسئلة الموبايل بتدخل جوه اختبار كل ركن (دايرة 'phone')، وبتتشال من حسابات الدواير الأصلية قبل الحفظ
+// عشان «أضعف دايرة» في كل ركن تفضل محسوبة زي ما هي. نتيجة الموبايل بتتحفظ لوحدها في PHONE_IMPACT_KEY.
+
+const PHONE_PILLARS = ['personal','family','social','professional','health'];
+const PHONE_IMPACT_KEY = 'eihyaha_phone_impact';
+const LIFT_EYES_LOG_KEY = 'eihyaha_lift_eyes_log';
+
+const PHONE_QUESTIONS = {
+  personal: [
+    { circle:'phone', q:"أول حاجة بتعملها لما تصحى من النوم؟", options:[
+      { label:"بقوم أبدأ يومي، والموبايل بعدين", score:0 },
+      { label:"ببص بصة سريعة على الإشعارات", score:1 },
+      { label:"بفضل ماسك الموبايل في السرير فترة", score:2 },
+    ]},
+    { circle:'phone', q:"لما تحس بملل أو ضيق أو توتر، بتعمل إيه غالبًا؟", options:[
+      { label:"بواجه اللي حاسس بيه، أو بعمل حاجة تريّحني فعلًا", score:0 },
+      { label:"أحيانًا بهرب للموبايل", score:1 },
+      { label:"على طول بمسك الموبايل وأقلّب من غير هدف", score:2 },
+    ]},
+  ],
+  family: [
+    { circle:'phone', q:"وانت قاعد مع أهل بيتك، الموبايل بيبقى فين غالبًا؟", options:[
+      { label:"بعيد عني، وقتهم ليهم", score:0 },
+      { label:"جنبي، وببص فيه من وقت للتاني", score:1 },
+      { label:"في إيدي أغلب الوقت", score:2 },
+    ]},
+    { circle:'phone', q:"حد من أهل بيتك (شريك حياتك، أولادك، أهلك) اشتكى إن الموبايل واخدك منهم؟", options:[
+      { label:"لأ خالص", score:0 },
+      { label:"حصلت مرة أو اتنين", score:1 },
+      { label:"بيتقالي كتير", score:2 },
+    ]},
+  ],
+  social: [
+    { circle:'phone', q:"آخر مرة قعدت مع صحابك أو قرايبك ومحدش فيكم بص في موبايله كتير؟", options:[
+      { label:"قريب، وده العادي عندنا", score:0 },
+      { label:"مش فاكر بالظبط", score:1 },
+      { label:"صعب، الموبايلات دايمًا في الإيد", score:2 },
+    ]},
+    { circle:'phone', q:"تواصلك مع الناس أغلبه بيبقى إزاي؟", options:[
+      { label:"مقابلات ومكالمات حقيقية", score:0 },
+      { label:"نص ونص", score:1 },
+      { label:"رسايل ولايكات وتعليقات أغلب الوقت", score:2 },
+    ]},
+  ],
+  professional: [
+    { circle:'phone', q:"وانت بتشتغل أو بتذاكر حاجة مهمة، بتبص على الموبايل قد إيه؟", options:[
+      { label:"بقفله أو ببعده لحد ما أخلّص", score:0 },
+      { label:"كل شوية ببص بصة", score:1 },
+      { label:"بشتغل والموبايل مفتوح قدامي على طول", score:2 },
+    ]},
+    { circle:'phone', q:"بتقول «هبص بصة سريعة» وتلاقي نص ساعة أو أكتر راحت؟", options:[
+      { label:"نادرًا", score:0 },
+      { label:"أحيانًا", score:1 },
+      { label:"تقريبًا كل يوم", score:2 },
+    ]},
+  ],
+  health: [
+    { circle:'phone', q:"آخر حاجة بتعملها قبل ما تنام؟", options:[
+      { label:"بسيب الموبايل قبلها بفترة", score:0 },
+      { label:"ببص فيه شوية وأنام", score:1 },
+      { label:"بنام والموبايل في إيدي، وساعات بسهر عليه", score:2 },
+    ]},
+    { circle:'phone', q:"ساعات الشاشة في يومك تقريبًا، غير الشغل؟ (تقدر تشوفها من «الرفاهية الرقمية» في إعدادات موبايلك)", options:[
+      { label:"أقل من ٣ ساعات", score:0 },
+      { label:"من ٣ لـ ٦ ساعات", score:1 },
+      { label:"أكتر من ٦ ساعات", score:2 },
+    ]},
+  ],
+};
+
+// المشكلة اللي بتظهر في نتيجة كل ركن لو الموبايل واخد منه
+const PHONE_PILLAR_PROBLEMS = {
+  personal: { title:'الموبايل بقى مهربك',
+    text:'لما الملل أو الضيق يبقى أول طريقه للموبايل، المشاعر مابتتحلّش — بتتأجّل. والتقليب في حياة الناس بيفتح باب المقارنة، فيقل رضاك عن نفسك من غير ما تاخد بالك.' },
+  family: { title:'حاضر بجسمك، غايب بعقلك',
+    text:'الموبايل بياخد من وقتك مع أهل بيتك حتى وانت قاعد وسطهم. شريك حياتك بيحس بالبعد ده، وأولادك بيتعلموا من اللي بيشوفوه منك أكتر من اللي بيسمعوه.' },
+  social: { title:'علاقات كتير.. وقُرب قليل',
+    text:'الرسايل واللايكات بتدّي إحساس إنك متواصل، بس القُرب الحقيقي بيتبني في القعدة والمكالمة والموقف. ولما الموبايلات تبقى على الترابيزة، القعدة نفسها بتبقى أقل عمق.' },
+  professional: { title:'مشغول طول اليوم.. وإنجاز قليل',
+    text:'كل مرة بتسيب اللي في إيدك عشان إشعار، تركيزك بياخد وقت عشان يرجع لنفس المستوى. فاليوم بيخلص وانت حاسس إنك اشتغلت كتير، والإنجاز الحقيقي أقل.' },
+  health: { title:'الموبايل بيسرق من نومك وجسمك',
+    text:'الشاشة قبل النوم بتأخّر نومك وبتقلل راحته، والقعدة الطويلة قدامها بتقلل حركتك وبتتعب عينك ورقبتك. والنوم الأقل بينعكس على مزاجك وطاقتك في اليوم اللي بعده.' },
+};
+
+// تصنيفات بنك الأنشطة — كل تصنيف مربوط بركن
+const LIFT_EYES_CATEGORIES = [
+  { key:'mind',    icon:'🧠', title:'عقلك',          pillar:'personal' },
+  { key:'calm',    icon:'☕', title:'هدوءك',          pillar:'personal' },
+  { key:'body',    icon:'🏃', title:'جسمك',          pillar:'health' },
+  { key:'home',    icon:'🏠', title:'بيتك ومكانك',    pillar:'health' },
+  { key:'family',  icon:'👨‍👩‍👧', title:'أهل بيتك',      pillar:'family' },
+  { key:'people',  icon:'🤝', title:'ناسك',          pillar:'social' },
+  { key:'work',    icon:'💼', title:'شغلك',          pillar:'professional' },
+];
+
+// الأنشطة (من ملف «١٠٠ نشاط بدون هاتف») — c: التصنيف، m: الوقت التقريبي بالدقايق
+const LIFT_EYES_ACTIVITIES = [
+  // 🧠 عقلك
+  { id:1,  c:'mind', m:30, t:'اقرأ في كتاب ورقي' },
+  { id:2,  c:'mind', m:15, t:'اكتب أفكارك أو أهدافك في نوتة' },
+  { id:3,  c:'mind', m:20, t:'حل كلمات متقاطعة أو سودوكو' },
+  { id:4,  c:'mind', m:30, t:'اتعلّم مهارة جديدة من كتاب أو كراسة' },
+  { id:7,  c:'mind', m:30, t:'العب شطرنج أو أي لعبة تفكير' },
+  { id:6,  c:'mind', m:20, t:'ارسم خريطة لأهدافك للشهر الجاي' },
+  { id:40, c:'mind', m:15, t:'اكتب رسالة لنفسك تقراها بعد سنة' },
+  { id:41, c:'mind', m:10, t:'اكتب قائمة بالحاجات اللي ممتن لوجودها في حياتك' },
+  { id:53, c:'mind', m:10, t:'اكتب أسماء ١٠ كتب نفسك تقراها' },
+  { id:54, c:'mind', m:10, t:'اعمل قائمة بالأفلام اللي عايز تشوفها بعدين' },
+  { id:69, c:'mind', m:20, t:'حل لغز أو أحجية ورقية' },
+  { id:70, c:'mind', m:20, t:'اكتب قصة قصيرة في صفحة واحدة' },
+  { id:71, c:'mind', m:10, t:'اكتب خاطرة' },
+  { id:72, c:'mind', m:15, t:'اكتب أهدافك الشخصية' },
+  { id:73, c:'mind', m:10, t:'اكتب الحاجات اللي عايز تبطّلها' },
+  { id:74, c:'mind', m:10, t:'اكتب الحاجات اللي عايز تبدأها' },
+  { id:94, c:'mind', m:20, t:'ارسم بالقلم حتى لو مش محترف' },
+  { id:95, c:'mind', m:20, t:'لوّن في كتاب تلوين' },
+  { id:96, c:'mind', m:10, t:'اعمل قائمة بالحاجات اللي بتثير فضولك' },
+  { id:97, c:'mind', m:30, t:'اختار موضوع واقرا عنه من كتاب' },
+  { id:98, c:'mind', m:20, t:'اتعلّم كلمات جديدة في لغة تانية من كتاب' },
+  { id:99, c:'mind', m:15, t:'درّب خطّك وحسّن كتابتك بإيدك' },
+  { id:100,c:'mind', m:10, t:'اكتب يومياتك ١٠ دقايق' },
+  // ☕ هدوءك
+  { id:15, c:'calm', m:15, t:'اعمل مشروب بتحبه واستمتع بيه من غير شاشة' },
+  { id:16, c:'calm', m:15, t:'اقعد في البلكونة' },
+  { id:17, c:'calm', m:20, t:'اسمع قرآن أو حاجة بتحبها من جهاز غير الموبايل' },
+  { id:18, c:'calm', m:45, t:'اطبخ وجرّب وصفة جديدة' },
+  { id:19, c:'calm', m:15, t:'اهتم بالنباتات' },
+  { id:46, c:'calm', m:15, t:'جرّب وصفة ساندويتش جديدة' },
+  { id:47, c:'calm', m:20, t:'حضّر لنفسك فطار حلو' },
+  { id:84, c:'calm', m:15, t:'ازرع بذرة أو نبتة' },
+  { id:85, c:'calm', m:5,  t:'اسقي النباتات' },
+  { id:86, c:'calm', m:15, t:'أعد ترتيب النباتات في البيت' },
+  { id:87, c:'calm', m:15, t:'اتأمّل في الطبيعة' },
+  { id:88, c:'calm', m:20, t:'اخرج اتفرّج على الغروب' },
+  { id:89, c:'calm', m:20, t:'اتفرّج على الشروق' },
+  { id:93, c:'calm', m:30, t:'صوّر بكاميرا عادية لو عندك، من غير الموبايل' },
+  // 🏃 جسمك
+  { id:8,  c:'body', m:45, t:'امشي من نص ساعة لساعة' },
+  { id:9,  c:'body', m:20, t:'اعمل تمارين في البيت' },
+  { id:13, c:'body', m:30, t:'اركب عجلة لو متاحة' },
+  { id:14, c:'body', m:10, t:'اعمل تمارين إطالة واسترخاء' },
+  { id:20, c:'body', m:20, t:'خد دُش طويل واسترخى بعده' },
+  { id:49, c:'body', m:5,  t:'اشرب كوباية مية واقعد بهدوء ٥ دقايق' },
+  { id:50, c:'body', m:5,  t:'اتنفّس ببطء كام دقيقة' },
+  { id:51, c:'body', m:10, t:'افرد جسمك وريّح عينك من غير ما تنام' },
+  { id:90, c:'body', m:30, t:'امشي في شارع هادي' },
+  { id:92, c:'body', m:45, t:'استكشف حي قريب منك مشي' },
+  // 🏠 بيتك ومكانك
+  { id:10, c:'home', m:20, t:'رتّب ونظّم مكانك' },
+  { id:11, c:'home', m:30, t:'اغسل ونضّف العربية' },
+  { id:12, c:'home', m:30, t:'انزل اشتري حاجة بسيطة بنفسك بدل ما تطلبها أونلاين' },
+  { id:42, c:'home', m:30, t:'نظّم دولاب هدومك' },
+  { id:43, c:'home', m:20, t:'رتّب مكتبك وشيل الحاجات اللي مش بتستخدمها' },
+  { id:44, c:'home', m:20, t:'نضّف الأدراج القديمة' },
+  { id:45, c:'home', m:30, t:'أعد ترتيب أوضة النوم' },
+  { id:55, c:'home', m:10, t:'جهّز هدومك لبكرة' },
+  { id:56, c:'home', m:15, t:'نضّف الجزم' },
+  { id:57, c:'home', m:20, t:'رتّب العربية من جوه' },
+  { id:59, c:'home', m:15, t:'اغسل الكوبايات والأطباق المتراكمة' },
+  { id:79, c:'home', m:30, t:'اختار مهمة واحدة وخلّصها للآخر' },
+  { id:80, c:'home', m:20, t:'اتعلّم عُقدة أو مهارة يدوية بسيطة' },
+  { id:81, c:'home', m:30, t:'صلّح أو ركّب حاجة بسيطة في البيت' },
+  { id:82, c:'home', m:20, t:'اهتم بالعفش' },
+  { id:83, c:'home', m:20, t:'اهتم بهدومك وجزمك' },
+  // 👨‍👩‍👧 أهل بيتك
+  { id:21, c:'family', m:30, t:'العب مع أولادك مكعبات أو ألعاب تركيب' },
+  { id:22, c:'family', m:30, t:'ارسموا ولوّنوا مع بعض' },
+  { id:23, c:'family', m:30, t:'العب كورة مع أولادك' },
+  { id:24, c:'family', m:15, t:'اقرا قصة لأولادك' },
+  { id:25, c:'family', m:60, t:'خروجة بسيطة للجنينة مع العيلة' },
+  { id:26, c:'family', m:30, t:'ابنوا بيت بالمخدات والبطاطين' },
+  { id:27, c:'family', m:20, t:'لعبة «دوّر على الحاجة» في البيت' },
+  { id:48, c:'family', m:30, t:'حضّر وجبة لحد بتحبه' },
+  { id:65, c:'family', m:30, t:'العبوا لعبة ورق مع بعض' },
+  { id:101,c:'family', m:20, t:'اقعد مع شريك حياتك من غير موبايلات، واسأله عن يومه بجد' },
+  // 🤝 ناسك
+  { id:39, c:'people', m:30, t:'اقعد في مكان مفتوح واتأمّل الناس والحياة حواليك' },
+  { id:60, c:'people', m:30, t:'اشتري كتاب من مكتبة قريبة' },
+  { id:61, c:'people', m:60, t:'زور مكتبة عامة' },
+  { id:62, c:'people', m:45, t:'اقعد في كافيه واقرا كتاب ورقي' },
+  { id:63, c:'people', m:60, t:'زور حد من عيلتك' },
+  { id:64, c:'people', m:15, t:'كلّم حد بتحبه، وبعدها حط الموبايل بعيد' },
+  { id:66, c:'people', m:30, t:'العب دومينو مع حد' },
+  { id:67, c:'people', m:30, t:'العب طاولة مع حد' },
+  { id:68, c:'people', m:30, t:'العب كوتشينة مع صحابك' },
+  { id:91, c:'people', m:60, t:'زور مكان جديد قريب منك' },
+  // 💼 شغلك
+  { id:28, c:'work', m:20, t:'اكتب ١٠ أفكار تزوّد دخلك من شغلك' },
+  { id:29, c:'work', m:20, t:'اكتب أهم ٣ مشاكل في شغلك وحلولها' },
+  { id:30, c:'work', m:20, t:'ارسم الهيكل الإداري لشغلك على ورقة' },
+  { id:31, c:'work', m:20, t:'راجع مصروفاتك وأرباحك على الورق' },
+  { id:32, c:'work', m:15, t:'اكتب أفكار محتوى من غير ما تفتح السوشيال ميديا' },
+  { id:33, c:'work', m:20, t:'خطّط لأسبوعك الجاي' },
+  { id:34, c:'work', m:30, t:'اقرا في الإدارة أو التسويق من كتاب ورقي' },
+  { id:52, c:'work', m:20, t:'اكتب ٢٠ فكرة لمشروع جديد' },
+  { id:5,  c:'work', m:15, t:'اكتب أفكار لمشاريعك' },
+  { id:75, c:'work', m:10, t:'اكتب خطة صباحية بسيطة' },
+  { id:76, c:'work', m:10, t:'اكتب خطة مسائية بسيطة' },
+  { id:77, c:'work', m:15, t:'راجع إنجازات الأسبوع على الورق' },
+  { id:78, c:'work', m:10, t:'اعمل قائمة بالمهام المتأجّلة' },
+];
+
+// تحدي ساعة بلا موبايل (من الملف)
+const LIFT_EYES_HOUR_CHALLENGE = [
+  { m:10, t:'ترتيب المكان' },
+  { m:20, t:'مشي' },
+  { m:20, t:'قراءة' },
+  { m:10, t:'كتابة أفكارك' },
+];
+
+// ---------- مساعدات عامة ----------
+function shuffleInPlace(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function getPhoneImpact(){
+  try { return JSON.parse(localStorage.getItem(PHONE_IMPACT_KEY) || '{}'); } catch(e){ return {}; }
+}
+function savePhoneImpact(pillar, score, max){
+  const all = getPhoneImpact();
+  all[pillar] = { score, max, date:new Date().toISOString() };
+  try { localStorage.setItem(PHONE_IMPACT_KEY, JSON.stringify(all)); } catch(e){}
+}
+// بتاخد إجابات الاختبار، تحفظ نتيجة الموبايل، وترجّع باقي الإجابات من غيرها
+function splitPhoneAnswers(pillar, answers){
+  const phone = answers.filter(a => a && a.circle === 'phone');
+  if(phone.length){
+    const score = phone.reduce((s,a) => s + (Number(a.score) || 0), 0);
+    savePhoneImpact(pillar, score, phone.length * 2);
+  }
+  return answers.filter(a => !(a && a.circle === 'phone'));
+}
+function phoneImpactPct(entry){ return entry && entry.max ? Math.round(entry.score / entry.max * 100) : null; }
+function phoneLevel(pct){
+  if(pct === null) return null;
+  if(pct >= 75) return { key:'high', label:'عالي', icon:'🔴' };
+  if(pct >= 40) return { key:'mid', label:'متوسط', icon:'🟡' };
+  return { key:'low', label:'قليل', icon:'🟢' };
+}
+function phonePillarName(p){ return PILLAR_ENTRY_TOOL[p] ? PILLAR_ENTRY_TOOL[p].pillarName : p; }
+
+function liftEyesActivitiesForPillar(pillar){
+  const cats = LIFT_EYES_CATEGORIES.filter(c => c.pillar === pillar).map(c => c.key);
+  return LIFT_EYES_ACTIVITIES.filter(a => cats.includes(a.c));
+}
+function pickRandom(arr, n){ return shuffleInPlace([...arr]).slice(0, n); }
+
+// ---------- كارت أثر الموبايل (بيظهر في نتيجة كل ركن وتقريره) ----------
+function renderPhoneImpactCard(pillar){
+  const entry = getPhoneImpact()[pillar];
+  if(!entry) return '';
+  const pct = phoneImpactPct(entry);
+  const lvl = phoneLevel(pct);
+  if(lvl.key === 'low'){
+    return `
+      <div class="card" style="margin-top:14px;">
+        <p class="card-title" style="margin-bottom:6px;">👀 الموبايل والركن ده</p>
+        <p style="font-size:14px; color:var(--text); line-height:1.8; margin:0 0 8px;">🟢 الموبايل مش واخد كتير من الركن ده عندك — حافظ على ده 👌</p>
+        <button class="btn-ghost" style="margin:0;" onclick="openLiftEyesScreen('${pillar}')">👀 ارفع عينك: أنشطة بدل الموبايل</button>
+      </div>`;
+  }
+  const prob = PHONE_PILLAR_PROBLEMS[pillar];
+  const picks = pickRandom(liftEyesActivitiesForPillar(pillar), 3);
+  return `
+    <div class="card" style="margin-top:14px; border:2px solid var(--gold);">
+      <p style="font-size:12.5px; color:var(--muted); margin:0;">👀 أثر الموبايل على الركن ده: <b>${lvl.icon} ${lvl.label}</b></p>
+      <p style="font-size:17px; font-weight:800; color:var(--text); margin:6px 0;">📱 «${prob.title}»</p>
+      <p style="font-size:14.5px; color:var(--text); line-height:1.85; margin:0 0 10px;">${prob.text}</p>
+      <p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">جرّب النهاردة بدل الموبايل:</p>
+      ${picks.map(a => `<p style="font-size:14px; color:var(--text); line-height:1.7; margin:0 0 4px;">• ${a.t} <span style="color:var(--muted); font-size:12px;">(${a.m} دقيقة)</span></p>`).join('')}
+      <button class="btn-primary" style="margin-top:10px;" onclick="openLiftEyesScreen('${pillar}')">👀 ارفع عينك — كل أنشطة ${phonePillarName(pillar)}</button>
+    </div>`;
+}
+function appendPhoneCardTo(containerId, pillar, prepend){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const html = renderPhoneImpactCard(pillar);
+  if(!html) return;
+  const old = el.querySelector('[data-phone-card]');
+  if(old) old.remove();
+  const box = document.createElement('div');
+  box.setAttribute('data-phone-card', '1');
+  box.innerHTML = html;
+  if(prepend) el.prepend(box); else el.appendChild(box);
+}
+
+// ---------- سجل الأنشطة اللي اتعملت ----------
+function getLiftEyesLog(){
+  try { return JSON.parse(localStorage.getItem(LIFT_EYES_LOG_KEY) || '[]'); } catch(e){ return []; }
+}
+function logLiftEyesActivity(id, minutes, label){
+  const log = getLiftEyesLog();
+  log.unshift({ id, m:minutes, t:label, date:new Date().toISOString() });
+  try { localStorage.setItem(LIFT_EYES_LOG_KEY, JSON.stringify(log.slice(0, 500))); } catch(e){}
+}
+function liftEyesMinutesSince(days){
+  const since = Date.now() - days * 86400000;
+  return getLiftEyesLog().filter(x => new Date(x.date).getTime() >= since).reduce((s,x) => s + (x.m || 0), 0);
+}
+function formatReclaimed(min){
+  if(min < 60) return `${min} دقيقة`;
+  const h = Math.floor(min / 60), r = min % 60;
+  return `${h} ساعة${r ? ` و${r} دقيقة` : ''}`;
+}
+
+// ---------- شاشة «ارفع عينك» ----------
+let liftEyesFilter = 'all';
+function openLiftEyesScreen(pillar){
+  if(typeof markToolOpened === 'function') markToolOpened('lift_eyes');
+  liftEyesFilter = pillar && PHONE_PILLARS.includes(pillar) ? pillar : 'all';
+  renderLiftEyes();
+  showScreen('screen-lift-eyes');
+}
+function weakestPhonePillar(){
+  const imp = getPhoneImpact();
+  const ranked = PHONE_PILLARS.filter(p => imp[p]).sort((a,b) => phoneImpactPct(imp[b]) - phoneImpactPct(imp[a]));
+  return ranked.length && phoneImpactPct(imp[ranked[0]]) >= 40 ? ranked[0] : null;
+}
+function renderLiftEyes(){
+  const body = document.getElementById('liftEyesBody');
+  const imp = getPhoneImpact();
+  const tested = PHONE_PILLARS.filter(p => imp[p]);
+  const week = liftEyesMinutesSince(7), month = liftEyesMinutesSince(30);
+  const list = liftEyesFilter === 'all' ? LIFT_EYES_ACTIVITIES : liftEyesActivitiesForPillar(liftEyesFilter);
+  const doneToday = new Set(getLiftEyesLog().filter(x => new Date(x.date).toDateString() === new Date().toDateString()).map(x => x.id));
+  const chip = (key, label) => `<span onclick="liftEyesFilter='${key}'; renderLiftEyes();" style="display:inline-block; padding:6px 12px; margin:0 0 6px 6px; border-radius:16px; font-size:13px; cursor:pointer; border:1.5px solid var(--gold); ${liftEyesFilter===key ? 'background:var(--gold); color:#1C2B29; font-weight:700;' : 'color:var(--text);'}">${label}</span>`;
+
+  body.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <p style="font-size:44px; margin:0;">👀</p>
+      <p style="font-size:20px; font-weight:800; color:var(--text); margin:4px 0;">ارفع عينك</p>
+      <p style="font-size:14px; color:var(--muted); line-height:1.8; margin:0;">١٠٠ حاجة ترجّعلك وقتك من الموبايل.<br>ماتدوّرش على النشاط المثالي — اختار واحد، وابدأ ١٠ دقايق بس.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:800; color:var(--gold); margin:0;">${formatReclaimed(week)}</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">استرديتها الأسبوع ده</p>
+      </div>
+      <div class="card" style="text-align:center; margin:0;">
+        <p style="font-size:22px; font-weight:800; color:var(--gold); margin:0;">${formatReclaimed(month)}</p>
+        <p style="font-size:12px; color:var(--muted); margin:4px 0 0;">آخر ٣٠ يوم</p>
+      </div>
+    </div>
+
+    ${tested.length ? `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">📱 الموبايل واخد منك قد إيه؟</p>
+      ${tested.sort((a,b) => phoneImpactPct(imp[b]) - phoneImpactPct(imp[a])).map(p => { const pct = phoneImpactPct(imp[p]); const l = phoneLevel(pct); return `
+        <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text); margin:6px 0 3px;"><span>${phonePillarName(p)}</span><span>${l.icon} ${l.label}</span></div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;"><div style="width:${Math.max(pct,3)}%; height:100%; background:var(--gold); border-radius:3px;"></div></div>`; }).join('')}
+      ${tested.length < PHONE_PILLARS.length ? `<p style="font-size:12px; color:var(--muted); margin:10px 0 0;">الأركان اللي مش ظاهرة لسه ماعملتش اختبارها — أسئلة الموبايل جوه اختبار كل ركن.</p>` : ''}
+    </div>` : `
+    <div class="card"><p style="font-size:13.5px; color:var(--muted); line-height:1.8; margin:0;">📱 أسئلة الموبايل موجودة جوه اختبار كل ركن (الشخصي، العائلي، الاجتماعي، المهني، الصحي). اعمل أي اختبار منهم وهتعرف الموبايل واخد منك قد إيه في الركن ده.</p></div>`}
+
+    <div class="card" style="text-align:center;">
+      <button class="btn-primary" onclick="suggestLiftEyesActivity()">🎲 اقترحلي نشاط دلوقتي</button>
+      <div id="liftEyesSuggestion"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title" style="margin-bottom:6px;">🔥 تحدي ساعة بلا موبايل</p>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 8px;">حط الموبايل في أوضة تانية، وامشي على دول بالترتيب:</p>
+      ${LIFT_EYES_HOUR_CHALLENGE.map(s => `<p style="font-size:14.5px; color:var(--text); margin:0 0 4px;">⏱️ <b>${s.m} دقيقة:</b> ${s.t}</p>`).join('')}
+      <button class="btn-ghost" style="margin-top:8px;" onclick="completeLiftEyesHour()">✅ خلّصت الساعة</button>
+    </div>
+
+    <div style="margin:14px 0 8px;">
+      ${chip('all','الكل')}${chip('personal','👤 الشخصي')}${chip('family','👨‍👩‍👧 العائلي')}${chip('social','🤝 الاجتماعي')}${chip('professional','💼 المهني')}${chip('health','🏃 الصحي')}
+    </div>
+
+    ${LIFT_EYES_CATEGORIES.filter(c => liftEyesFilter === 'all' || c.pillar === liftEyesFilter).map(c => {
+      const items = list.filter(a => a.c === c.key);
+      if(!items.length) return '';
+      return `
+      <div class="card">
+        <p class="card-title" style="margin-bottom:8px;">${c.icon} ${c.title}</p>
+        ${items.map(a => `
+          <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(201,162,75,.2);">
+            <p style="flex:1; font-size:14.5px; color:var(--text); margin:0; line-height:1.6;">${a.t} <span style="color:var(--muted); font-size:12px;">· ${a.m} د</span></p>
+            ${doneToday.has(a.id)
+              ? `<span style="font-size:12.5px; color:var(--gold); font-weight:700; white-space:nowrap;">✓ اتعمل</span>`
+              : `<span onclick="doneLiftEyesActivity(${a.id})" style="font-size:12.5px; color:var(--text); border:1px solid var(--gold); border-radius:12px; padding:4px 10px; cursor:pointer; white-space:nowrap;">عملته ✓</span>`}
+          </div>`).join('')}
+      </div>`;
+    }).join('')}
+
+    <p style="font-size:12.5px; color:var(--muted); text-align:center; line-height:1.7; margin:10px 0 24px;">قاعدة بسيطة: ماتدوّرش على نشاط مثالي… اختار نشاط واحد وابدأ ١٠ دقايق بس.</p>
+  `;
+}
+function suggestLiftEyesActivity(){
+  const target = liftEyesFilter !== 'all' ? liftEyesFilter : weakestPhonePillar();
+  const pool = target ? liftEyesActivitiesForPillar(target) : LIFT_EYES_ACTIVITIES;
+  const a = pickRandom(pool, 1)[0];
+  const el = document.getElementById('liftEyesSuggestion');
+  if(!el || !a) return;
+  el.innerHTML = `
+    <p style="font-size:16px; font-weight:700; color:var(--text); margin:12px 0 4px; line-height:1.7;">${a.t}</p>
+    <p style="font-size:12.5px; color:var(--muted); margin:0 0 8px;">${a.m} دقيقة${target ? ` · مختار من ${phonePillarName(target)} عشان الموبايل واخد منه أكتر` : ''}</p>
+    <button class="btn-ghost" style="margin:0;" onclick="doneLiftEyesActivity(${a.id})">عملته ✓</button>`;
+}
+function doneLiftEyesActivity(id){
+  const a = LIFT_EYES_ACTIVITIES.find(x => x.id === id);
+  if(!a) return;
+  logLiftEyesActivity(a.id, a.m, a.t);
+  renderLiftEyes();
+}
+function completeLiftEyesHour(){
+  logLiftEyesActivity('hour', 60, 'تحدي ساعة بلا موبايل');
+  renderLiftEyes();
+  alert('🎉 ساعة كاملة ليك مش للشاشة — دي اتحسبت في الوقت اللي استرديته.');
+}
+
+// ---------- كارت الموبايل في التقرير الشامل ----------
+function renderFullReportPhoneCard(){
+  const imp = getPhoneImpact();
+  const tested = PHONE_PILLARS.filter(p => imp[p]);
+  const month = liftEyesMinutesSince(30);
+  if(!tested.length && !month) return '';
+  const ranked = tested.sort((a,b) => phoneImpactPct(imp[b]) - phoneImpactPct(imp[a]));
+  const top = ranked[0];
+  return `
+    <div class="card">
+      <p class="card-title" style="margin-bottom:8px;">👀 الموبايل واخد من أنهي ركن أكتر؟</p>
+      ${ranked.map(p => { const pct = phoneImpactPct(imp[p]); const l = phoneLevel(pct); return `
+        <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text); margin:6px 0 3px;"><span>${phonePillarName(p)}</span><span>${l.icon} ${l.label} (${pct}%)</span></div>
+        <div style="height:6px; background:var(--sand); border-radius:3px;"><div style="width:${Math.max(pct,3)}%; height:100%; background:var(--gold); border-radius:3px;"></div></div>`; }).join('')}
+      ${top && phoneImpactPct(imp[top]) >= 40 ? `<p style="font-size:14px; color:var(--text); line-height:1.8; margin:10px 0 0;">أكتر ركن الموبايل واخد منه: <b>${phonePillarName(top)}</b> — «${PHONE_PILLAR_PROBLEMS[top].title}».</p>` : ''}
+      <p style="font-size:14px; color:var(--text); margin:10px 0 0;">⏳ الوقت اللي استرديته من الشاشة آخر ٣٠ يوم: <b style="color:var(--gold);">${formatReclaimed(month)}</b></p>
+      <button class="btn-ghost" style="margin-top:10px;" onclick="openLiftEyesScreen('${top || 'all'}')">👀 ارفع عينك</button>
+    </div>`;
+}
+// إشارة لترشيح المتخصص: الموبايل عالي في ٣ أركان أو أكتر
+function getPhoneHighPillars(){
+  const imp = getPhoneImpact();
+  return PHONE_PILLARS.filter(p => imp[p] && phoneImpactPct(imp[p]) >= 75);
+}
+
+// ---------- دمج أسئلة الموبايل في اختبارات الأركان ----------
+CIRCLE_QUESTIONS.push(...PHONE_QUESTIONS.social);
+FAMILY_CIRCLE_QUESTIONS.push(...PHONE_QUESTIONS.family);
+HEALTH_CIRCLE_QUESTIONS.push(...PHONE_QUESTIONS.health);
+PHONE_QUESTIONS.personal.forEach(q => SELF_KNOW_QUESTIONS.push({ q:q.q, options:q.options.map(o => ({ label:o.label, tag:'phone:' + o.score })) }));
+CIRCLE_LABELS.phone = 'الموبايل';
+FAMILY_CIRCLE_LABELS.phone = 'الموبايل';
+HEALTH_CIRCLE_LABELS.phone = 'الموبايل';
+PROFESSIONAL_CIRCLE_LABELS.phone = 'الموبايل';
+
+// عرض كارت الموبايل تحت نتيجة كل ركن وجوه تقريره
+(function(){
+  const wrapAfter = (name, fn) => {
+    const orig = window[name];
+    if(typeof orig !== 'function') return;
+    window[name] = function(){
+      const r = orig.apply(this, arguments);
+      if(r && typeof r.then === 'function') return r.then(v => { fn(); return v; });
+      fn(); return r;
+    };
+  };
+  wrapAfter('renderCircleResult', () => appendPhoneCardTo('circleBody', 'social'));
+  wrapAfter('renderFamilyCircleResult', () => appendPhoneCardTo('familyCircleBody', 'family'));
+  wrapAfter('renderHealthCircleResult', () => appendPhoneCardTo('healthCircleBody', 'health'));
+  wrapAfter('renderProfessionalCircleResult', () => appendPhoneCardTo('professionalCircleBody', 'professional'));
+  wrapAfter('renderSelfKnowContent', () => appendPhoneCardTo('selfKnowContent', 'personal', true));
+  wrapAfter('openPersonalReport', () => appendPhoneCardTo('personalReportBody', 'personal'));
+  wrapAfter('openFamilyReport', () => appendPhoneCardTo('familyReportBody', 'family'));
+  wrapAfter('openSocialReport', () => appendPhoneCardTo('socialReportBody', 'social'));
+  wrapAfter('openProfessionalReport', () => appendPhoneCardTo('professionalReportBody', 'professional'));
+  wrapAfter('openHealthReport', () => appendPhoneCardTo('healthReportBody', 'health'));
+})();
+
 const COMPASS_JOURNEY_QUESTIONS = [
   { stageKey:"اعرف", q:"لو حد سألك «مين انت؟»، هتقدر تجاوب بوضوح عن شخصيتك ومشاعرك؟", options:[
     { label:"آه، عندي صورة واضحة عن نفسي", done:true }, { label:"لأ، لسه مش واضحة", done:false },
