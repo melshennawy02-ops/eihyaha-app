@@ -15140,16 +15140,18 @@ function extraPhraseScoreEn(text, phrases){
 
 // ================= «خطوتك الجاية» — بطاقة الرئيسية بدل إعلان الرحلة الثابت =================
 // بتختار للمستخدم خطوة واحدة محددة النهاردة من بياناته هو، وتحتها شريط تقدمه في رحلته النفسية القرآنية.
-const NEXT_STEP_SKIP_KEY = 'eihyaha_next_step_skipped';
+const NEXT_STEP_SKIP_KEY = 'eihyaha_next_step_offset';
 function nsTodayKey(){ return new Date().toISOString().slice(0,10); }
-function nsGetSkipped(){
-  try { const s = JSON.parse(localStorage.getItem(NEXT_STEP_SKIP_KEY) || '{}'); return s.day === nsTodayKey() ? (s.keys || []) : []; } catch(e){ return []; }
+// «خطوة تانية» بتلف على الخطوات بالدور، ولما توصل للآخر بترجع لأول خطوة تاني (مش بتخفيها)
+function nsGetOffset(){
+  try { const s = JSON.parse(localStorage.getItem(NEXT_STEP_SKIP_KEY) || '{}'); return s.day === nsTodayKey() ? (s.offset || 0) : 0; } catch(e){ return 0; }
 }
-function nsSkip(key){
-  const keys = nsGetSkipped(); keys.push(key);
-  try { localStorage.setItem(NEXT_STEP_SKIP_KEY, JSON.stringify({ day: nsTodayKey(), keys })); } catch(e){}
+function nsNext(total){
+  const offset = (nsGetOffset() + 1) % Math.max(1, total);
+  try { localStorage.setItem(NEXT_STEP_SKIP_KEY, JSON.stringify({ day: nsTodayKey(), offset })); } catch(e){}
   renderHomeNextStep();
 }
+function nsResetOffset(){ try { localStorage.removeItem(NEXT_STEP_SKIP_KEY); } catch(e){} }
 function nsEsc(s){ return String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function nsMoodLoggedToday(){
   try {
@@ -15234,31 +15236,33 @@ function renderHomeNextStep(){
   const wrap = document.getElementById('homeNextStep');
   if(!wrap) return;
   const chooser = (typeof getUiMode === 'function' && !getUiMode()) ? uiModeChooserHtml() : '';
-  const skipped = nsGetSkipped();
   const all = nsCandidates();
-  const step = all.find(x => !skipped.includes(x.key));
-  const remaining = all.filter(x => !skipped.includes(x.key)).length;
+  const pos = all.length ? nsGetOffset() % all.length : 0;
+  const step = all[pos];
+  const remaining = all.length;
+  const counter = all.length > 1 ? `<span style="font-size:11.5px; color:rgba(255,255,255,.7); font-weight:400;"> (${pos+1} من ${all.length})</span>` : '';
   let inner;
   if(!step){
     inner = `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">🎯 خطوتك الجاية</p>
       <p style="font-size:15px; color:#fff; font-weight:700; margin:0 0 4px;">🌿 خطواتك النهاردة خلصت</p>
       <p style="font-size:13px; color:rgba(255,255,255,.85); margin:0; line-height:1.7;">ارتاح أو اختار أي ركن تحب تكمّل فيه — الاستمرار الهادي أهم من الكتير.</p>`;
   } else if(step.goalId){
-    inner = `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">🎯 خطوتك الجاية</p>
+    inner = `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">🎯 خطوتك الجاية${counter}</p>
       <p style="font-size:15px; color:#fff; font-weight:700; margin:0 0 4px;">${step.icon} ${step.title}</p>
       <p style="font-size:13.5px; color:rgba(255,255,255,.9); margin:0 0 10px; line-height:1.7;">${step.why}</p>
       <div style="display:flex; gap:6px;">
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; font-size:12px; padding:8px 4px;" onclick="resolveFollowUp(${step.goalId}, 'worked'); renderHomeNextStep();">👍 عملته وفرق</div>
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; font-size:12px; padding:8px 4px;" onclick="resolveFollowUp(${step.goalId}, 'trying'); renderHomeNextStep();">🔄 لسه بجرب</div>
         <div class="choice-btn" style="flex:1; text-align:center; margin:0; font-size:12px; padding:8px 4px;" onclick="resolveFollowUp(${step.goalId}, 'didnt_work'); renderHomeNextStep();">👎 ماحصلش</div>
-      </div>`;
+      </div>
+      ${remaining > 1 ? `<p style="margin:10px 0 0; text-align:left;"><span onclick="nsNext(${remaining})" style="font-size:12.5px; color:rgba(255,255,255,.75); cursor:pointer; text-decoration:underline;">خطوة تانية</span></p>` : ''}`;
   } else {
-    inner = `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">🎯 خطوتك الجاية</p>
+    inner = `<p style="font-size:13px; color:var(--gold); font-weight:700; margin:0 0 6px;">🎯 خطوتك الجاية${counter}</p>
       <p style="font-size:15px; color:#fff; font-weight:700; margin:0 0 4px;">${step.icon} ${step.title}</p>
       <p style="font-size:13.5px; color:rgba(255,255,255,.9); margin:0 0 12px; line-height:1.7;">${step.why}</p>
       <div style="display:flex; gap:8px; align-items:center;">
         <button class="btn-primary" style="flex:1; margin:0;" onclick="${step.fn}">${step.cta} <span class="arrow" style="display:inline-block;">‹</span></button>
-        ${remaining > 1 ? `<span onclick="nsSkip('${step.key}')" style="font-size:12.5px; color:rgba(255,255,255,.75); cursor:pointer; text-decoration:underline; white-space:nowrap;">خطوة تانية</span>` : ''}
+         ${remaining > 1 ? `<span onclick="nsNext(${remaining})" style="font-size:12.5px; color:rgba(255,255,255,.75); cursor:pointer; text-decoration:underline; white-space:nowrap;">خطوة تانية</span>` : ''}
       </div>`;
   }
   wrap.innerHTML = chooser + `<div class="card" style="background:linear-gradient(135deg, rgba(46,31,74,.92), rgba(74,46,107,.75)), url('https://images.unsplash.com/photo-1685438531044-ef75606db89d?fm=jpg&q=70&w=800&auto=format&fit=crop') center/cover no-repeat; margin-bottom:20px;">${inner}${nsJourneyBar()}</div>`;
@@ -15289,9 +15293,9 @@ function setUiMode(mode){
 function applyUiMode(){ document.body.classList.toggle('simple-mode', isSimpleMode()); }
 
 function uiModeChooserHtml(){
-  return `<div class="card" style="border:2px solid var(--gold); margin-bottom:14px;">
-    <p class="card-title" style="margin-bottom:6px;">👋 تحب التطبيق يكون إزاي؟</p>
-    <p style="font-size:13.5px; color:var(--muted); margin:0 0 12px; line-height:1.7;">تقدر تغيّر اختيارك في أي وقت من الإعدادات.</p>
+  return `<div class="card" style="border:2px solid var(--gold); margin-bottom:14px; background:linear-gradient(rgba(7,43,40,.78), rgba(7,43,40,.86)), url('https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=900&auto=format&fit=crop') center/cover no-repeat;">
+    <p class="card-title" style="margin-bottom:6px; color:#fff;">👋 تحب التطبيق يكون إزاي؟</p>
+    <p style="font-size:13.5px; color:rgba(255,255,255,.85); margin:0 0 12px; line-height:1.7;">تقدر تغيّر اختيارك في أي وقت من الإعدادات.</p>
     <div class="choice-btn" style="margin:0 0 8px;" onclick="setUiMode('simple')"><b>🌱 بسيط</b><br><span style="font-size:12.5px; color:var(--muted);">الأساسيات بس: خطوتك الجاية، واحكيلي، ويومياتك، وأهم الأدوات في كل ركن</span></div>
     <div class="choice-btn" style="margin:0;" onclick="setUiMode('full')"><b>🌳 كامل</b><br><span style="font-size:12.5px; color:var(--muted);">كل الأدوات والتقارير والمحتوى</span></div>
   </div>`;
@@ -15458,6 +15462,94 @@ function goalToTask(goal, deadline){
   const app = document.getElementById('app') || document.body;
   new MutationObserver(uxSchedule).observe(app, { childList:true, subtree:true });
   uxSchedule();
+})();
+
+
+
+// ================= صورة لكل أداة وبنك (بانر أعلى الشاشة) =================
+const HERO_IMG = id => `https://images.unsplash.com/${id}?fm=jpg&q=70&w=900&auto=format&fit=crop`;
+const SCREEN_HEROES = {
+  // الروحاني
+  'screen-rabbek':['photo-1621419202928-c6b8c1493043','rgba(10,40,35,.35)'], 'screen-worship':['photo-1621419202928-c6b8c1493043','rgba(90,70,20,.35)'],
+  'screen-worship-insights':['photo-1621419202928-c6b8c1493043','rgba(10,40,35,.35)'], 'screen-spiritual-circle':['photo-1506126613408-eca07ce68773','rgba(10,45,35,.35)'],
+  'screen-tasleem-compass':['photo-1506126613408-eca07ce68773','rgba(45,30,10,.35)'], 'screen-asma':['photo-1742626157111-59f3f1019a8a','rgba(20,10,35,.35)'],
+  'screen-prophets':['photo-1684090090291-adb1f15f0cd5','rgba(20,15,10,.35)'], 'screen-mirror-test':['photo-1684090090291-adb1f15f0cd5','rgba(20,15,10,.35)'],
+  'screen-tawba':['photo-1506564461966-4107c88f6d29','rgba(15,45,60,.3)'], 'screen-khalwa':['photo-1506564461966-4107c88f6d29','rgba(20,55,40,.35)'],
+  'screen-spiritual-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'], 'screen-journey':['photo-1685438531044-ef75606db89d','rgba(46,31,74,.35)'],
+  // الشخصي
+  'screen-ehkily':['photo-1546795708-c962dc089798','rgba(20,20,40,.35)'], 'screen-merat':['photo-1753135984656-ad63c1017075','rgba(20,20,40,.3)'],
+  'screen-tabiei':['photo-1516246843873-9d12356b6fab','rgba(20,30,40,.3)'], 'screen-disorder-guide':['photo-1516246843873-9d12356b6fab','rgba(20,30,40,.3)'],
+  'screen-disorder-detail':['photo-1516246843873-9d12356b6fab','rgba(20,30,40,.3)'], 'screen-self-know':['photo-1753135984656-ad63c1017075','rgba(20,20,40,.3)'],
+  'screen-trait-guide':['photo-1753135984656-ad63c1017075','rgba(40,30,20,.3)'], 'screen-trait-detail':['photo-1753135984656-ad63c1017075','rgba(40,30,20,.3)'],
+  'screen-daftar':['photo-1643148636630-0b0fb138fc74','rgba(30,30,20,.3)'], 'screen-report':['photo-1659353888922-7c7b1ad21650','rgba(15,35,45,.3)'],
+  'screen-flash':['photo-1593359854850-3c0df0373871','rgba(10,40,30,.3)'], 'screen-lift-eyes':['photo-1593359854850-3c0df0373871','rgba(10,40,30,.3)'],
+  'screen-support-guide':['photo-1509062522246-3755977927d7','rgba(30,25,15,.3)'], 'screen-personal-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'],
+  'screen-compass':['photo-1508165821229-7be282c31b6e','rgba(10,15,25,.35)'], 'screen-case-file':['photo-1659353888922-7c7b1ad21650','rgba(15,35,45,.3)'],
+  'screen-stats':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'], 'screen-full-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'],
+  'screen-tasks':['photo-1768055104910-8c8d213835fb','rgba(15,30,25,.35)'],
+  // العائلي
+  'screen-family-wound':['photo-1593629765902-31ed1b8d24d1','rgba(40,25,20,.3)'], 'screen-family-circle':['photo-1593629765902-31ed1b8d24d1','rgba(40,25,20,.3)'],
+  'screen-spouse':['photo-1518199266791-5375a83190b7','rgba(50,20,30,.3)'], 'screen-relcheck':['photo-1518199266791-5375a83190b7','rgba(50,20,30,.3)'],
+  'screen-children':['photo-1476234251651-f353703a034d','rgba(30,40,20,.3)'], 'screen-siblings':['photo-1511895426328-dc8714191300','rgba(30,30,40,.3)'],
+  'screen-extended-family':['photo-1600585154340-be6161a56a0c','rgba(30,25,20,.3)'], 'screen-family-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'],
+  // الاجتماعي
+  'screen-circle':['photo-1506869640319-fe1a24fd76dc','rgba(20,35,45,.3)'], 'screen-rahm':['photo-1509062522246-3755977927d7','rgba(30,25,15,.3)'],
+  'screen-neighbor':['photo-1518780664697-55e3ad937233','rgba(20,30,20,.3)'], 'screen-social-skills':['photo-1543269865-cbf427effbad','rgba(20,25,40,.3)'],
+  'screen-social-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'], 'screen-coworkers':['photo-1522071820081-009f0129c71c','rgba(20,25,35,.3)'],
+  'screen-coworker-exchange':['photo-1522071820081-009f0129c71c','rgba(20,25,35,.3)'], 'screen-coworker-boundaries':['photo-1522071820081-009f0129c71c','rgba(20,25,35,.3)'],
+  'screen-coworker-burnout':['photo-1508165821229-7be282c31b6e','rgba(40,20,20,.3)'],
+  // المهني
+  'screen-professional-circle':['photo-1752223638233-4c9545333f89','rgba(20,25,35,.3)'], 'screen-boss':['photo-1752223638233-4c9545333f89','rgba(20,25,35,.3)'],
+  'screen-owner':['photo-1752223638233-4c9545333f89','rgba(30,25,15,.3)'], 'screen-freelancer':['photo-1752223638233-4c9545333f89','rgba(15,30,30,.3)'],
+  'screen-home-role':['photo-1476234251651-f353703a034d','rgba(30,40,20,.3)'], 'screen-transition':['photo-1683027279045-d2722b1bb44a','rgba(20,30,40,.3)'],
+  'screen-ambition':['photo-1593359854850-3c0df0373871','rgba(20,30,20,.3)'], 'screen-field-discovery':['photo-1566341013452-946caa457784','rgba(20,25,35,.3)'],
+  'screen-growth-plan':['photo-1633158829875-e5316a358c6f','rgba(20,35,25,.3)'], 'screen-first-step':['photo-1683027279045-d2722b1bb44a','rgba(20,30,40,.3)'],
+  'screen-executive-prep':['photo-1522071820081-009f0129c71c','rgba(20,25,35,.3)'], 'screen-business-prep':['photo-1509062522246-3755977927d7','rgba(30,25,15,.3)'],
+  'screen-professional-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'],
+  // المادي
+  'screen-financial-circle':['photo-1566341013452-946caa457784','rgba(30,30,15,.3)'], 'screen-money-relationship':['photo-1546795708-c962dc089798','rgba(30,30,15,.3)'],
+  'screen-budget':['photo-1643148636630-0b0fb138fc74','rgba(30,30,15,.3)'], 'screen-debt':['photo-1508165821229-7be282c31b6e','rgba(30,20,15,.3)'],
+  'screen-savings':['photo-1633158829875-e5316a358c6f','rgba(20,35,25,.3)'], 'screen-giving':['photo-1509062522246-3755977927d7','rgba(30,25,15,.3)'],
+  'screen-contentment':['photo-1621419202928-c6b8c1493043','rgba(30,30,15,.3)'], 'screen-financial-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'],
+  // الصحي
+  'screen-health-circle':['photo-1506126613408-eca07ce68773','rgba(15,35,35,.3)'], 'screen-body-signals':['photo-1506126613408-eca07ce68773','rgba(15,35,35,.3)'],
+  'screen-eating':['photo-1643148636630-0b0fb138fc74','rgba(30,30,15,.3)'], 'screen-doctor':['photo-1659353888922-7c7b1ad21650','rgba(15,35,45,.3)'],
+  'screen-sleep':['photo-1621419202928-c6b8c1493043','rgba(20,20,45,.3)'], 'screen-movement':['photo-1633158829875-e5316a358c6f','rgba(20,35,25,.3)'],
+  'screen-fatigue':['photo-1508165821229-7be282c31b6e','rgba(40,20,20,.3)'], 'screen-health-report':['photo-1543269865-cbf427effbad','rgba(15,25,35,.35)'],
+  // المتخصصين والاشتراك
+  'screen-specialists-directory':['photo-1573497491208-6b1acb260507','rgba(20,20,40,.3)'], 'screen-specialists-browse':['photo-1573497491208-6b1acb260507','rgba(20,20,40,.3)'],
+  'screen-become-specialist':['photo-1573497491208-6b1acb260507','rgba(20,20,40,.3)'], 'screen-subscription':['photo-1763793927066-e737cd50bd1a','rgba(7,43,40,.3)']
+};
+function ensureScreenHero(id){
+  const cfg = SCREEN_HEROES[id];
+  const sc = document.getElementById(id);
+  if(!cfg || !sc || sc.querySelector('.screen-hero')) return;
+  const top = sc.querySelector('.topbar');
+  const hero = document.createElement('div');
+  hero.className = 'screen-hero';
+  hero.style.cssText = `height:110px; margin:0 16px 14px; border-radius:18px; background:linear-gradient(${cfg[1]}, ${cfg[1]}), url('${HERO_IMG(cfg[0])}') center/cover no-repeat; box-shadow:0 6px 18px rgba(0,0,0,.12);`;
+  if(top) top.after(hero); else sc.prepend(hero);
+}
+(function(){
+  const orig = window.showScreen;
+  if(typeof orig !== 'function') return;
+  window.showScreen = function(id){ try { ensureScreenHero(id); } catch(e){} return orig.apply(this, arguments); };
+})();
+const PILLAR_HEROES = { 1:'photo-1621419202928-c6b8c1493043', 2:'photo-1617791160536-598cf32026fb', 3:'photo-1593629765902-31ed1b8d24d1', 4:'photo-1506869640319-fe1a24fd76dc', 5:'photo-1752223638233-4c9545333f89', 6:'photo-1566341013452-946caa457784', 7:'photo-1506126613408-eca07ce68773' };
+(function(){
+  const orig = window.goToPillar;
+  if(typeof orig !== 'function') return;
+  window.goToPillar = function(id){
+    const r = orig.apply(this, arguments);
+    try {
+      const sc = document.getElementById('screen-pillar');
+      let hero = sc.querySelector('.screen-hero');
+      if(!hero){ hero = document.createElement('div'); hero.className = 'screen-hero'; const top = sc.querySelector('.topbar'); if(top) top.after(hero); else sc.prepend(hero); }
+      const img = PILLAR_HEROES[id];
+      hero.style.cssText = img ? `height:110px; margin:0 16px 14px; border-radius:18px; background:linear-gradient(rgba(10,30,30,.3), rgba(10,30,30,.3)), url('${HERO_IMG(img)}') center/cover no-repeat; box-shadow:0 6px 18px rgba(0,0,0,.12);` : 'display:none;';
+    } catch(e){}
+    return r;
+  };
 })();
 
 </script>
