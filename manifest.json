@@ -1,0 +1,19 @@
+{
+  "name": "إحياها باستمتاع",
+  "short_name": "إحياها",
+  "description": "اعرف نفسك ووازن حياتك في ٧ أركان: روحي، نفسي، عائلي، اجتماعي، مهني، مادي وصحي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3EEE3",
+  "theme_color": "#072B28",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
