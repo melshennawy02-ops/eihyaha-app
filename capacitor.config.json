@@ -4,7 +4,7 @@
   "webDir": "www",
   "server": {
     "url": "https://melshennawy02-ops.github.io/eihyaha-app",
-    "cleartext": true
+    "cleartext": false
   },
   "plugins": {
     "SplashScreen": {
@@ -13,6 +13,9 @@
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_INSIDE",
       "showSpinner": false
+    },
+    "LocalNotifications": {
+      "iconColor": "#0A2420"
     }
   }
 }
