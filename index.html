@@ -8112,17 +8112,17 @@ function goToPillar(id){
   } else {
     // الركن الشخصي — الأدوات المتاحة بخلفيات صور
     const personalTools = [
-      { key:"detox", onclick:"openDetox()", icon:"📱", title:"من الشاشة للحياة", sub:"خطة ٢١ يوم عملية للتعافي من الموبايل", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,30,.72)" },
       { key:"pcx_personal", onclick:"startPcx('personal')", icon:"📊", title:"الفحص الشخصي الشامل", sub:"٢٠ سؤال في ٨ جوانب — تقرير بقوتك ومساحات نموك", img:"https://images.unsplash.com/photo-1617791160536-598cf32026fb?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
       { key:"selfknow", onclick:"openSelfKnowScreen()", icon:"🧠", title:"اعرف نفسك", sub:"مين أنت؟ .. مشاعرك وأفكارك وسلوكك", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,10,35,.72)" },
       { key:"merat", onclick:"startMerat()", icon:"🪞", title:"افهم إحساسك", sub:"افهم أنماطك الفكرية والشعورية", img:"https://images.unsplash.com/photo-1753135984656-ad63c1017075?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,20,20,.68)" },
-      { key:"tabiei", onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
       { key:"ehkily", onclick:"startEhkily()", icon:"💬", title:"صاحبك اللي بيسمعك", sub:"احكيلي — في فرحك وحزنك، من غير حكم", img:"https://images.unsplash.com/photo-1546795708-c962dc089798?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,20,35,.72)" },
+      { key:"daftar", onclick:"openDaftarScreen()", icon:"📓", title:"يومياتي", sub:"تتبع مزاجك وطاقتك يوميًا", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(25,20,15,.68)" },
+      { key:"tabiei", onclick:"startTabiei()", icon:"❓", title:"هل أنا طبيعي؟", sub:"إجابات سريعة على أسئلتك", img:"https://images.unsplash.com/photo-1516246843873-9d12356b6fab?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(20,30,15,.65)" },
       { key:"flash", onclick:"openFlashScreen()", icon:"✨", title:"ومضة نفسية", sub:"١٠٠ موقف نفسي بمنظور قرآني", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(30,20,5,.65)" },
       { key:"lift_eyes", onclick:"openLiftEyesScreen()", icon:"👀", title:"ارفع عينك", sub:"١٠٠ حاجة ترجّعلك وقتك من الموبايل", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(15,35,30,.70)" },
-      { key:"daftar", onclick:"openDaftarScreen()", icon:"📓", title:"يومياتي", sub:"تتبع مزاجك وطاقتك يوميًا", img:"https://images.unsplash.com/photo-1643148636630-0b0fb138fc74?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(25,20,15,.68)" },
+      { key:"detox", onclick:"openDetox()", icon:"📱", title:"من الشاشة للحياة", sub:"خطة ٢١ يوم عملية للتعافي من الموبايل", img:"https://images.unsplash.com/photo-1593359854850-3c0df0373871?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,40,30,.72)" },
       { key:"report", onclick:"startReport()", icon:"📋", title:"جهزني للدكتور", sub:"تقرير مبسط قبل زيارة المتخصص", img:"https://images.unsplash.com/photo-1659353888922-7c7b1ad21650?fm=jpg&q=70&w=800&auto=format&fit=crop", overlay:"rgba(10,25,35,.7)" },
-    ];
+];
     const personalStartIdx = firstUntriedIndex(personalTools);
     body.innerHTML = renderPersonalDashboard() + personalTools.map((t,idx) => `
       <div class="tool-row" style="background:linear-gradient(${t.overlay}, ${t.overlay}), url('${t.img}') center/cover no-repeat; border:${idx===personalStartIdx ? '2px solid var(--gold)' : 'none'}; position:relative;" onclick="${t.onclick}">
